@@ -46,8 +46,8 @@ export default {
     '@nuxtjs/svg',
     // https://firebase.nuxtjs.org/
     '@nuxtjs/firebase',
-       // Doc: https://http.nuxtjs.org
-       '@nuxt/http'
+    // Doc: https://http.nuxtjs.org
+    '@nuxt/http'
   ],
 
   // Axios module configuration: https://go.nuxtjs.dev/config-axios
@@ -97,5 +97,19 @@ export default {
   serverMiddleware: ['~/api/index.js'],
   // Build Configuration: https://go.nuxtjs.dev/config-build
   build: {
+    postcss: {
+      // Add plugin names as key and arguments as value
+      // Install them before as dependencies with npm or yarn
+      plugins: {
+        // Disable a plugin by passing false as value
+        'postcss-url': false,
+      },
+      preset: {
+        // Change the postcss-preset-env settings
+        autoprefixer: {
+          grid: true
+        }
+      }
+    }
   }
 }

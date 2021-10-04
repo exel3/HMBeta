@@ -22,7 +22,7 @@ header {
   justify-content: space-between;
   align-items: center;
   border-bottom: solid 1px;
-  border-color: var(--border-color);
+  border-color: #2dce89;
   background: white;
   box-sizing: border-box;
   grid-auto-flow: column;
@@ -31,6 +31,8 @@ header {
   top:0;
   user-select: none;
     padding-left: 16rem;
+    background-color: #2dce89;
+    color: white;
 }
 .logoAndTitle {
   display: grid;
@@ -38,6 +40,7 @@ header {
   align-items: center;
   grid-auto-flow: column;
   text-decoration: none;
+  color:white;
 }
 .dashboard {
   height: 4rem;
@@ -48,7 +51,6 @@ header {
   align-items:center;
   justify-content: center;
   font-size: 1.5rem;
-  color:black;
 }
 
 h1 {

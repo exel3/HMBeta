@@ -5,6 +5,7 @@
     <v-main>
       <v-container>
         <section class="containerDefault">
+          <div class="backgroundGreen"></div>
         <Nuxt />
         </section>
       </v-container>
@@ -30,5 +31,14 @@ export default {
   padding-top: 5rem;
   padding-left: 15rem;
       background: var(--background-color);
+}
+
+.backgroundGreen {
+  position: absolute;
+  top: 4rem;
+  width: 100%;
+  height: 15rem;
+  background:#2dce89;
+  z-index: 1;
 }
 </style>

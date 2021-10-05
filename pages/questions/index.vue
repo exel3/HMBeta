@@ -1,55 +1,56 @@
 <template lang="">
-  <p v-if="$fetchState.pending">Fetching locals...</p>
-  <p v-else-if="$fetchState.error">An error occurred :(</p>
-  <div v-else class="indexQuestionContainer">
-    <div class='owner'>Bienvenido! administre las preguntas y respuestas que se veran en sus locales<br> En la columna derecha visualice las mesas activas en su local.</div>
-    <div class='locals'>
-      <div v-for="local in locals" :key="local.id" class='local'>
-        <Locals :localprop='{local, localSelected}' @click="setLocalSelected(local)"/>
+  <section>
+    <article class="newUser">
+      <div class="titleCard"><p>Nueva pregunta</p></div>
+      <div class="contentCard">
+        <form>
+          <div>
+          <label for="email">Pregunta</label>
+          <input id="email" v-model="newQuestion.question" type="email" autocomplete="off">
+          </div>
+        </form>
       </div>
-    </div>
-    <div class="localContainer">
-      <div class="stats">
-        <div class="cardStats">
-          <div class="statsIcon">P</div>
-          <div class="textIcon"><p class="statNumber">{{localSelected.questions.length}}</p><p>Preguntas disponibles</p></div>
-        </div>
-         <div class="cardStats">
-          <div class="statsIcon">M</div>
-          <div class="textIcon"><p class="statNumber">{{localSelected.tables.length}}</p><p>Mesas conectadas</p></div>
-        </div>
+      <div class="containerAddBtn">
+        <button @click.prevent="addNewUser()">Agregar</button>
       </div>
-    <div class='questions'>
-      <p class="titleBoxs">Preguntas</p>
-      <div class="questionsSelected">
-        <div v-for="(question, index) in questionsSelected" :key="question.question" class="question">
-          <Question :info='{question, index}' @delete:question='deleteQuestion' @update:question='updateLocalQuestion'/>
-        </div>
-             <div class="newQuestion">  
-        <AddButton type='normal' @click='searchEmptyQuestion()'/>
-      </div>
-      </div>
-      </div>
-    </div>
-  </div>
+    </article>
+    <article class="userList">
+       <div class="titleCard"><p>Lista de preguntas</p></div>
+       </article>
+         <article v-for="question in questionsSelected" :key="question.question" class="answerList">
+     <table >
+	<thead>
+	<tr>
+		<th><input :value="question.question"></th>
+    <th><img src="@/assets/icons/edit.svg"><img src="@/assets/icons/delete.svg" @click="showDeleteModal = true; userSelected = user"></th>
+	</tr>
+	</thead>
+	<tbody>
+	<tr v-for="answer in question.answers" :key="answer.id">
+		<td><input :value="answer"></td>
+		<td class="tdDelete"><img src="@/assets/icons/edit.svg"><img src="@/assets/icons/delete.svg" @click="showDeleteModal = true; userSelected = user"></td>
+	</tr>
+	</tbody>
+</table>
+    </article>
+    <DeleteModal v-if="showDeleteModal" @delete-user="deleteUser" @cancel-delete="showDeleteModal = false"/>
+  </section>
 </template>
 <script>
-import Locals from '@/components/questions/Locals.vue'
-import Question from '@/components/questions/Question.vue'
-import AddButton from '@/components/questions/tools/AddButton.vue'
+import DeleteModal from '@/components/users/DeleteModal.vue'
 export default {
-  name: 'QuestionsIndex',
-  components: { Locals, Question, AddButton },
+  name: 'Owners',
+  components: {
+    DeleteModal,
+  },
   data: () => ({
-    dataApi: {},
     localSelected: [],
     questionsSelected: [],
-    searchValue: '',
-    emptyQuestions: [],
-    clientId: '1234',
     locals: [],
+    clientId: '1234',
+    localAnswers:[],
+    newQuestion: {}
   }),
-
   async fetch() {
     await this.$axios
       .$get('/api/getUser')
@@ -61,15 +62,6 @@ export default {
       .catch((e) => {
         console.log(e)
       })
-
-    this.locals.length > 0 &&
-      (await this.$axios
-        .$get(`/api/getGroupTables/${this.locals[0].id}`)
-        .then((res) => {
-          this.locals[0].tables = res.groupTables
-          this.localSelected.tables = res.groupTables
-        })
-        .catch((e) => console.log(e)))
     this.locals.length > 0 &&
       (await this.$axios
         .$get(`/api/getQuestions/${this.locals[0].id}`)
@@ -82,50 +74,14 @@ export default {
     console.log(this.locals[0])
     console.log('lista ban: ', await this.getGroupsBan())
   },
-
+  mounted() {
+    this.getLocals()
+  },
   methods: {
     setLocalSelected(local) {
       this.localSelected = this.locals.find((l) => l.id === local.id)
       this.questionsSelected = this.localSelected.questions
     },
-    addNewQuestion() {
-      this.questionsSelected.push({
-        answers: ['', ''],
-        question: '',
-      })
-      console.log(this.localSelected.questions)
-    },
-
-    confirmChangeQuestion() {
-      const localId = this.localSelected.id
-      const questions = this.questionsSelected
-      const body = { localId, questions }
-
-      this.$axios
-        .$post('/api/updateQuestions', body)
-        .then((res) => console.log(res))
-        .catch((e) => {
-          console.log(e)
-        })
-    },
-
-    deleteQuestion(index) {
-      this.questionsSelected = this.questionsSelected.filter(
-        (q) => q.question !== this.questionsSelected[index].question
-      )
-      this.confirmChangeQuestion()
-    },
-    updateLocalQuestion(questionP, index, answersP) {
-      this.questionsSelected[index].question = questionP
-      this.questionsSelected[index].answers = answersP
-      this.confirmChangeQuestion()
-    },
-    searchFilter() {
-      this.localSelected.tables = this.localSelected.tables.filter((t) =>
-        t.name.toLowerCase().includes(this.searchValue.toLowerCase())
-      )
-    },
-
     getLocals() {
       this.$axios
         .$get('/api/getUser')
@@ -143,269 +99,146 @@ export default {
         })
       this.localSelected = this.locals.find((l) => l)
     },
-
-    getGroupTables(id) {
-      return this.$axios
-        .$get(`/api/getGroupTables/${id}`)
-        .then((response) => response.groupTables)
-        .catch((e) => {
-          console.log(e)
-        })
-    },
-
-    getQuestions(id) {
-      return this.$axios
-        .$get(`/api/getQuestions/${id}`)
-        .then((response) => response.questions)
-        .catch((e) => {
-          console.log(e)
-        })
-    },
-
-    searchEmptyQuestion() {
-      this.emptyQuestions = this.questionsSelected.filter(
-        (q) => q.question === ''
-      )
-      this.emptyQuestions.length === 0 && this.addNewQuestion()
-    },
-    banClient(idGroup, reason) {
-      this.$axios
-        .$post(`/api/banGroupTable/${idGroup}`, { reason })
-        .then((res) => console.log('Mesa baneada ', res))
-        .catch((e) => {
-          console.log(e)
-        })
-    },
-    unBanClient(idGroup) {
-      this.$axios
-        .$post(`/api/unBanGroupTable/${idGroup}`)
-        .then((res) => console.log('Mesa desbaneada ', res))
-        .catch((e) => {
-          console.log(e)
-        })
-    },
-    getGroupsBan() {
-      return this.$axios
-        .$get('/api/getGroupsBan')
-        .then((res) => res)
-        .catch((e) => {
-          console.log(e)
-        })
-    },
   },
 }
 </script>
-
-<style>
-.indexQuestionContainer {
-  width: 100%;
+<style scoped>
+section {
+  position: relative;
+  background: var(--background-color);
+  display: grid;
+  grid-auto-flow: row;
+  gap: 2rem 0;
+  margin-top: 4rem;
+  box-sizing: border-box;
+  padding: 0 5rem;
 }
-.locals {
+
+article {
+  background: white;
+  border: 0;
+  box-sizing: border-box;
+  box-shadow: 0 0 2rem 0 rgb(136 152 170 / 15%);
+  border-radius: 0.375rem;
+  z-index: 2;
+  overflow: hidden;
+}
+.answerList {
+  margin-bottom: 1rem;
+}
+
+.newUser {
+  max-height: 15rem;
+}
+
+.titleCard {
+  padding: 1.25rem 1.5rem;
+  margin-bottom: 0;
+  background-color: #fff;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.titleCard p {
+  font-size: 1.0625rem;
+  font-family: inherit;
+  font-weight: 600;
+  line-height: 1.5;
+  color: #32325d;
+}
+
+label {
+  color: #525f7f;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+input {
+  width: 100%;
+  height: 2rem;
+  padding: 0.625rem 0.75rem;
+  font-weight: 400;
+  line-height: 1.5;
+  color: #8898aa;
+  background-color: #fff;
+  background-clip: padding-box;
+  border: 1px solid #dee2e6;
+  border-radius: 0.25rem;
+  box-shadow: 0 3px 2px rgb(233 236 239 / 5%);
+  box-sizing: border-box;
+}
+
+.contentCard {
+  position: relative;
+  box-sizing: border-box;
+  padding: 1rem;
+}
+
+.contentCard form {
   display: grid;
   grid-auto-flow: column;
-  justify-content: start;
-  align-items: center;
-  gap: 0 0.5rem;
-  border-bottom: solid 1px var(--border-color);
-  user-select: none;
-  margin-bottom: 1rem;
-  padding: 0 0 0 1rem;
-}
-.localContainer {
-  width: 100%;
-  justify-content: center;
-  align-items: start;
+  box-sizing: border-box;
   gap: 0 1rem;
-  box-sizing: border-box;
-  padding: 1rem 1rem 0 1rem;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  grid-template-areas:
-    'stats stats'
-    'questions users'
-    'questions users';
 }
 
-.questions {
+.contentCard form div {
   display: grid;
-  align-items: start;
-  justify-items: center;
-  width: 100%;
-  box-sizing: border-box;
-  border: solid 1px var(--border-color);
-  position: relative;
-    background: white;
-  grid-area: questions;
+  grid-auto-flow: row;
 }
-.owner {
-  font-size: 1rem;
-   padding: 1rem 1rem 0 1rem;
-}
-.newQuestion {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-direction: column;
-  padding: 1rem;
-  border-radius: 0.3rem;
-  background: transparent;
-  max-width: 30rem;
-  min-width: 10rem;
-  min-height: 12rem;
-  overflow: hidden;
-  border: dashed rgba(0, 0, 0, 0.1) 2px;
-  box-sizing: border-box;
-}
-.local {
-  max-width: 100%;
-  margin: auto;
+.containerAddBtn {
+  max-height: 4rem;
   display: grid;
+  justify-items: end;
+  padding-bottom: 1.25rem;
+  padding-right: 1.5rem;
   box-sizing: border-box;
 }
 
-.questionsSelected {
-  padding: 2rem 1rem;
-  display: grid;
-  width: 100%;
-  grid-gap: 1.3rem;
-  grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
-  box-sizing: border-box;
-}
-
-.users {
-  width: 100%;
-  border: solid 1px var(--border-color);
-  display: grid;
-  padding: 1rem;
-  box-sizing: border-box;
-  align-items: start;
-  justify-items: center;
-  gap: 1rem 0;
-  padding-top: 8rem;
-  position: relative;
-   grid-area: users;
-   background: white;
-}
-.user {
-  width: 100%
-}
-
-.filterContainer {
-  position: absolute;
-  top: 0;
-  height: 4rem;
-  width: 100%;
-  background: #f3f3f4;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.filterContainer form {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-}
-.filterContainer input {
-  width: 100%;
+.containerAddBtn button {
+  width: 8rem;
+  height: 2rem;
   border: none;
-  box-shadow: 0 8px 20px rgb(0 0 0 / 6%);
-  border-radius: 8px;
-  box-sizing: border-box;
-  padding: 1.5rem 4rem;
-  outline: none;
-  height: 100%;
-}
-
-.searchIcon {
-  position: absolute;
-  top: 1.4rem;
-  left: 1rem;
-  z-index: 1;
-}
-.clearIcon {
-  position: absolute;
-  top: 1.4rem;
-  left: calc(100% - 4rem);
-  z-index: 1;
+  text-transform: none;
+  transition: all 0.15s ease;
+  letter-spacing: 0.025em;
+  font-size: 0.875rem;
+  will-change: transform;
+  color: #fff;
+  background-color: #5e72e4;
+  border-color: #5e72e4;
+  box-shadow: 0 4px 6px rgb(50 50 93 / 11%), 0 1px 3px rgb(0 0 0 / 8%);
   cursor: pointer;
 }
 
-.inputWrapper {
-  width: 80%;
-  position: relative;
-  top: 1rem;
-  height: 2rem;
-  border: none;
-  box-sizing: border-box;
+table {
+  width: 100%;
+  border-collapse: collapse;
+  padding: 5px;
 }
 
-.titleBoxs {
-  position: absolute;
-  top: -2rem;
-  left: 1rem;
-  font-size: 14px;
-  font-weight: 500;
-  color: #5f6368;
+th {
+  padding: 1rem;
+  background: #f6f9fc;
+  border-top: 1px solid #ebeef5;
+  border-bottom: 1px solid #ebeef5;
+  color: #8898aa;
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  text-align: start;
+}
+td {
+  padding: 1rem;
+  border-bottom: 1px solid #ebeef5;
+  line-height: 1;
+  text-align: start;
+  white-space: nowrap;
+  font-weight: 400;
+  font-size: 0.875rem;
+  text-transform: none;
+  color: #525f7f;
 }
 
-.stats {
- grid-area: stats; 
- width: 100%;
- height: 4rem;
- display: grid;
- grid-auto-flow: column;
-margin-bottom: 4rem;
- box-sizing: border-box;
- gap: 0 1rem;
- grid-template-columns: 1fr 1fr;
-}
-
-.cardStats {
- background: white;
-  border: 0.1rem solid var(--border-color);
-  box-sizing: border-box;
-   display: grid;
-   align-items: center;
-   justify-content: start;
-   grid-template-columns: 1fr 5fr;
-    padding: 0 1rem;
-}
-
-.statsIcon {
-  width: 3rem;
-  height: 3rem;
-  border-radius: 50%;
-     display: grid;
-   align-items: center;
-   justify-content: center;
-   text-align: center;
-   color:white;
-   font-size: 1.5rem;
-}
-
-.textIcon {
-display:grid;
-align-items: center;
-justify-content: start;
-grid-auto-flow: column;
-text-align: center;
-gap: 0 1rem;
-color: gray;
-}
-
-
-.cardStats:first-child  .statsIcon{
-  background: #a889e0;
-}
-.cardStats:last-child .statsIcon{
-   background: #07bca5;
-}
-
-.statNumber {
-  font-size: 1.5rem;
-  color:black;
+.tdDelete img {
+  cursor: pointer;
 }
 </style>

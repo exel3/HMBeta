@@ -6,8 +6,16 @@
         <p>HappyMatch</p>
       </div>
     </div>
+      <ItemAsideMenu
+      title="Perfil"
+      imgsrc="profile.svg"
+      :options="[
+        { title: 'Editar perfil', url: '/profile' },
+      ]"
+    />
     <ItemAsideMenu
-      title="Cuentas"
+      title="Usuarios"
+       imgsrc="group.svg"
       :options="[
         { title: 'Dueños', url: '/users/owners' },
         { title: 'Administradores', url: '/users/admins' },
@@ -15,9 +23,18 @@
     />
     <ItemAsideMenu
       title="Locales"
+       imgsrc="locals.svg"
       :options="[
         { title: 'Bares', url: '/locals/' },
         { title: 'Mesas', url: '/tables' },
+      ]"
+    />
+      <ItemAsideMenu
+      title="Gestion match"
+       imgsrc="match.svg"
+      :options="[
+        { title: 'Preguntas y respuestas', url: '/questions/' },
+         { title: 'Grupos', url: '/clients/' },
       ]"
     />
     <div class="row titleRow" @click="clearSesion()">

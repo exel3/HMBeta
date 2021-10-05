@@ -158,7 +158,7 @@ this.$fire.auth.signInWithEmailAndPassword( this.userName, this.userPassword)
         await this.$axios.$post(`/api`, post).then((result) => {
           const { id, locals } = result.data
           this.setClient({ id, locals })
-          this.$router.push('questions')
+          this.$router.push('clients')
         })
       } catch (error) {
         console.error('Login error', error)

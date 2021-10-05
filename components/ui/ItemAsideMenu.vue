@@ -1,6 +1,9 @@
 <template>
-  <div>
-    <div class="row title" @click="showOptions = !showOptions">{{ title }}</div>
+  <div class="itemContainer">
+    <div class="row title">
+    <div><img :src="getImg()"></div>
+    <div @click="showOptions = !showOptions">{{ title }}</div>
+    </div>
     <div v-if="showOptions" class="options">
       <ul>
         <nuxt-link
@@ -23,6 +26,10 @@ export default {
       type: String,
       required: true,
     },
+    imgsrc: {
+      type: String,
+      required: true
+    },
     options: {
       type: Array,
       required: true,
@@ -31,11 +38,20 @@ export default {
   data: () => ({
     showOptions: false,
   }),
+  methods: {
+    getImg() {
+      return require(`@/assets/icons/${this.imgsrc}`)
+    }
+  }
 }
 </script>
 <style scoped>
 * {
   color: rgba(0, 0, 0, 0.6);
+}
+
+.itemContainer {
+  margin-bottom: 1rem;
 }
 
 .title {
@@ -48,6 +64,7 @@ export default {
   width: 100%;
   height: 2rem;
   padding: 0.675rem 1.5rem;
+  gap: 0 1rem;
 }
 
 .li {

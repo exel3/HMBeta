@@ -36,8 +36,8 @@
 	<tbody>
 	<tr v-for="user in currentUsers" :key="user.id">
 		<td>{{user.userName}}</td>
-		<td>{{user.email}}</td>
 		<td>{{user.password}}</td>
+		<td>{{user.email}}</td>
 		<td class="tdOptions"><img src="@/assets/icons/edit.svg"><img src="@/assets/icons/delete.svg" @click="showDeleteModal = true; userSelected = user"></td>
 	</tr>
 	</tbody>
@@ -66,28 +66,22 @@ export default {
     getUsers() {
       this.currentUsers = [
         {
-          userName: 'SableParis',
-          email: 'contacto@sableparis.com',
+          userName: 'Guillermo',
+          email: 'guillermo@happymatch.com',
           password: '123456Sable',
           id: 12323,
         },
         {
-          userName: 'PeñonDelAguila',
-          email: 'contacto@peniondelaguila.com',
+          userName: 'Mateo',
+          email: 'mateo@happymatch.com',
           password: 'penion12',
           id: 134543,
         },
         {
-          userName: 'ZonaParque',
-          email: 'zonaparque@gmail.com',
+          userName: 'Prueba',
+          email: 'prueba@happymatch.com',
           password: 'zp1234',
           id: 34543,
-        },
-        {
-          userName: 'McDonaldsPellegrini',
-          email: 'contacto@mcdonalds.com',
-          password: 'mcPellegrini',
-          id: 7864,
         },
       ]
     },
@@ -122,6 +116,7 @@ article {
   box-shadow: 0 0 2rem 0 rgb(136 152 170 / 15%);
   border-radius: 0.375rem;
   z-index: 2;
+    overflow: hidden;
 }
 
 .newUser {

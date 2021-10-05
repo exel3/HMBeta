@@ -49,6 +49,6 @@ export default {
   border-top: 2px solid #2c3e4e;
   border-bottom: 2px solid white;
   border-radius: 0.3rem 0.3rem 0 0;
-  z-index: 4;
+  z-index: 0;
 }
 </style>

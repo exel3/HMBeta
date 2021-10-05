@@ -1,7 +1,7 @@
 <template lang="">
   <section>
     <article class="newUser">
-      <div class="titleCard"><p>Agregar nuevo dueño</p></div>
+      <div class="titleCard"><p>Tus datos</p></div>
       <div class="contentCard">
         <form>
           <div>
@@ -19,29 +19,12 @@
         </form>
       </div>
       <div class="containerAddBtn">
-        <button @click.prevent="addNewUser()">Agregar</button>
+        <button @click.prevent="addNewUser()">Editar</button>
       </div>
     </article>
     <article class="userList">
-       <div class="titleCard"><p>Lista de dueños</p></div>
-     <table>
-	<thead>
-	<tr>
-		<th>Usuario</th>
-		<th>Contraseña</th>
-		<th>Email</th>
-    <th>Opciones</th>
-	</tr>
-	</thead>
-	<tbody>
-	<tr v-for="user in currentUsers" :key="user.id">
-		<td>{{user.userName}}</td>
-		<td>{{user.password}}</td>
-		<td>{{user.email}}</td>
-		<td class="tdOptions"><img src="@/assets/icons/edit.svg"><img src="@/assets/icons/delete.svg" @click="showDeleteModal = true; userSelected = user"></td>
-	</tr>
-	</tbody>
-</table>
+       <div class="titleCard"><p>Informacion adicional</p></div>
+    
     </article>
     <DeleteModal v-if="showDeleteModal" @delete-user="deleteUser" @cancel-delete="showDeleteModal = false"/>
   </section>
@@ -66,28 +49,22 @@ export default {
     getUsers() {
       this.currentUsers = [
         {
-          userName: 'SableParis',
-          email: 'contacto@sableparis.com',
+          userName: 'Guillermo',
+          email: 'guillermo@happymatch.com',
           password: '123456Sable',
           id: 12323,
         },
         {
-          userName: 'PeñonDelAguila',
-          email: 'contacto@peniondelaguila.com',
+          userName: 'Mateo',
+          email: 'mateo@happymatch.com',
           password: 'penion12',
           id: 134543,
         },
         {
-          userName: 'ZonaParque',
-          email: 'zonaparque@gmail.com',
+          userName: 'Prueba',
+          email: 'prueba@happymatch.com',
           password: 'zp1234',
           id: 34543,
-        },
-        {
-          userName: 'McDonaldsPellegrini',
-          email: 'contacto@mcdonalds.com',
-          password: 'mcPellegrini',
-          id: 7864,
         },
       ]
     },

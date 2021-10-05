@@ -29,33 +29,17 @@
         <AddButton type='normal' @click='searchEmptyQuestion()'/>
       </div>
       </div>
-    </div>
-    <div class="users">
-    <p class="titleBoxs">Mesas actuales</p>
-      <div class="filterContainer">
-        <div class="inputWrapper">
-            <img class="searchIcon" src="@/assets/icons/search.svg">
-            <img v-if="searchValue!=''" class="clearIcon" src="@/assets/icons/clearInput.svg" @click="searchValue='';searchFilter()">
-        <form @submit.prevent>
-          <input v-model="searchValue" placeholder="Buscar.." @keyup="searchFilter()" @keyup.prevent="searchFilter()" >
-        </form>
-        </div>
       </div>
-      <div v-for="table in localSelected.tables" :key="localSelected.id + table.id" class="user">
-        <Client :info="table" @ban:client="banClient"/>
-      </div>
-    </div>
     </div>
   </div>
 </template>
 <script>
 import Locals from '@/components/questions/Locals.vue'
 import Question from '@/components/questions/Question.vue'
-import Client from '@/components/clients/Client.vue'
 import AddButton from '@/components/questions/tools/AddButton.vue'
 export default {
   name: 'QuestionsIndex',
-  components: { Locals, Question, AddButton, Client },
+  components: { Locals, Question, AddButton },
   data: () => ({
     dataApi: {},
     localSelected: [],

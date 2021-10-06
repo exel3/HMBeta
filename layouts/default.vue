@@ -27,9 +27,22 @@ export default {
 </script>
 
 <style>
+
+@media (max-width: 600px) {
+  .containerDefault {
+     padding-left: 1rem;
+  }
+
+}
+@media (min-width: 600px) {
+  .containerDefault {
+     padding-left: 15rem;
+  }
+
+}
+
 .containerDefault {
   padding-top: 5rem;
-  padding-left: 15rem;
       background: var(--background-color);
 }
 

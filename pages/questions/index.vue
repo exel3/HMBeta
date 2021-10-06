@@ -11,11 +11,11 @@
           </div>
            <div v-if="showNewAnswersInput" class="newAnswerForm">
         
-          <input id="newQuestion" v-model="newAnswers[0]" type="text" autocomplete="off" placeholder="Respuesta">
+          <input v-model="newAnswers[0]" type="text" autocomplete="off" placeholder="Respuesta">
           </div>
            <div v-if="showNewAnswersInput" class="newAnswerForm">
         
-          <input id="newQuestion" v-model="newAnswers[1]" type="text" autocomplete="off" placeholder="Respuesta">
+          <input v-model="newAnswers[1]" type="text" autocomplete="off" placeholder="Respuesta">
           </div>
         </form>
       </div>
@@ -32,7 +32,7 @@
 	<thead>
 	<tr>
 		<th><input v-model="questionsSelected[indexQuestion].question" class="questionInput" @blur="confirmChangeQuestion()"></th>
-    <th><img v-if="question.answers.length<3" src="@/assets/icons/add.svg" @click="addNewAnswer(indexQuestion)"><img src="@/assets/icons/delete.svg" @click="deleteQuestion(question)"></th>
+    <th><img src="@/assets/icons/delete.svg" @click="deleteQuestion(question)"><img v-if="question.answers.length<3" src="@/assets/icons/add.svg" @click="addNewAnswer(indexQuestion)"><img v-else class="invisibleImg" src="@/assets/icons/add.svg"></th>
 	</tr>
 	</thead>
 	<tbody>
@@ -321,13 +321,20 @@ table img {
   color: #525f7f;
   font-weight: 400;
 }
-
+#newQuestion {
+  margin-top:1rem;
+}
 .newQuestionForm {
 margin-bottom: 1rem;
 }
 .newAnswerForm{
 margin-bottom: 1rem;
 }
+.invisibleImg {
+  opacity:0;
+  cursor: default;
+}
+
 
 
 </style>

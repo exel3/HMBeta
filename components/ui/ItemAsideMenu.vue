@@ -1,5 +1,5 @@
 <template>
-  <div class="itemContainer">
+  <div class="itemContainer" @click="$emit('click')">
     <div class="row title">
     <div><img :src="getImg()"></div>
     <div @click="showOptions = !showOptions">{{ title }}</div>
@@ -27,6 +27,10 @@ export default {
       required: true,
     },
     imgsrc: {
+      type: String,
+      required: true
+    },
+    mainurl: {
       type: String,
       required: true
     },

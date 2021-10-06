@@ -6,16 +6,16 @@
         <p>HappyMatch</p>
       </div>
     </div>
-      <ItemAsideMenu
+    <ItemAsideMenu
       title="Perfil"
       imgsrc="profile.svg"
-      :options="[
-        { title: 'Editar perfil', url: '/profile' },
-      ]"
+      mainurl="/profile"
+      :options="[{ title: 'Editar perfil', url: '/profile' }]"
     />
     <ItemAsideMenu
       title="Usuarios"
-       imgsrc="group.svg"
+      imgsrc="group.svg"
+      mainurl="/users/owners/"
       :options="[
         { title: 'Dueños', url: '/users/owners' },
         { title: 'Administradores', url: '/users/admins' },
@@ -23,26 +23,29 @@
     />
     <ItemAsideMenu
       title="Locales"
-       imgsrc="locals.svg"
+      imgsrc="locals.svg"
+      mainurl="/locals/"
       :options="[
         { title: 'Bares', url: '/locals/' },
         { title: 'Mesas', url: '/tables' },
       ]"
     />
-      <ItemAsideMenu
+    <ItemAsideMenu
       title="Gestion match"
-       imgsrc="match.svg"
+      imgsrc="match.svg"
+      mainurl="/questions/"
       :options="[
         { title: 'Preguntas y respuestas', url: '/questions/' },
-         { title: 'Grupos', url: '/clients/' },
+        { title: 'Grupos', url: '/clients/' },
       ]"
     />
-    <div class="row titleRow" @click="clearSesion()">
-      <nuxt-link to="/auth"
-        ><img src="@/assets/icons/closeSesion.svg" />
-        <p>Cerrar Sesion</p></nuxt-link
-      >
-    </div>
+    <ItemAsideMenu
+      title="Cerrar sesion"
+      imgsrc="logout.svg"
+      mainurl="/auth"
+      :options="[]"
+      @click="clearSesion()"
+    />
   </aside>
 </template>
 
@@ -55,7 +58,7 @@ export default {
     async clearSesion() {
       await this.$axios
         .$delete('/api/clearSesion')
-        .then((resp) => console.log(resp))
+        .then((resp) => this.$router.go('/auth'))
         .catch((e) => console.log(e))
     },
   },
@@ -63,6 +66,24 @@ export default {
 </script>
 
 <style scoped>
+@media (max-width: 600px) {
+  aside {
+    width: 4rem;
+  }
+  .header {
+    opacity: 0;
+  }
+}
+@media (min-width: 600px) {
+  aside {
+    width: 15rem;
+  }
+
+  .header {
+    opacity: 1;
+  }
+}
+
 aside {
   top: 0;
   position: fixed;
@@ -71,9 +92,9 @@ aside {
   z-index: 99;
   padding: 1rem 0;
   border-width: 0 1px 0 0;
-  width: 15rem;
-  color:rgba(0,0,0,.6);
-  border-color:rgba(0,0,0,.05);
+  color: rgba(0, 0, 0, 0.6);
+  border-color: rgba(0, 0, 0, 0.05);
+  overflow: hidden;
 }
 
 .containerAside {
@@ -82,10 +103,10 @@ aside {
 }
 
 .header {
-  font-size: 1.5rem;
-  color:rgb(65 184 131);
-  font-weight: bold;
   display: grid;
+  font-size: 1.5rem;
+  color: rgb(65 184 131);
+  font-weight: bold;
   align-items: center;
   justify-content: center;
   margin-bottom: 3rem;
@@ -102,7 +123,7 @@ aside {
   grid-auto-flow: column;
   cursor: pointer;
   box-sizing: border-box;
-  padding: .675rem 1.5rem;
+  padding: 0.675rem 1.5rem;
 }
 
 .row a {

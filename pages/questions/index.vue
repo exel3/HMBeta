@@ -1,34 +1,44 @@
-<template lang="">
+<template>
   <section>
-    <article class="newUser">
+    <transition name="fade">
+    <article class="newQuestionArticle" >
       <div class="titleCard"><p>Nueva pregunta</p></div>
-      <div class="contentCard">
+      <div class="newQuestionContainer">
         <form>
-          <div>
-          <label for="email">Pregunta</label>
-          <input id="email" v-model="newQuestion.question" type="email" autocomplete="off">
+          <div class="newQuestionForm">
+          <label for="newQuestion">Pregunta</label>
+          <input id="newQuestion" v-model="newQuestion" type="text" autocomplete="off">
+          </div>
+           <div v-if="showNewAnswersInput" class="newAnswerForm">
+        
+          <input id="newQuestion" v-model="newAnswers[0]" type="text" autocomplete="off" placeholder="Respuesta">
+          </div>
+           <div v-if="showNewAnswersInput" class="newAnswerForm">
+        
+          <input id="newQuestion" v-model="newAnswers[1]" type="text" autocomplete="off" placeholder="Respuesta">
           </div>
         </form>
       </div>
       <div class="containerAddBtn">
-        <button @click.prevent="addNewUser()">Agregar</button>
+        <button @click.prevent="addNewQuestion()">{{buttonAddTitle}}</button>
       </div>
     </article>
+    </transition>
     <article class="userList">
        <div class="titleCard"><p>Lista de preguntas</p></div>
        </article>
-         <article v-for="question in questionsSelected" :key="question.question" class="answerList">
+         <article v-for="(question, indexQuestion) in questionsSelected" :key="question.id" class="answerList">
      <table >
 	<thead>
 	<tr>
-		<th><input :value="question.question"></th>
-    <th><img src="@/assets/icons/edit.svg"><img src="@/assets/icons/delete.svg" @click="showDeleteModal = true; userSelected = user"></th>
+		<th><input v-model="questionsSelected[indexQuestion].question" class="questionInput" @blur="confirmChangeQuestion()"></th>
+    <th><img v-if="question.answers.length<3" src="@/assets/icons/add.svg" @click="addNewAnswer(indexQuestion)"><img src="@/assets/icons/delete.svg" @click="deleteQuestion(question)"></th>
 	</tr>
 	</thead>
 	<tbody>
-	<tr v-for="answer in question.answers" :key="answer.id">
-		<td><input :value="answer"></td>
-		<td class="tdDelete"><img src="@/assets/icons/edit.svg"><img src="@/assets/icons/delete.svg" @click="showDeleteModal = true; userSelected = user"></td>
+	<tr v-for="(answer, indexAnswer) in question.answers" :key="answer.id">
+		<td><input v-model="question.answers[indexAnswer]" class="answerInput"  @blur="confirmChangeQuestion()" ></td>
+		<td class="tdDelete"><img v-if="question.answers.length>2" src="@/assets/icons/delete.svg" @click="deleteAnswer(indexQuestion, answer)"></td>
 	</tr>
 	</tbody>
 </table>
@@ -44,12 +54,16 @@ export default {
     DeleteModal,
   },
   data: () => ({
+    showDeleteModal: '',
+    showNewAnswersInput: false,
     localSelected: [],
     questionsSelected: [],
     locals: [],
     clientId: '1234',
-    localAnswers:[],
-    newQuestion: {}
+    localAnswers: [],
+    newQuestion: '',
+    newAnswers:[],
+    buttonAddTitle: 'Agregar',
   }),
   async fetch() {
     await this.$axios
@@ -69,10 +83,7 @@ export default {
           this.locals[0].questions = res.questions
         })
         .catch((e) => console.log(e)))
-    console.log('hora fetch', Date.now())
     await this.setLocalSelected(this.locals[0])
-    console.log(this.locals[0])
-    console.log('lista ban: ', await this.getGroupsBan())
   },
   mounted() {
     this.getLocals()
@@ -99,6 +110,60 @@ export default {
         })
       this.localSelected = this.locals.find((l) => l)
     },
+    addNewQuestion() {
+      if(this.newQuestion !=='' & this.buttonAddTitle === "Agregar"){
+      this.changeShowNewAnswersInput()
+      this.buttonAddTitle = "Confirmar"
+      } else {
+        this.confirmAddNewQuestion()
+      }
+
+    },
+    changeShowNewAnswersInput() {
+      this.showNewAnswersInput = true
+    },
+    async confirmAddNewQuestion() {
+      if(this.newAnswers.filter(a => a.answer === '').length === 0 & this.newQuestion !== '') { 
+      // TODO: addNewQuestion in bd
+      console.log(this.newQuestion.answers)
+      const temporalQuestion = {
+        question:this.newQuestion,
+        answers: this.newAnswers,
+      }
+      await this.questionsSelected.push(temporalQuestion)
+      this.confirmChangeQuestion()
+      this.newQuestion=''
+      this.newAnswers=[]
+      this.showNewAnswersInput= false;
+      this.buttonAddTitle= "Agregar"
+      }
+    },
+
+    confirmChangeQuestion() {
+      const localId = this.localSelected.id
+      const questions = this.questionsSelected
+      const body = { localId, questions }
+
+      this.$axios
+        .$post('/api/updateQuestions', body)
+        .then((res) => console.log(res))
+        .catch((e) => {
+          console.log(e)
+        })
+    },
+
+    deleteQuestion (question) {
+      this.questionsSelected = this.questionsSelected.filter(q => question.question !== q.question)
+     this.confirmChangeQuestion()
+    },
+    deleteAnswer (questionIndex, answer) {
+      this.questionsSelected[questionIndex].answers = this.questionsSelected[questionIndex].answers.filter(a => answer !== a)
+ this.confirmChangeQuestion()
+    },
+    addNewAnswer (questionIndex){
+       this.questionsSelected[questionIndex].answers.push('')
+    }
+
   },
 }
 </script>
@@ -167,12 +232,6 @@ input {
   box-sizing: border-box;
 }
 
-.contentCard {
-  position: relative;
-  box-sizing: border-box;
-  padding: 1rem;
-}
-
 .contentCard form {
   display: grid;
   grid-auto-flow: column;
@@ -238,7 +297,37 @@ td {
   color: #525f7f;
 }
 
-.tdDelete img {
+table img {
   cursor: pointer;
 }
+
+.newQuestionContainer {
+  display: grid; 
+  grid-auto-flow: row;
+    position: relative;
+  box-sizing: border-box;
+  padding: 1rem;
+}
+
+.questionInput {
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 1.5;
+  color: #32325d;
+}
+
+.answerInput {
+  line-height: 1.5;
+  color: #525f7f;
+  font-weight: 400;
+}
+
+.newQuestionForm {
+margin-bottom: 1rem;
+}
+.newAnswerForm{
+margin-bottom: 1rem;
+}
+
+
 </style>

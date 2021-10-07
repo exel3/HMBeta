@@ -1,49 +1,102 @@
 <template>
   <section>
     <transition name="fade">
-    <article class="newQuestionArticle" >
-      <div class="titleCard"><p>Nueva pregunta</p></div>
-      <div class="newQuestionContainer">
-        <form>
-          <div class="newQuestionForm">
-          <label for="newQuestion">Pregunta</label>
-          <input id="newQuestion" v-model="newQuestion" type="text" autocomplete="off">
-          </div>
-           <div v-if="showNewAnswersInput" class="newAnswerForm">
-        
-          <input v-model="newAnswers[0]" type="text" autocomplete="off" placeholder="Respuesta">
-          </div>
-           <div v-if="showNewAnswersInput" class="newAnswerForm">
-        
-          <input v-model="newAnswers[1]" type="text" autocomplete="off" placeholder="Respuesta">
-          </div>
-        </form>
-      </div>
-      <div class="containerAddBtn">
-        <button @click.prevent="addNewQuestion()">{{buttonAddTitle}}</button>
-      </div>
-    </article>
+      <article class="newQuestionArticle">
+        <div class="titleCard"><p>Nueva pregunta</p></div>
+        <div class="newQuestionContainer">
+          <form>
+            <div class="newQuestionForm">
+              <label for="newQuestion">Pregunta</label>
+              <input
+                id="newQuestion"
+                v-model="newQuestion"
+                type="text"
+                autocomplete="off"
+              />
+            </div>
+            <div v-if="showNewAnswersInput" class="newAnswerForm">
+              <input
+                v-model="newAnswers[0]"
+                type="text"
+                autocomplete="off"
+                placeholder="Respuesta"
+              />
+            </div>
+            <div v-if="showNewAnswersInput" class="newAnswerForm">
+              <input
+                v-model="newAnswers[1]"
+                type="text"
+                autocomplete="off"
+                placeholder="Respuesta"
+              />
+            </div>
+          </form>
+        </div>
+        <div class="containerAddBtn">
+          <button @click.prevent="addNewQuestion()">
+            {{ buttonAddTitle }}
+          </button>
+        </div>
+      </article>
     </transition>
     <article class="userList">
-       <div class="titleCard"><p>Lista de preguntas</p></div>
-       </article>
-         <article v-for="(question, indexQuestion) in questionsSelected" :key="question.id" class="answerList">
-     <table >
-	<thead>
-	<tr>
-		<th><input v-model="questionsSelected[indexQuestion].question" class="questionInput" @blur="confirmChangeQuestion()"></th>
-    <th><img src="@/assets/icons/delete.svg" @click="deleteQuestion(question)"><img v-if="question.answers.length<3" src="@/assets/icons/add.svg" @click="addNewAnswer(indexQuestion)"><img v-else class="invisibleImg" src="@/assets/icons/add.svg"></th>
-	</tr>
-	</thead>
-	<tbody>
-	<tr v-for="(answer, indexAnswer) in question.answers" :key="answer.id">
-		<td><input v-model="question.answers[indexAnswer]" class="answerInput"  @blur="confirmChangeQuestion()" ></td>
-		<td class="tdDelete"><img v-if="question.answers.length>2" src="@/assets/icons/delete.svg" @click="deleteAnswer(indexQuestion, answer)"></td>
-	</tr>
-	</tbody>
-</table>
+      <div class="titleCard"><p>Lista de preguntas</p></div>
     </article>
-    <DeleteModal v-if="showDeleteModal" @delete-user="deleteUser" @cancel-delete="showDeleteModal = false"/>
+    <article
+      v-for="(question, indexQuestion) in questionsSelected"
+      :key="question.id"
+      class="answerList"
+    >
+      <table>
+        <thead>
+          <tr>
+            <th>
+              <input
+                v-model="questionsSelected[indexQuestion].question"
+                class="questionInput"
+                @blur="confirmChangeQuestion()"
+              />
+            </th>
+            <th>
+              <img
+                src="@/assets/icons/delete.svg"
+                @click="deleteQuestion(question)"
+              /><img
+                v-if="question.answers.length < 3"
+                src="@/assets/icons/add.svg"
+                @click="addNewAnswer(indexQuestion)"
+              /><img v-else class="invisibleImg" src="@/assets/icons/add.svg" />
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr
+            v-for="(answer, indexAnswer) in question.answers"
+            :key="answer.id"
+          >
+            <td>
+              <input
+                v-model="question.answers[indexAnswer]"
+                class="answerInput"
+                @blur="confirmChangeQuestion()"
+              />
+            </td>
+            <td class="tdDelete">
+              <img
+                v-if="question.answers.length > 2"
+                src="@/assets/icons/delete.svg"
+                @click="deleteAnswer(indexQuestion, answer)"
+              />
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </article>
+    <DeleteModal
+      v-if="showDeleteModal"
+      @delete-user="deleteUser"
+      @cancel-delete="showDeleteModal = false"
+    />
   </section>
 </template>
 <script>
@@ -62,7 +115,7 @@ export default {
     clientId: '1234',
     localAnswers: [],
     newQuestion: '',
-    newAnswers:[],
+    newAnswers: [],
     buttonAddTitle: 'Agregar',
   }),
   async fetch() {
@@ -111,31 +164,39 @@ export default {
       this.localSelected = this.locals.find((l) => l)
     },
     addNewQuestion() {
-      if(this.newQuestion !=='' & this.buttonAddTitle === "Agregar"){
-      this.changeShowNewAnswersInput()
-      this.buttonAddTitle = "Confirmar"
+      if ((this.newQuestion !== '') & (this.buttonAddTitle === 'Agregar')) {
+        this.changeShowNewAnswersInput()
+        this.buttonAddTitle = 'Confirmar'
       } else {
         this.confirmAddNewQuestion()
-      }
 
+        this.$toasted.show('Creando pregunta..', {
+          theme: 'toasted-primary',
+          position: 'top-right',
+          duration: 2000,
+        })
+      }
     },
     changeShowNewAnswersInput() {
       this.showNewAnswersInput = true
     },
     async confirmAddNewQuestion() {
-      if(this.newAnswers.filter(a => a.answer === '').length === 0 & this.newQuestion !== '') { 
-      // TODO: addNewQuestion in bd
-      console.log(this.newQuestion.answers)
-      const temporalQuestion = {
-        question:this.newQuestion,
-        answers: this.newAnswers,
-      }
-      await this.questionsSelected.push(temporalQuestion)
-      this.confirmChangeQuestion()
-      this.newQuestion=''
-      this.newAnswers=[]
-      this.showNewAnswersInput= false;
-      this.buttonAddTitle= "Agregar"
+      if (
+        (this.newAnswers.filter((a) => a.answer === '').length === 0) &
+        (this.newQuestion !== '')
+      ) {
+        // TODO: addNewQuestion in bd
+        console.log(this.newQuestion.answers)
+        const temporalQuestion = {
+          question: this.newQuestion,
+          answers: this.newAnswers,
+        }
+        await this.questionsSelected.push(temporalQuestion)
+        this.confirmChangeQuestion()
+        this.newQuestion = ''
+        this.newAnswers = []
+        this.showNewAnswersInput = false
+        this.buttonAddTitle = 'Agregar'
       }
     },
 
@@ -146,24 +207,63 @@ export default {
 
       this.$axios
         .$post('/api/updateQuestions', body)
-        .then((res) => console.log(res))
+        .then((res) => this.$toasted.show('Cambios guardados', {
+          theme: 'toasted-primary',
+          position: 'top-right',
+          duration: 2000,
+        }))
         .catch((e) => {
-          console.log(e)
+         this.$toasted.show(`Error al guardar los cambios: ${e}`, {
+          theme: 'toasted-primary',
+          position: 'top-right',
+          duration: 10000,
+        })
         })
     },
 
-    deleteQuestion (question) {
-      this.questionsSelected = this.questionsSelected.filter(q => question.question !== q.question)
-     this.confirmChangeQuestion()
+    deleteQuestion(question) {
+      this.questionsSelected = this.questionsSelected.filter(
+        (q) => question.question !== q.question
+      )
+      try {
+      this.confirmChangeQuestion()
+          this.$toasted.show('Borrando pregunta..', {
+          theme: 'toasted-primary',
+          position: 'top-right',
+          duration: 2000,
+        })
+      }
+      catch (e){
+            this.$toasted.show(`Error al borrar pregunta: ${e}`, {
+          theme: 'toasted-primary',
+          position: 'top-right',
+          duration: 5000,
+        })
+      }
     },
-    deleteAnswer (questionIndex, answer) {
-      this.questionsSelected[questionIndex].answers = this.questionsSelected[questionIndex].answers.filter(a => answer !== a)
- this.confirmChangeQuestion()
+    deleteAnswer(questionIndex, answer) {
+      this.questionsSelected[questionIndex].answers = this.questionsSelected[
+        questionIndex
+      ].answers.filter((a) => answer !== a)
+         try {
+      this.confirmChangeQuestion()
+          this.$toasted.show('Borrando respuesta..', {
+          theme: 'toasted-primary',
+          position: 'top-right',
+          duration: 2000,
+        })
+      }
+      catch (e){
+            this.$toasted.show(`Error al borrar respuesta: ${e}`, {
+          theme: 'toasted-primary',
+          position: 'top-right',
+          duration: 5000,
+        })
+      }
     },
-    addNewAnswer (questionIndex){
-       this.questionsSelected[questionIndex].answers.push('')
-    }
-
+    addNewAnswer(questionIndex) {
+      this.questionsSelected[questionIndex].answers.push('')
+    },
   },
 }
 </script>
@@ -302,9 +402,9 @@ table img {
 }
 
 .newQuestionContainer {
-  display: grid; 
+  display: grid;
   grid-auto-flow: row;
-    position: relative;
+  position: relative;
   box-sizing: border-box;
   padding: 1rem;
 }
@@ -322,19 +422,16 @@ table img {
   font-weight: 400;
 }
 #newQuestion {
-  margin-top:1rem;
+  margin-top: 1rem;
 }
 .newQuestionForm {
-margin-bottom: 1rem;
+  margin-bottom: 1rem;
 }
-.newAnswerForm{
-margin-bottom: 1rem;
+.newAnswerForm {
+  margin-bottom: 1rem;
 }
 .invisibleImg {
-  opacity:0;
+  opacity: 0;
   cursor: default;
 }
-
-
-
 </style>

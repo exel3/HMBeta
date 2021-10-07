@@ -42,12 +42,12 @@ export default {
     '@nuxtjs/axios',
     // https://go.nuxtjs.dev/pwa
     '@nuxtjs/pwa',
-    // https://www.npmjs.com/package/@nuxtjs/svg
-    '@nuxtjs/svg',
     // https://firebase.nuxtjs.org/
     '@nuxtjs/firebase',
     // Doc: https://http.nuxtjs.org
-    '@nuxt/http'
+    '@nuxt/http',
+    // https://www.npmjs.com/package/@nuxtjs/toast
+    '@nuxtjs/toast'
   ],
 
   // Axios module configuration: https://go.nuxtjs.dev/config-axios
@@ -60,6 +60,19 @@ export default {
       lang: 'en'
     }
   },
+
+  toast: {
+    position: 'top-right',
+    register: [ // Register custom toasts
+      {
+        name: 'my-error',
+        message: 'Oops...Something went wrong',
+        options: {
+          type: 'error'
+        }
+      }
+    ]
+},
 
 
   firebase: {
@@ -97,19 +110,9 @@ export default {
   serverMiddleware: ['~/api/index.js'],
   // Build Configuration: https://go.nuxtjs.dev/config-build
   build: {
-    postcss: {
-      // Add plugin names as key and arguments as value
-      // Install them before as dependencies with npm or yarn
-      plugins: {
-        // Disable a plugin by passing false as value
-        'postcss-url': false,
-      },
-      preset: {
-        // Change the postcss-preset-env settings
-        autoprefixer: {
-          grid: true
-        }
-      }
-    }
-  }
+    extend(config, ctx) {} // blah blah
+},
+server: {
+    host: "0.0.0.0"
+}
 }

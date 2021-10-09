@@ -131,7 +131,11 @@ this.$fire.auth.signInWithEmailAndPassword( this.userName, this.userPassword)
     this.loginWithUserName(user)
   })
   .catch((error) => {
-    console.log(error)
+     this.$toasted.show(`Error recuperando los datos de usuario: ${error}`, {
+          theme: 'toasted-primary',
+          position: 'top-right',
+          duration: 10000,
+        })
   });
     },
     async loginWithGoogle() {
@@ -141,8 +145,11 @@ this.$fire.auth.signInWithEmailAndPassword( this.userName, this.userPassword)
         const user = result.user
         this.setUser(user)
       } catch (error) {
-        // TODO: show toast
-        console.error('Login error', error)
+         this.$toasted.show(`Error recuperando los datos de usuario: ${error}`, {
+          theme: 'toasted-primary',
+          position: 'top-right',
+          duration: 10000,
+        })
       }
     },
     changeRegisterMode() {
@@ -161,7 +168,11 @@ this.$fire.auth.signInWithEmailAndPassword( this.userName, this.userPassword)
           this.$router.push('clients')
         })
       } catch (error) {
-        console.error('Login error', error)
+         this.$toasted.show(`Login error: ${error}`, {
+          theme: 'toasted-primary',
+          position: 'top-right',
+          duration: 10000,
+        })
       }
     },
     async registerClient(data) {
@@ -170,7 +181,11 @@ this.$fire.auth.signInWithEmailAndPassword( this.userName, this.userPassword)
       this.updateNameUser()
       } 
       catch (error) {
-        console.error(error) // TODO: show toast
+         this.$toasted.show(`Error creando usuario: ${error}`, {
+          theme: 'toasted-primary',
+          position: 'top-right',
+          duration: 10000,
+        })
       }
       loginServices.get().then((user) => console.log(user))
     },

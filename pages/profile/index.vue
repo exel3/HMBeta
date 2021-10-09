@@ -32,7 +32,7 @@
 <script>
 import DeleteModal from '@/components/users/DeleteModal.vue'
 export default {
-  name: 'Owners',
+  name: 'Profile',
   components: {
     DeleteModal
   },

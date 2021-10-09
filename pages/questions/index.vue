@@ -102,7 +102,7 @@
 <script>
 import DeleteModal from '@/components/users/DeleteModal.vue'
 export default {
-  name: 'Owners',
+  name: 'QuestionsIndex',
   components: {
     DeleteModal,
   },
@@ -124,10 +124,13 @@ export default {
       .then((response) => {
         this.locals = response.locals
         this.clientId = response.id
-        console.log(this.locals)
       })
       .catch((e) => {
-        console.log(e)
+            this.$toasted.show(`Error recuperando los datos de usuario: ${e}`, {
+          theme: 'toasted-primary',
+          position: 'top-right',
+          duration: 10000,
+        })
       })
     this.locals.length > 0 &&
       (await this.$axios
@@ -135,7 +138,11 @@ export default {
         .then((res) => {
           this.locals[0].questions = res.questions
         })
-        .catch((e) => console.log(e)))
+        .catch((e) =>  this.$toasted.show(`Error recuperando los datos de preguntas: ${e}`, {
+          theme: 'toasted-primary',
+          position: 'top-right',
+          duration: 10000,
+        })))
     await this.setLocalSelected(this.locals[0])
   },
   mounted() {
@@ -159,7 +166,11 @@ export default {
           })
         })
         .catch((e) => {
-          console.log(e)
+          this.$toasted.show(`Error recuperando los datos de usuario: ${e}`, {
+          theme: 'toasted-primary',
+          position: 'top-right',
+          duration: 10000,
+        })
         })
       this.localSelected = this.locals.find((l) => l)
     },
@@ -186,7 +197,6 @@ export default {
         (this.newQuestion !== '')
       ) {
         // TODO: addNewQuestion in bd
-        console.log(this.newQuestion.answers)
         const temporalQuestion = {
           question: this.newQuestion,
           answers: this.newAnswers,

@@ -34,12 +34,8 @@
 	</tr>
 	</thead>
 	<tbody>
-	<tr v-for="user in currentUsers" :key="user.id">
-		<td>{{user.userName}}</td>
-		<td>{{user.password}}</td>
-		<td>{{user.email}}</td>
-		<td class="tdOptions"><img src="@/assets/icons/edit.svg"><img src="@/assets/icons/delete.svg" @click="showDeleteModal = true; userSelected = user"></td>
-	</tr>
+<BaseUser v-for="user in currentUsers" :key="user.id" :user="user" @click="showDeleteModal = true; userSelected = user"/>
+	
 	</tbody>
 </table>
     </article>
@@ -48,10 +44,12 @@
 </template>
 <script>
 import DeleteModal from '@/components/users/DeleteModal.vue'
+import BaseUser from '~/components/users/BaseUser.vue'
 export default {
-  name: 'Owners',
+  name: 'Admins',
   components: {
-    DeleteModal
+    DeleteModal,
+    BaseUser,
   },
   data: () => ({
     currentUsers: [],
@@ -90,14 +88,15 @@ export default {
       this.currentUsers.push(this.newUser)
     },
     deleteUser() {
-      this.currentUsers = this.currentUsers.filter(u => u.id !== this.userSelected.id)
+      this.currentUsers = this.currentUsers.filter(
+        (u) => u.id !== this.userSelected.id
+      )
       this.showDeleteModal = false
-    }
+    },
   },
 }
 </script>
 <style scoped>
-
 section {
   position: relative;
   background: var(--background-color);
@@ -116,7 +115,7 @@ article {
   box-shadow: 0 0 2rem 0 rgb(136 152 170 / 15%);
   border-radius: 0.375rem;
   z-index: 2;
-    overflow: hidden;
+  overflow: hidden;
 }
 
 .newUser {
@@ -233,14 +232,6 @@ td {
   text-transform: none;
   color: #525f7f;
 }
-.tdOptions {
-  display: grid;
-  align-items: center;
-  justify-content: start;
-  grid-auto-flow: column;
-}
 
-.tdOptions img {
-  cursor: pointer;
-}
+
 </style>

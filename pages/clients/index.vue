@@ -86,7 +86,11 @@ export default {
         this.clientId = response.id
       })
       .catch((e) => {
-        console.log(e)
+         this.$toasted.show(`Error recuperando los datos de usuario: ${e}`, {
+          theme: 'toasted-primary',
+          position: 'top-right',
+          duration: 10000,
+        })
       })
 
     this.locals.length > 0 &&
@@ -97,7 +101,11 @@ export default {
           this.localSelected.tables = res.groupTables
           this.tableFilter = res.groupTables
         })
-        .catch((e) => console.log(e)))
+        .catch((e) =>  this.$toasted.show(`Error recuperando las groupTables: ${e}`, {
+          theme: 'toasted-primary',
+          position: 'top-right',
+          duration: 10000,
+        })))
 
     await this.setLocalSelected(this.locals[0])
   },

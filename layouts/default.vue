@@ -28,13 +28,13 @@ export default {
 
 <style>
 
-@media (max-width: 600px) {
+@media (max-width: 1000px) {
   .containerDefault {
-     padding-left: 1rem;
+     padding-left: 0;
   }
 
 }
-@media (min-width: 600px) {
+@media (min-width: 1000px) {
   .containerDefault {
      padding-left: 15rem;
   }

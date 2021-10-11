@@ -66,15 +66,15 @@ export default {
 </script>
 
 <style scoped>
-@media (max-width: 600px) {
+@media (max-width: 1000px) {
   aside {
-    width: 4rem;
+    width: 0;
   }
   .header {
     opacity: 0;
   }
 }
-@media (min-width: 600px) {
+@media (min-width: 1000px) {
   aside {
     width: 15rem;
   }

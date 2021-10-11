@@ -1,5 +1,5 @@
 <template>
-  <input class="inputBase" :value="value" :disabled="status">
+  <input :value="value" :class="inputBase"  :disabled="status" @input="$emit('input', $event.target.value); getBorderColor($event.target.value)">
 </template>
 <script>
 export default {
@@ -15,14 +15,25 @@ export default {
   }
   },
   data: () => ({
-
-  })
+    inputBase:'inputBase',
+  }),
+  methods:{
+    getBorderColor(currentValue){
+     currentValue===''? this.inputBase ='inputBaseAlert' :   this.inputBase = 'inputBase'}
+  }
 }
 </script>
 <style scoped>
 .inputBase {
   color: black;
       border: none;
+      background: transparent;
+      height: 100%;
+      width: 100%;
+}
+.inputBaseAlert {
+    color: black;
+      border: red;
       background: transparent;
       height: 100%;
       width: 100%;

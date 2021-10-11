@@ -34,7 +34,7 @@
 	</tr>
 	</thead>
 	<tbody>
-<BaseUser v-for="user in currentUsers" :key="user.id" :user="user" @click="showDeleteModal = true; userSelected = user"/>
+<BaseRow v-for="user in currentUsers" :key="user.id" :user="user" @click="showDeleteModal = true; userSelected = user" @update-user="updateUser(user)" @click-delete="showDeleteModal=true; userSelected=user"/>
 	
 	</tbody>
 </table>
@@ -44,12 +44,12 @@
 </template>
 <script>
 import DeleteModal from '@/components/users/DeleteModal.vue'
-import BaseUser from '~/components/users/BaseUser.vue'
+import BaseRow from '~/components/users/BaseRow.vue'
 export default {
   name: 'Admins',
   components: {
     DeleteModal,
-    BaseUser,
+    BaseRow,
   },
   data: () => ({
     currentUsers: [],
@@ -87,6 +87,9 @@ export default {
       this.newUser.id = Date.now()
       this.currentUsers.push(this.newUser)
     },
+    updateUser (userC) {
+      // TODO: connection with update user endpoint
+    },
     deleteUser() {
       this.currentUsers = this.currentUsers.filter(
         (u) => u.id !== this.userSelected.id
@@ -97,6 +100,30 @@ export default {
 }
 </script>
 <style scoped>
+
+@media (max-width: 1000px) {
+  section {
+    padding: 0 0.1rem;
+  }
+  td {
+   padding: 0.5rem 0.1rem
+  }
+  th {
+    padding: 0.5rem 0.1rem
+  }
+}
+@media (min-width: 1000px) {
+  section {
+    padding: 0 5rem;
+  }
+  td {
+     padding: 1rem
+  }
+
+  th {
+     padding: 1rem
+  }
+}
 section {
   position: relative;
   background: var(--background-color);
@@ -105,7 +132,6 @@ section {
   gap: 2rem 0;
   margin-top: 4rem;
   box-sizing: border-box;
-  padding: 0 5rem;
 }
 
 article {
@@ -211,7 +237,6 @@ table {
 }
 
 th {
-  padding: 1rem;
   background: #f6f9fc;
   border-top: 1px solid #ebeef5;
   border-bottom: 1px solid #ebeef5;
@@ -222,7 +247,6 @@ th {
   text-align: start;
 }
 td {
-  padding: 1rem;
   border-bottom: 1px solid #ebeef5;
   line-height: 1;
   text-align: start;

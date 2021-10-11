@@ -1,8 +1,8 @@
 <template>
   <tr>
-    <td><BaseInput :value="currentUser.userName" :status="status" @blur="currentUser.userName =  $event.target.value" /></td>
-    <td><BaseInput :value="currentUser.password" :status="status" @blur="currentUser.password =  $event.target.value" /></td>
-    <td><BaseInput :value="currentUser.email" :status="status" @blur="currentUser.email =  $event.target.value" /></td>
+    <td><BaseInput :value="currentUser.userName" :status="status" @input="currentUser.userName =  $event" /></td>
+    <td><BaseInput :value="currentUser.password" :status="status" @input="currentUser.password =  $event" /></td>
+    <td><BaseInput :value="currentUser.email" :status="status" @input="currentUser.email =  $event" /></td>
     <td class="tdOptions">
       <BaseButtonTable
         v-if="status === true"
@@ -18,8 +18,7 @@
         bordercolor="#5e72e4"
         imgsrc="done.svg"
         @click="
-          status = !status
-          $emit('update-user', currentUser)
+          updateUser()
         "
       />
       <BaseButtonTable
@@ -28,15 +27,14 @@
         bordercolor="#5e72e4"
         imgsrc="cancel.svg"
         @click="
-          status = !status
-          currentUser = user
+         clickCancel()
         "
       />
       <BaseButtonTable
         backcolor="#f5365c"
         bordercolor="#f5365c"
         imgsrc="delete.svg"
-        @click="$emit('click-delete',currentUser)"
+        @click="$emit('click:delete',currentUser)"
       />
     </td>
   </tr>
@@ -63,6 +61,34 @@ export default {
   mounted() {
     this.currentUser = this.user
   },
+  methods: {
+    clickCancel() {
+      this.$emit('cancel:click')
+       this.status = !status
+      this.currentUser = this.user
+    },
+    updateUser() {
+      const reEmail = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
+    
+     if (this.currentUser.userName.length < 8)  {this.$toasted.show(`El nombre de usuario debe contener 8 o mas caracteres`, {
+          theme: 'toasted-primary',
+          position: 'top-right',
+          duration: 5000,
+        }) }
+          else if(this.currentUser.password.length < 8){ this.$toasted.show(`La contraseña debe contener 8 o mas caracteres`, {
+          theme: 'toasted-primary',
+          position: 'top-right',
+          duration: 5000,
+        }) }
+
+        else if( !reEmail.test(this.currentUser.email) ){ this.$toasted.show(`Formato de email incorrecto`, {
+          theme: 'toasted-primary',
+          position: 'top-right',
+          duration: 5000,
+        }) }
+        else {this.$emit('update:user', this.currentUser);this.status = !status}
+    }
+  }
 }
 </script>
 <style>

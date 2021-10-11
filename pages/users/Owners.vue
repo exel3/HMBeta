@@ -23,7 +23,30 @@
       </div>
     </article>
     <article class="userList">
-       <div class="titleCard"><p>Lista de dueños</p></div>
+       <div class="titleCard">
+         <p>Lista de dueños</p>
+          <div class="searchContainer">
+          <div class="inputContainer">
+            <img class="searchIcon" src="@/assets/icons/search.svg" />
+            <img
+              v-if="searchValue != ''"
+              class="clearIcon"
+              src="@/assets/icons/clearInput.svg"
+              @click="
+                searchValue = ''
+                searchFilter()
+              "
+            />
+            <form @submit.prevent>
+              <input
+                v-model="searchValue"
+                placeholder="Buscar.."
+                @keyup.prevent="searchFilter()"
+              />
+            </form>
+          </div>
+        </div>
+       </div>
      <table>
 	<thead>
 	<tr>
@@ -34,37 +57,46 @@
 	</tr>
 	</thead>
 	<tbody>
-	<tr v-for="user in currentUsers" :key="user.id">
-		<td>{{user.userName}}</td>
-		<td>{{user.password}}</td>
-		<td>{{user.email}}</td>
-		<td class="tdOptions"><img src="@/assets/icons/edit.svg"><img src="@/assets/icons/delete.svg" @click="showDeleteModal = true; userSelected = user"></td>
-	</tr>
+<BaseRow v-for="user in tableFilter" 
+:key="user.id" 
+:user="user"
+@click="showDeleteModal = true; userSelected = user" 
+@update:user="updateUser(user)" 
+@click:delete="showDeleteModal=true; userSelected=user"
+@cancel:click="cancelClick(user)"
+/>
 	</tbody>
 </table>
     </article>
-    <DeleteModal v-if="showDeleteModal" @delete-user="deleteUser" @cancel-delete="showDeleteModal = false"/>
+    <DeleteModal v-if="showDeleteModal" @delete:user="deleteUser" @cancel:delete="showDeleteModal = false"/>
   </section>
 </template>
 <script>
 import DeleteModal from '@/components/users/DeleteModal.vue'
+import BaseRow from '~/components/users/BaseRow.vue'
 export default {
-  name: 'Owners',
+  name: 'Admins',
   components: {
-    DeleteModal
+    DeleteModal,
+    BaseRow,
   },
   data: () => ({
     currentUsers: [],
     userSelected: {},
     newUser: { userName: '', email: '', password: '', id: null },
     showDeleteModal: false,
+    searchValue: '',
+    tableFilter: []
   }),
   mounted() {
     this.getUsers()
   },
   methods: {
+    cancelClick(user) {
+      this.getUsers()
+    },
     getUsers() {
-      this.currentUsers = [
+       this.currentUsers = [
         {
           userName: 'SableParis',
           email: 'contacto@sableparis.com',
@@ -90,20 +122,90 @@ export default {
           id: 7864,
         },
       ]
+      this.tableFilter = this.currentUsers
+    },
+     searchFilter() {
+      this.tableFilter = this.currentUsers.filter((u) =>
+        u.userName.toLowerCase().includes(this.searchValue.toLowerCase()) || u.email.toLowerCase().includes(this.searchValue.toLowerCase()) 
+      )
     },
     addNewUser() {
-      this.newUser.id = Date.now()
-      this.currentUsers.push(this.newUser)
+      const reEmail =
+        /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
+      if (this.newUser.userName.length < 8) {
+        this.$toasted.show(
+          `El nombre de usuario debe contener 8 o mas caracteres`,
+          {
+            theme: 'toasted-primary',
+            position: 'top-right',
+            duration: 5000,
+          }
+        )
+      } else if (this.newUser.password.length < 8) {
+        this.$toasted.show(`La contraseña debe contener 8 o mas caracteres`, {
+          theme: 'toasted-primary',
+          position: 'top-right',
+          duration: 5000,
+        })
+      } else if (!reEmail.test(this.newUser.email)) {
+        this.$toasted.show(`Formato de email incorrecto`, {
+          theme: 'toasted-primary',
+          position: 'top-right',
+          duration: 5000,
+        })
+      } else {
+        this.newUser.id = Date.now()
+        this.currentUsers.push(this.newUser)
+      }
+    },
+    updateUser(userC) {
+      // TODO: connection with update user endpoint
     },
     deleteUser() {
-      this.currentUsers = this.currentUsers.filter(u => u.id !== this.userSelected.id)
+      this.currentUsers = this.currentUsers.filter(
+        (u) => u.id !== this.userSelected.id
+      )
       this.showDeleteModal = false
-    }
+      this.tableFilter = this.currentUsers
+    },
   },
 }
 </script>
 <style scoped>
+@media (max-width: 1000px) {
+  section {
+    padding: 0 0.1rem;
+  }
+  td {
+    padding: 0.5rem 0.1rem;
+  }
+  th {
+    padding: 0.5rem 0.1rem;
+  }
+  .titleCard {
+  display: grid;
+  grid-auto-flow: row;
+  justify-content: center;
+  gap: 1rem 0;
+  }
+}
+@media (min-width: 1000px) {
+  section {
+    padding: 0 5rem;
+  }
+  td {
+    padding: 1rem;
+  }
 
+  th {
+    padding: 1rem;
+  }
+    .titleCard {
+  display: grid;
+  grid-auto-flow: column;
+  justify-content: space-between;
+  }
+}
 section {
   position: relative;
   background: var(--background-color);
@@ -112,7 +214,6 @@ section {
   gap: 2rem 0;
   margin-top: 4rem;
   box-sizing: border-box;
-  padding: 0 5rem;
 }
 
 article {
@@ -122,7 +223,7 @@ article {
   box-shadow: 0 0 2rem 0 rgb(136 152 170 / 15%);
   border-radius: 0.375rem;
   z-index: 2;
-    overflow: hidden;
+  overflow: hidden;
 }
 
 .newUser {
@@ -134,6 +235,7 @@ article {
 }
 
 .titleCard {
+  position: relative;
   padding: 1.25rem 1.5rem;
   margin-bottom: 0;
   background-color: #fff;
@@ -146,6 +248,9 @@ article {
   font-weight: 600;
   line-height: 1.5;
   color: #32325d;
+  display: grid;
+  align-items: center;
+  justify-content: center;
 }
 
 label {
@@ -218,7 +323,6 @@ table {
 }
 
 th {
-  padding: 1rem;
   background: #f6f9fc;
   border-top: 1px solid #ebeef5;
   border-bottom: 1px solid #ebeef5;
@@ -229,7 +333,6 @@ th {
   text-align: start;
 }
 td {
-  padding: 1rem;
   border-bottom: 1px solid #ebeef5;
   line-height: 1;
   text-align: start;
@@ -239,14 +342,47 @@ td {
   text-transform: none;
   color: #525f7f;
 }
-.tdOptions {
-  display: grid;
+.searchContainer {
+  height: 100%;
+  width: 20rem;
+  display: flex;
   align-items: center;
-  justify-content: start;
-  grid-auto-flow: column;
+  justify-content: center;
+}
+.searchContainer form {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+.searchContainer input {
+  box-sizing: border-box;
+  height: 2.5rem;
+   padding: 0 3rem;
+  outline: none;
+  border: 1px solid #dcdfe6;
+  border-radius: 4px;
 }
 
-.tdOptions img {
+.searchIcon {
+  position: absolute;
+  top: 0.55rem;
+  left: 1rem;
+  z-index: 1;
+}
+.clearIcon {
+  position: absolute;
+  top:0.55rem;
+  left: calc(100% - 3rem);
+  z-index: 1;
   cursor: pointer;
+}
+
+.inputContainer {
+  width: 80%;
+  position: relative;
+  border: none;
+  box-sizing: border-box;
 }
 </style>

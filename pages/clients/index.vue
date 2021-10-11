@@ -3,7 +3,7 @@
     <article class="userList">
       <div class="titleCard"><p>Lista de grupos</p></div>
       <div class="selectLocalCard">
-        <div>
+        <div class="selectContainer">
         <label for="locals">Local</label>
         <select id="locals" name="cars">
           <option
@@ -122,6 +122,56 @@ export default {
 }
 </script>
 <style scoped>
+@media (max-width: 1000px) {
+    section {
+    padding: 0 0.1rem;
+  }
+  td {
+    padding: 0.5rem 0.1rem;
+  }
+  th {
+    padding: 0.5rem 0.1rem;
+  }
+  .selectLocalCard {
+    display: grid;
+  grid-auto-flow: row;
+  justify-content: center;
+  gap: 1rem 0;
+  width: 100%;
+  padding: 1rem 0;
+  }
+  .selectContainer {
+    width: 100%;
+    display: grid;
+    align-items: center;
+    justify-content: center;
+    grid-auto-flow: column;
+  }
+  th:nth-child(2) {
+    display: none;
+  }
+    td:nth-child(2) {
+    display: none;
+  }
+}
+@media (min-width: 1000px) {
+   section {
+    padding: 0 5rem;
+  }
+  td {
+    padding: 1rem;
+  }
+
+  th {
+    padding: 1rem;
+  }
+  .selectLocalCard{
+    display: grid;
+  grid-auto-flow: column;
+  justify-content: space-between;
+  padding: 1.25rem 1.5rem;
+  }
+}
 section {
   position: relative;
   background: var(--background-color);
@@ -130,7 +180,6 @@ section {
   gap: 2rem 0;
   margin-top: 4rem;
   box-sizing: border-box;
-  padding: 0 5rem;
 }
 
 article {
@@ -150,7 +199,6 @@ table {
 }
 
 th {
-  padding: 1rem;
   background: #f6f9fc;
   border-top: 1px solid #ebeef5;
   border-bottom: 1px solid #ebeef5;
@@ -161,7 +209,6 @@ th {
   text-align: start;
 }
 td {
-  padding: 1rem;
   border-bottom: 1px solid #ebeef5;
   line-height: 1;
   text-align: start;
@@ -202,13 +249,9 @@ td {
 
 .selectLocalCard {
   position: relative;
-  padding: 1.25rem 1.5rem;
   margin-bottom: 0;
   background-color: #fff;
   border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-  display: grid;
-  grid-auto-flow: column;
-  justify-content: space-between;
 }
 .selectLocalCard label {
   font-size: 1rem;

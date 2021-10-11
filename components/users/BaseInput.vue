@@ -1,9 +1,9 @@
 <template>
-  <input :value="value" :class="inputBase"  :disabled="status" @input="$emit('input', $event.target.value); getBorderColor($event.target.value)">
+  <input :value="value" :class="inputBase" :disabled="status" @input="$emit('input', $event.target.value); getBorderColor($event.target.value)">
 </template>
 <script>
 export default {
-  name: 'BaseInputUsers',
+  name: 'BaseInput',
   props: {
     value: {
       type: String,
@@ -15,7 +15,8 @@ export default {
   }
   },
   data: () => ({
-    inputBase:'inputBase',
+    borderColor:'transparent',
+    inputBase: 'inputBase'
   }),
   methods:{
     getBorderColor(currentValue){
@@ -33,13 +34,15 @@ export default {
 }
 .inputBaseAlert {
     color: black;
-      border: red;
+     border: 1px solid red;
+     border-radius: 0.2rem;
       background: transparent;
       height: 100%;
       width: 100%;
 }
 .inputBase:enabled {
    border: 1px solid #dee2e6;
+   border-radius: 0.2rem;
 }
   .inputBase:disabled {
   border: none;

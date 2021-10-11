@@ -4,7 +4,7 @@
       <div class="imgContainer"><img src="@/assets/icons/warning.svg"></div>
      <div class="modalText"><h1>ADVERTENCIA</h1><p>Eliminar usuario borrará toda su informacion de la base de datos, ¿Desea continuar?</p></div>
      <div class="modalButtons">
-       <button @click.prevent="$emit('delete-user')">Eliminar</button><button @click.prevent="$emit('cancel-delete')">Cancelar</button>
+       <button @click.prevent="$emit('delete:user')">Eliminar</button><button @click.prevent="$emit('cancel:delete')">Cancelar</button>
      </div>
       </div>
   </div>

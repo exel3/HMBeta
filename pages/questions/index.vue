@@ -59,7 +59,7 @@
             </th>
             <th>
               <img
-                src="@/assets/icons/delete.svg"
+                src="@/assets/icons/deleteGray.svg"
                 @click="deleteQuestion(question)"
               /><img
                 v-if="question.answers.length < 3"

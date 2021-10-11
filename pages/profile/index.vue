@@ -19,12 +19,8 @@
         </form>
       </div>
       <div class="containerAddBtn">
-        <button @click.prevent="addNewUser()">Editar</button>
+        <button @click.prevent="updateProfile()">Editar</button>
       </div>
-    </article>
-    <article class="userList">
-       <div class="titleCard"><p>Informacion adicional</p></div>
-    
     </article>
     <DeleteModal v-if="showDeleteModal" @delete-user="deleteUser" @cancel-delete="showDeleteModal = false"/>
   </section>
@@ -47,39 +43,85 @@ export default {
   },
   methods: {
     getUsers() {
-      this.currentUsers = [
-        {
-          userName: 'Guillermo',
-          email: 'guillermo@happymatch.com',
-          password: '123456Sable',
-          id: 12323,
-        },
-        {
-          userName: 'Mateo',
-          email: 'mateo@happymatch.com',
-          password: 'penion12',
-          id: 134543,
-        },
-        {
-          userName: 'Prueba',
-          email: 'prueba@happymatch.com',
-          password: 'zp1234',
-          id: 34543,
-        },
-      ]
+    
+         this.$axios
+        .$get('/api/getUser')
+        .then((response) => {
+          this.client = response
+             console.log(this.client)
+             this.newUser.userName = this.client.username
+             this.client.email? this.newUser.email = this.client.email : this.newUser.email = 'Email no registrado'
+        })
+        .catch((e) => {
+          this.$toasted.show(`Error recuperando los datos de usuario: ${e}`, {
+          theme: 'toasted-primary',
+          position: 'top-right',
+          duration: 10000,
+        })
+        })
+     
     },
-    addNewUser() {
-      this.newUser.id = Date.now()
-      this.currentUsers.push(this.newUser)
+    updateProfile() {
+        const reEmail =
+        /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
+      if (this.newUser.userName.length < 8) {
+        this.$toasted.show(
+          `El nombre de usuario debe contener 8 o mas caracteres`,
+          {
+            theme: 'toasted-primary',
+            position: 'top-right',
+            duration: 5000,
+          }
+        )
+      } else if (this.newUser.password.length < 8) {
+        this.$toasted.show(`La contraseña debe contener 8 o mas caracteres`, {
+          theme: 'toasted-primary',
+          position: 'top-right',
+          duration: 5000,
+        })
+      } else if (!reEmail.test(this.newUser.email)) {
+        this.$toasted.show(`Formato de email incorrecto`, {
+          theme: 'toasted-primary',
+          position: 'top-right',
+          duration: 5000,
+        })
+      } else {
+        this.newUser.id = Date.now()
+        this.currentUsers.push(this.newUser)
+      }
     },
-    deleteUser() {
-      this.currentUsers = this.currentUsers.filter(u => u.id !== this.userSelected.id)
-      this.showDeleteModal = false
-    }
   },
 }
 </script>
 <style scoped>
+@media (max-width: 1000px) {
+  section {
+    padding: 0 0.1rem;
+  }
+  .contentCard form {
+  display: grid;
+  grid-auto-flow: row;
+  box-sizing: border-box;
+  gap: 0 1rem;
+}
+.newUser {
+  max-height: 20rem;
+}
+}
+@media (min-width: 1000px) {
+  section {
+    padding: 0 5rem;
+  }
+  .contentCard form {
+  display: grid;
+  grid-auto-flow: column;
+  box-sizing: border-box;
+  gap: 0 1rem;
+}
+.newUser {
+  max-height: 15rem;
+}
+}
 
 section {
   position: relative;
@@ -89,7 +131,7 @@ section {
   gap: 2rem 0;
   margin-top: 4rem;
   box-sizing: border-box;
-  padding: 0 5rem;
+  height: 83vh;
 }
 
 article {
@@ -102,9 +144,7 @@ article {
     overflow: hidden;
 }
 
-.newUser {
-  max-height: 15rem;
-}
+
 
 .userList {
   min-height: 40rem;
@@ -152,12 +192,7 @@ input {
   padding: 1rem;
 }
 
-.contentCard form {
-  display: grid;
-  grid-auto-flow: column;
-  box-sizing: border-box;
-  gap: 0 1rem;
-}
+
 
 .contentCard form div {
   display: grid;

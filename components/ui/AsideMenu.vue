@@ -26,8 +26,8 @@
       imgsrc="locals.svg"
       mainurl="/locals/"
       :options="[
-        { title: 'Bares', url: '/locals/' },
-        { title: 'Mesas', url: '/tables' },
+        { title: 'Bares', url: '/locals' },
+        { title: 'Mesas', url: '/locals/tables' },
       ]"
     />
     <ItemAsideMenu

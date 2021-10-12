@@ -54,7 +54,7 @@
               <input
                 v-model="questionsSelected[indexQuestion].question"
                 class="questionInput"
-                @blur="confirmChangeQuestion()"
+                @blur="showToast();confirmChangeQuestion()"
               />
             </th>
             <th>
@@ -179,13 +179,14 @@ export default {
         this.changeShowNewAnswersInput()
         this.buttonAddTitle = 'Confirmar'
       } else {
-        this.confirmAddNewQuestion()
+       
 
         this.$toasted.show('Creando pregunta..', {
           theme: 'toasted-primary',
           position: 'top-right',
           duration: 2000,
         })
+         this.confirmAddNewQuestion()
       }
     },
     changeShowNewAnswersInput() {
@@ -236,12 +237,13 @@ export default {
         (q) => question.question !== q.question
       )
       try {
-      this.confirmChangeQuestion()
+     
           this.$toasted.show('Borrando pregunta..', {
           theme: 'toasted-primary',
           position: 'top-right',
           duration: 2000,
         })
+         this.confirmChangeQuestion()
       }
       catch (e){
             this.$toasted.show(`Error al borrar pregunta: ${e}`, {
@@ -274,6 +276,13 @@ export default {
     addNewAnswer(questionIndex) {
       this.questionsSelected[questionIndex].answers.push('')
     },
+    showToast(){
+        this.$toasted.show('Guardando cambios..', {
+          theme: 'toasted-primary',
+          position: 'top-right',
+          duration: 2000,
+        })
+    }
   },
 }
 </script>

@@ -1,7 +1,7 @@
 <template lang="">
   <section>
     <article class="newUser">
-      <div class="titleCard"><p>Agregar nuevo dueño</p></div>
+      <div class="titleCard"><p>Agregar nuevo administrador</p></div>
       <div class="contentCard">
         <form>
           <div>
@@ -24,7 +24,7 @@
     </article>
     <article class="userList">
        <div class="titleCard">
-         <p>Lista de dueños</p>
+         <p>Lista de administradores</p>
           <div class="searchContainer">
           <div class="inputContainer">
             <img class="searchIcon" src="@/assets/icons/search.svg" />
@@ -75,7 +75,7 @@
 import DeleteModal from '@/components/users/DeleteModal.vue'
 import BaseRow from '~/components/users/BaseRow.vue'
 export default {
-  name: 'Owners',
+  name: 'Locals',
   components: {
     DeleteModal,
     BaseRow,
@@ -96,30 +96,24 @@ export default {
       this.getUsers()
     },
     getUsers() {
-       this.currentUsers = [
+      this.currentUsers = [
         {
-          userName: 'SableParis',
-          email: 'contacto@sableparis.com',
+          userName: 'Guillermo',
+          email: 'guillermo@happymatch.com',
           password: '123456Sable',
           id: 12323,
         },
         {
-          userName: 'PeñonDelAguila',
-          email: 'contacto@peniondelaguila.com',
+          userName: 'Mateo',
+          email: 'mateo@happymatch.com',
           password: 'penion12',
           id: 134543,
         },
         {
-          userName: 'ZonaParque',
-          email: 'zonaparque@gmail.com',
+          userName: 'Prueba',
+          email: 'prueba@happymatch.com',
           password: 'zp1234',
           id: 34543,
-        },
-        {
-          userName: 'McDonaldsPellegrini',
-          email: 'contacto@mcdonalds.com',
-          password: 'mcPellegrini',
-          id: 7864,
         },
       ]
       this.tableFilter = this.currentUsers

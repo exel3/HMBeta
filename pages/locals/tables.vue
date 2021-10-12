@@ -1,30 +1,26 @@
 <template lang="">
   <section>
-    <article class="newUser">
-      <div class="titleCard"><p>Agregar nuevo dueño</p></div>
+    <article class="newTable">
+      <div class="titleCard"><p>Agregar nueva mesa</p></div>
       <div class="contentCard">
         <form>
-          <div>
-          <label for="email">Email</label>
-          <input id="email" v-model="newUser.email" type="email" autocomplete="off">
-          </div>
-          <div>
-          <label for="contraseña">Contraseña</label>
-          <input id="contraseña" v-model="newUser.password" type="text"  autocomplete="off">
-          </div>
            <div>
-          <label for="usuario">Usuario</label>
-          <input id="usuario"  v-model="newUser.userName" type="text" name="newUser" autocomplete="off">
+          <label for="tablename">Nombre</label>
+          <input id="tablename"  v-model="newTable.name" type="text" name="newTable" autocomplete="off">
+          </div>
+            <div>
+          <label for="QR">QR</label>
+          <input id="QR" v-model="newTable.QR" type="text"  autocomplete="off">
           </div>
         </form>
       </div>
       <div class="containerAddBtn">
-        <button @click.prevent="addNewUser()">Agregar</button>
+        <button @click.prevent="addnewTable()">Agregar</button>
       </div>
     </article>
-    <article class="userList">
+    <article class="tableList">
        <div class="titleCard">
-         <p>Lista de dueños</p>
+         <p>Lista de mesas</p>
           <div class="searchContainer">
           <div class="inputContainer">
             <img class="searchIcon" src="@/assets/icons/search.svg" />
@@ -50,123 +46,140 @@
      <table>
 	<thead>
 	<tr>
-		<th>Usuario</th>
-		<th>Contraseña</th>
-		<th>Email</th>
+		<th>Nombre</th>
+		<th>QR</th>
     <th>Opciones</th>
 	</tr>
 	</thead>
 	<tbody>
-<BaseRow v-for="user in tableFilter" 
-:key="user.id" 
-:user="user"
-@click="showDeleteModal = true; userSelected = user" 
-@update:user="updateUser(user)" 
-@click:delete="showDeleteModal=true; userSelected=user"
-@cancel:click="cancelClick(user)"
+<BaseRow v-for="table in tableFilter" 
+:key="table.id" 
+:table="table"
+@click="showDeleteModal = true; tableSelected = table" 
+@update:table="updatetable(table)" 
+@click:delete="showDeleteModal=true; tableSelected=table"
+@cancel:click="cancelClick(table)"
 />
 	</tbody>
 </table>
     </article>
-    <DeleteModal v-if="showDeleteModal" @delete:user="deleteUser" @cancel:delete="showDeleteModal = false"/>
+    <DeleteModal v-if="showDeleteModal" @delete:table="deletetable" @cancel:delete="showDeleteModal = false"/>
   </section>
 </template>
 <script>
-import DeleteModal from '@/components/users/DeleteModal.vue'
-import BaseRow from '~/components/users/BaseRow.vue'
+import DeleteModal from '@/components/tables/DeleteModalTables.vue'
+import BaseRow from '~/components/tables/BaseRowTables.vue'
 export default {
-  name: 'Owners',
+  name: 'Tables',
   components: {
     DeleteModal,
     BaseRow,
   },
   data: () => ({
-    currentUsers: [],
-    userSelected: {},
-    newUser: { userName: '', email: '', password: '', id: null },
+    currentTable: [],
+    tableSelected: {},
+    newTable: { name: '', email: '', QR: '', id: null },
     showDeleteModal: false,
     searchValue: '',
     tableFilter: []
   }),
   mounted() {
-    this.getUsers()
+    this.gettables()
   },
   methods: {
-    cancelClick(user) {
-      this.getUsers()
+    cancelClick(table) {
+      this.gettables()
     },
-    getUsers() {
-       this.currentUsers = [
+    gettables() {
+      this.currentTable = [
         {
-          userName: 'SableParis',
-          email: 'contacto@sableparis.com',
-          password: '123456Sable',
+          name: 'Mesa 1',
+          QR: '65465465465',
           id: 12323,
         },
         {
-          userName: 'PeñonDelAguila',
-          email: 'contacto@peniondelaguila.com',
-          password: 'penion12',
-          id: 134543,
+          name: 'Mesa 2',
+          QR: '65465465465',
+          id: 56411,
         },
         {
-          userName: 'ZonaParque',
-          email: 'zonaparque@gmail.com',
-          password: 'zp1234',
-          id: 34543,
+          name: 'Mesa 3',
+         QR: '65465465465',
+          id: 45654789,
         },
-        {
-          userName: 'McDonaldsPellegrini',
-          email: 'contacto@mcdonalds.com',
-          password: 'mcPellegrini',
-          id: 7864,
+          {
+          name: 'Mesa 4',
+         QR: '65465465465',
+          id: 333344,
+        },
+          {
+          name: 'Mesa 5',
+         QR: '65465465465',
+          id: 890955,
+        },
+          {
+          name: 'Mesa 6',
+         QR: '65465465465',
+          id: 324678,
+        },
+          {
+          name: 'Mesa 7',
+         QR: '65465465465',
+          id: 4545,
+        },
+          {
+          name: 'Mesa 8',
+         QR: '65465465465',
+          id: 8765,
+        },
+          {
+          name: 'Mesa 9',
+         QR: '65465465465',
+          id: 1233213,
+        },
+          {
+          name: 'Mesa 10',
+         QR: '65465465465',
+          id: 345423,
         },
       ]
-      this.tableFilter = this.currentUsers
+      this.tableFilter = this.currentTable
     },
      searchFilter() {
-      this.tableFilter = this.currentUsers.filter((u) =>
-        u.userName.toLowerCase().includes(this.searchValue.toLowerCase()) || u.email.toLowerCase().includes(this.searchValue.toLowerCase()) 
+      this.tableFilter = this.currentTable.filter((u) =>
+        u.name.toLowerCase().includes(this.searchValue.toLowerCase()) 
       )
     },
-    addNewUser() {
-      const reEmail =
-        /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
-      if (this.newUser.userName.length < 8) {
+    addnewTable() {
+      if (this.newTable.name.length < 1) {
         this.$toasted.show(
-          `El nombre de usuario debe contener 8 o mas caracteres`,
+          `El nombre de mesa debe contener 1 o mas caracteres`,
           {
             theme: 'toasted-primary',
             position: 'top-right',
             duration: 5000,
           }
         )
-      } else if (this.newUser.password.length < 8) {
-        this.$toasted.show(`La contraseña debe contener 8 o mas caracteres`, {
-          theme: 'toasted-primary',
-          position: 'top-right',
-          duration: 5000,
-        })
-      } else if (!reEmail.test(this.newUser.email)) {
-        this.$toasted.show(`Formato de email incorrecto`, {
+      } else if (this.newTable.QR.length < 8) {
+        this.$toasted.show(`El QR debe contener 8 o mas caracteres`, {
           theme: 'toasted-primary',
           position: 'top-right',
           duration: 5000,
         })
       } else {
-        this.newUser.id = Date.now()
-        this.currentUsers.push(this.newUser)
+        this.newTable.id = Date.now()
+        this.currentTable.push(this.newTable)
       }
     },
-    updateUser(userC) {
-      // TODO: connection with update user endpoint
+    updatetable(tableC) {
+      // TODO: connection with update table endpoint
     },
-    deleteUser() {
-      this.currentUsers = this.currentUsers.filter(
-        (u) => u.id !== this.userSelected.id
+    deletetable() {
+      this.currentTable = this.currentTable.filter(
+        (u) => u.id !== this.tableSelected.id
       )
       this.showDeleteModal = false
-      this.tableFilter = this.currentUsers
+      this.tableFilter = this.currentTable
     },
   },
 }
@@ -226,11 +239,11 @@ article {
   overflow: hidden;
 }
 
-.newUser {
+.newTable {
   max-height: 15rem;
 }
 
-.userList {
+.tableList {
   min-height: 40rem;
 }
 

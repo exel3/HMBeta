@@ -1,19 +1,23 @@
 <template lang="">
   <section>
     <article class="newUser">
-      <div class="titleCard"><p>Agregar nuevo administrador</p></div>
+      <div class="titleCard"><p>Agregar nuevo bar</p></div>
       <div class="contentCard">
         <form>
           <div>
-          <label for="email">Email</label>
+          <label for="email">Nombre</label>
           <input id="email" v-model="newUser.email" type="email" autocomplete="off">
           </div>
           <div>
-          <label for="contraseña">Contraseña</label>
+          <label for="contraseña">Direccion</label>
           <input id="contraseña" v-model="newUser.password" type="text"  autocomplete="off">
           </div>
            <div>
-          <label for="usuario">Usuario</label>
+          <label for="usuario">Ciudad</label>
+          <input id="usuario"  v-model="newUser.userName" type="text" name="newUser" autocomplete="off">
+          </div>
+           <div>
+          <label for="usuario">Pais</label>
           <input id="usuario"  v-model="newUser.userName" type="text" name="newUser" autocomplete="off">
           </div>
         </form>
@@ -24,7 +28,7 @@
     </article>
     <article class="userList">
        <div class="titleCard">
-         <p>Lista de administradores</p>
+         <p>Lista de bares</p>
           <div class="searchContainer">
           <div class="inputContainer">
             <img class="searchIcon" src="@/assets/icons/search.svg" />
@@ -176,11 +180,20 @@ export default {
   th {
     padding: 0.5rem 0.1rem;
   }
+    .newUser {
+  max-height: 25rem;
+}
   .titleCard {
   display: grid;
   grid-auto-flow: row;
   justify-content: center;
   gap: 1rem 0;
+  }
+    .contentCard form {
+    display:grid;
+    grid-auto-flow: row;
+    align-items: center;
+    gap: 1rem 0;
   }
 }
 @media (min-width: 1000px) {
@@ -194,10 +207,18 @@ export default {
   th {
     padding: 1rem;
   }
+    .newUser {
+  max-height: 15rem;
+}
     .titleCard {
   display: grid;
   grid-auto-flow: column;
   justify-content: space-between;
+  }
+  .contentCard form {
+      display: grid;
+  grid-auto-flow: column;
+  gap: 0 1rem;
   }
 }
 section {
@@ -218,10 +239,6 @@ article {
   border-radius: 0.375rem;
   z-index: 2;
   overflow: hidden;
-}
-
-.newUser {
-  max-height: 15rem;
 }
 
 .userList {
@@ -275,10 +292,7 @@ input {
 }
 
 .contentCard form {
-  display: grid;
-  grid-auto-flow: column;
   box-sizing: border-box;
-  gap: 0 1rem;
 }
 
 .contentCard form div {

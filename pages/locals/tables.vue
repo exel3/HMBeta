@@ -195,11 +195,20 @@ export default {
   th {
     padding: 0.5rem 0.1rem;
   }
+    .newTable {
+  max-height: 25rem;
+}
   .titleCard {
   display: grid;
   grid-auto-flow: row;
   justify-content: center;
   gap: 1rem 0;
+  }
+    .contentCard form {
+    display:grid;
+    grid-auto-flow: row;
+    align-items: center;
+    gap: 1rem 0;
   }
 }
 @media (min-width: 1000px) {
@@ -213,10 +222,18 @@ export default {
   th {
     padding: 1rem;
   }
+    .newTable {
+  max-height: 15rem;
+}
     .titleCard {
   display: grid;
   grid-auto-flow: column;
   justify-content: space-between;
+  }
+  .contentCard form {
+      display: grid;
+  grid-auto-flow: column;
+  gap: 0 1rem;
   }
 }
 section {
@@ -237,10 +254,6 @@ article {
   border-radius: 0.375rem;
   z-index: 2;
   overflow: hidden;
-}
-
-.newTable {
-  max-height: 15rem;
 }
 
 .tableList {
@@ -294,10 +307,7 @@ input {
 }
 
 .contentCard form {
-  display: grid;
-  grid-auto-flow: column;
   box-sizing: border-box;
-  gap: 0 1rem;
 }
 
 .contentCard form div {

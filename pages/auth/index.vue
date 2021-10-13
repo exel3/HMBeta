@@ -11,7 +11,8 @@
           data-value="false"
           autocomplete="off"
           required="true"
-          placeholder="Correo electronico"
+          placeholder="Usuario"
+          :disabled="loadingMode"
         />
         <input
           v-model="userPassword"
@@ -21,97 +22,35 @@
           autocomplete="on"
           required="true"
           placeholder="Password"
+          :disabled="loadingMode"
         />
         <div class="containerButton">
           <button
             class="buttonSubmit"
             type="submit"
-           
+              :disabled="loadingMode"
               @click.prevent="loginWithUserNameAndEmail()"
           >
             Acceder
           </button>
         </div>
-        <div class="socialButtons">
-          <p class="register" @click="changeRegisterMode">Registrarse</p>
-        </div>
       </form>
-      <form v-else class="registerForm">
-         <div class="backButton" @click="isRegisterMode=false"><img src="@/assets/icons/backArrow.svg"></div>
-        <label for="username">Nombre de usuario:</label>
-        <BaseRegisterInput
-          id="username"
-          :modelo="newUserName"
-          clase="registerInput"
-          type="text"
-          data-value="false"
-          autocomplete="off"
-          required="true"
-          @input="(value) => newUserName=value"
-         
-        />
-        <label for="email">Correo electronico:</label>
-        <BaseRegisterInput
-          id="email"
-          :modelo="newEmail"
-          clase="registerInput"
-          type="email"
-          data-value="false"
-          autocomplete="on"
-          required="true"
-          @input="(value) => newEmail=value"
-        />
-        <label for="password">Password:</label>
-        <BaseRegisterInput
-          id="password"
-          :modelo="newPassword"
-          clase="registerInput"
-          type="password"
-          data-value="false"
-          autocomplete="off"
-          required="true"
-          @input="(value) => newPassword=value"
-        />
-        <label for="confirmpassword">Confirme password:</label>
-        <BaseRegisterInput
-          id="confirmpassword"
-          :modelo="newPasswordConfirm"
-          clase="registerInput"
-          type="password"
-          data-value="false"
-          autocomplete="off"
-          required="true"
-          @input="(value) => newPasswordConfirm=value"
-        />
-        <div class="containerButton">
-          <button class="buttonRegister" @click.prevent="registerClient()">
-            Registrarse
-          </button>
-        </div>
-      </form>
+      <div v-if="loadingMode"><p>Cargando...</p></div>
       <span class="poweredSpan"> Powered by <a>Pollux</a> </span>
     </div>
   </div>
 </template>
 <script>
 import { mapMutations } from 'vuex'
-import loginServices from '@/services/loginServices.js'
-import BaseRegisterInput from '@/components/auth/BaseRegisterInput.vue'
 
 export default {
   name: 'Login',
-    components: {
-    BaseRegisterInput
-  },
   layout: 'auth',
   data: () => ({
     isRegisterMode: false,
     userPassword: '',
     userName: '',
-    newUserName: '',
-    newPassword: '',
-    newEmail: '',
-    newPasswordConfirm: '',
+    loadingMode: false
   }),
 
   methods: {
@@ -120,80 +59,37 @@ export default {
       setClient: 'data/setClient',
     }),
     loginWithUserNameAndEmail() {
-this.$fire.auth.signInWithEmailAndPassword( this.userName, this.userPassword)
-  .then((userCredential) => {
-    // Signed in
-    console.log(userCredential)
-    const user = userCredential.user.displayName;
-    console.log(user)
-    // ...
-    userCredential&&
-    this.loginWithUserName(user)
-  })
-  .catch((error) => {
-     this.$toasted.show(`Error recuperando los datos de usuario: ${error}`, {
-          theme: 'toasted-primary',
-          position: 'top-right',
-          duration: 10000,
-        })
-  });
-    },
-    async loginWithGoogle() {
-      try {
-        const provider = new this.$fireModule.auth.GoogleAuthProvider()
-        const result = await this.$fire.auth.signInWithPopup(provider)
-        const user = result.user
-        this.setUser(user)
-      } catch (error) {
-         this.$toasted.show(`Error recuperando los datos de usuario: ${error}`, {
-          theme: 'toasted-primary',
-          position: 'top-right',
-          duration: 10000,
-        })
-      }
-    },
-    changeRegisterMode() {
-      this.isRegisterMode = !this.isRegisterMode
+   this.loginWithUserName()
     },
 
-    async loginWithUserName(userName) {
+    async loginWithUserName() {
+      this.loadingMode = true
       const post = {
-        username: userName,
+        username: this.userName,
         password: this.userPassword,
       }
       try {
         await this.$axios.$post(`/api`, post).then((result) => {
           const { id, locals } = result.data
           this.setClient({ id, locals })
+            this.loadingMode = false
           this.$router.push('clients')
         })
       } catch (error) {
+          this.loadingMode = false
+          error.statusCode === 400?
          this.$toasted.show(`Login error: ${error}`, {
           theme: 'toasted-primary',
           position: 'top-right',
           duration: 10000,
         })
-      }
-    },
-    async registerClient(data) {
-      try {
-      await this.$fire.auth.createUserWithEmailAndPassword(this.newEmail, this.newPassword)
-      this.updateNameUser()
-      } 
-      catch (error) {
-         this.$toasted.show(`Error creando usuario: ${error}`, {
+        :
+              this.$toasted.show(`Login error: Usuario o contraseña incorrectos`, {
           theme: 'toasted-primary',
           position: 'top-right',
           duration: 10000,
         })
       }
-      loginServices.get().then((user) => console.log(user))
-    },
-    async updateNameUser(){
-      await this.$fire.auth.currentUser.updateProfile({
-        displayName: this.newUserName
-      }).then(this.isRegisterMode=false)
-      console.log(this.$fire.auth.currentUser)
     },
     validateUser(){
       const re = /^[a-zA-Z0-9]*$/

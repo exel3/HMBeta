@@ -69,7 +69,7 @@ app.post('/', (req, res) => {
       }
     })
     .catch(e => {
-      res.statusCode = 403
+      res.statusCode = e.response.status
       res.json({
         error: e.message
       })
@@ -86,7 +86,7 @@ app.get('/getGroupTables/:localId', (req, res) => {
       }
     )
     .catch(e => {
-      res.statusCode = 403
+      res.statusCode = e.response.status
       res.json({
         error: e.message
       })
@@ -109,7 +109,7 @@ app.get('/getQuestions/:localId', (req, res) => {
       }
     )
     .catch(e => {
-      res.statusCode = 403
+      res.statusCode = e.response.status
       res.json({
         error: e.message
       })
@@ -136,7 +136,7 @@ app.post('/createQuestions', (req, res) => {
       }
     )
     .catch(e => {
-      res.statusCode = 403
+      res.statusCode = e.response.status
       res.json({
         error: e.message
       })
@@ -167,7 +167,7 @@ app.post('/updateQuestions', (req, res) => {
       }
     )
     .catch(e => {
-      res.statusCode = 403
+      res.statusCode = e.response.status
       console.log('error servidor', e)
       res.json({
         error: e.message
@@ -192,7 +192,7 @@ app.post('/banGroupTable/:idGroup', (req, res) => {
     res.json(response.data)
   })
     .catch(e => {
-      res.statusCode = 403
+      res.statusCode = e.response.status
       console.log('error servidor', e)
       res.json({
         error: e.message
@@ -214,7 +214,7 @@ app.delete('/unBanGroupTable/:idGroup', (req, res) => {
     res.json(response.data)
   })
     .catch(e => {
-      res.statusCode = 403
+      res.statusCode = e.response.status
       console.log('error servidor', e)
       res.json({
         error: e.message
@@ -239,7 +239,7 @@ app.get('/getGroupsBan', (req, res) => {
     res.json(response.data)
   })
     .catch(e => {
-      res.statusCode = 403
+      res.statusCode = e.response.status
       console.log('error servidor', e)
       res.json({
         error: e.message

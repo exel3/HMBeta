@@ -1,34 +1,34 @@
 <template lang="">
   <section>
-    <article class="newUser">
-      <div class="titleCard"><p>Agregar nuevo bar</p></div>
+    <article class="newlocal">
+      <div class="titleCard"><p>Agregar nuevo local</p></div>
       <div class="contentCard">
         <form>
           <div>
-          <label for="email">Nombre</label>
-          <input id="email" v-model="newUser.email" type="email" autocomplete="off">
+          <label for="location_address">Nombre</label>
+          <input id="location_address" v-model="newlocal.name" type="location_address" autocomplete="off">
           </div>
           <div>
           <label for="contraseña">Direccion</label>
-          <input id="contraseña" v-model="newUser.password" type="text"  autocomplete="off">
+          <input id="contraseña" v-model="newlocal.location_address" type="text"  autocomplete="off">
           </div>
            <div>
           <label for="usuario">Ciudad</label>
-          <input id="usuario"  v-model="newUser.userName" type="text" name="newUser" autocomplete="off">
+          <input id="usuario"  v-model="newlocal.location_city_name" type="text" name="newlocal" autocomplete="off">
           </div>
            <div>
           <label for="usuario">Pais</label>
-          <input id="usuario"  v-model="newUser.userName" type="text" name="newUser" autocomplete="off">
+          <input id="usuario"  v-model="newlocal.location_country_name" type="text" name="newlocal" autocomplete="off">
           </div>
         </form>
       </div>
       <div class="containerAddBtn">
-        <button @click.prevent="addNewUser()">Agregar</button>
+        <button @click.prevent="addNewlocal()">Agregar</button>
       </div>
     </article>
-    <article class="userList">
+    <article class="localList">
        <div class="titleCard">
-         <p>Lista de bares</p>
+         <p>Lista de locales</p>
           <div class="searchContainer">
           <div class="inputContainer">
             <img class="searchIcon" src="@/assets/icons/search.svg" />
@@ -54,30 +54,31 @@
      <table>
 	<thead>
 	<tr>
-		<th>Usuario</th>
-		<th>Contraseña</th>
-		<th>Email</th>
+		<th>Nombre</th>
+		<th>Direccion</th>
+		<th>Ciudad</th>
+    <th>Pais</th>
     <th>Opciones</th>
 	</tr>
 	</thead>
 	<tbody>
-<BaseRow v-for="user in tableFilter" 
-:key="user.id" 
-:user="user"
-@click="showDeleteModal = true; userSelected = user" 
-@update:user="updateUser(user)" 
-@click:delete="showDeleteModal=true; userSelected=user"
-@cancel:click="cancelClick(user)"
+<BaseRow v-for="local in localsFilter" 
+:key="local.id" 
+:local="local"
+@click="showDeleteModal = true; localSelected = local" 
+@update:local="updatelocal(local)" 
+@click:delete="showDeleteModal=true; localSelected=local"
+@cancel:click="cancelClick(local)"
 />
 	</tbody>
 </table>
     </article>
-    <DeleteModal v-if="showDeleteModal" @delete:user="deleteUser" @cancel:delete="showDeleteModal = false"/>
+    <DeleteModal v-if="showDeleteModal" @delete:local="deletelocal" @cancel:delete="showDeleteModal = false"/>
   </section>
 </template>
 <script>
 import DeleteModal from '@/components/users/DeleteModal.vue'
-import BaseRow from '~/components/users/BaseRow.vue'
+import BaseRow from '~/components/locals/BaseRow.vue'
 export default {
   name: 'Locals',
   components: {
@@ -85,52 +86,53 @@ export default {
     BaseRow,
   },
   data: () => ({
-    currentUsers: [],
-    userSelected: {},
-    newUser: { userName: '', email: '', password: '', id: null },
+    currentlocals: [],
+    localSelected: {},
+    newlocal: { name: '', location_address: '', location_city_name: '', location_country_name: '',id: null },
     showDeleteModal: false,
     searchValue: '',
-    tableFilter: []
+    localsFilter: []
   }),
   mounted() {
-    this.getUsers()
+    this.getlocals()
   },
   methods: {
-    cancelClick(user) {
-      this.getUsers()
+    cancelClick(local) {
+      this.getlocals()
     },
-    getUsers() {
-      this.currentUsers = [
+    getlocals() {
+      this.currentlocals = [
         {
-          userName: 'Guillermo',
-          email: 'guillermo@happymatch.com',
-          password: '123456Sable',
+          name: 'Matria',
+          location_address: 'Pellegrini 1000',
+          location_city_name: 'Rosario',
+          location_country_name: 'Argentina',
           id: 12323,
         },
         {
-          userName: 'Mateo',
-          email: 'mateo@happymatch.com',
-          password: 'penion12',
+          name: 'KingBeer',
+          location_address: 'Pellegrini 1000',
+          location_city_name: 'Rosario',
+          location_country_name: 'Argentina',
           id: 134543,
         },
         {
-          userName: 'Prueba',
-          email: 'prueba@happymatch.com',
-          password: 'zp1234',
+          name: 'Worldbeer',
+          location_address: 'Pellegrini 1000',
+          location_city_name: 'Rosario',
+          location_country_name: 'Argentina',
           id: 34543,
         },
       ]
-      this.tableFilter = this.currentUsers
+      this.localsFilter = this.currentlocals
     },
      searchFilter() {
-      this.tableFilter = this.currentUsers.filter((u) =>
-        u.userName.toLowerCase().includes(this.searchValue.toLowerCase()) || u.email.toLowerCase().includes(this.searchValue.toLowerCase()) 
+      this.localsFilter = this.currentlocals.filter((u) =>
+        u.name.toLowerCase().includes(this.searchValue.toLowerCase()) || u.location_address.toLowerCase().includes(this.searchValue.toLowerCase()) 
       )
     },
-    addNewUser() {
-      const reEmail =
-        /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
-      if (this.newUser.userName.length < 8) {
+    addNewlocal() {
+      if (this.newlocal.name.length < 8) {
         this.$toasted.show(
           `El nombre de usuario debe contener 8 o mas caracteres`,
           {
@@ -139,32 +141,32 @@ export default {
             duration: 5000,
           }
         )
-      } else if (this.newUser.password.length < 8) {
+      } else if (this.newlocal.location_city_name.length < 8) {
         this.$toasted.show(`La contraseña debe contener 8 o mas caracteres`, {
           theme: 'toasted-primary',
           position: 'top-right',
           duration: 5000,
         })
-      } else if (!reEmail.test(this.newUser.email)) {
-        this.$toasted.show(`Formato de email incorrecto`, {
+      } else if (this.newlocal.location_address) {
+        this.$toasted.show(`Formato de location_address incorrecto`, {
           theme: 'toasted-primary',
           position: 'top-right',
           duration: 5000,
         })
       } else {
-        this.newUser.id = Date.now()
-        this.currentUsers.push(this.newUser)
+        this.newlocal.id = Date.now()
+        this.currentlocals.push(this.newlocal)
       }
     },
-    updateUser(userC) {
-      // TODO: connection with update user endpoint
+    updatelocal(localC) {
+      // TODO: connection with update local endpoint
     },
-    deleteUser() {
-      this.currentUsers = this.currentUsers.filter(
-        (u) => u.id !== this.userSelected.id
+    deletelocal() {
+      this.currentlocals = this.currentlocals.filter(
+        (u) => u.id !== this.localSelected.id
       )
       this.showDeleteModal = false
-      this.tableFilter = this.currentUsers
+      this.localsFilter = this.currentlocals
     },
   },
 }
@@ -180,7 +182,7 @@ export default {
   th {
     padding: 0.5rem 0.1rem;
   }
-    .newUser {
+    .newlocal {
   max-height: 25rem;
 }
   .titleCard {
@@ -207,7 +209,7 @@ export default {
   th {
     padding: 1rem;
   }
-    .newUser {
+    .newlocal {
   max-height: 15rem;
 }
     .titleCard {
@@ -241,7 +243,7 @@ article {
   overflow: hidden;
 }
 
-.userList {
+.localList {
   min-height: 40rem;
 }
 

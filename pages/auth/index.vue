@@ -62,22 +62,23 @@ export default {
    this.loginWithUserName()
     },
 
-    async loginWithUserName() {
+    loginWithUserName() {
       this.loadingMode = true
       const post = {
         username: this.userName,
         password: this.userPassword,
       }
-      try {
-        await this.$axios.$post(`/api`, post).then((result) => {
+     
+        const authPromises = [this.$axios.$post(`/api/client/login`, post), this.$axios.$post(`/api/admin/login`, post)]
+        Promise.any(authPromises).then((result) => {
           const { id, locals } = result.data
           this.setClient({ id, locals })
             this.loadingMode = false
           this.$router.push('clients')
         })
-      } catch (error) {
+       .catch (error => {
           this.loadingMode = false
-          error.statusCode === 400?
+          error.statusCode === 401?
          this.$toasted.show(`Login error: ${error}`, {
           theme: 'toasted-primary',
           position: 'top-right',
@@ -89,7 +90,7 @@ export default {
           position: 'top-right',
           duration: 10000,
         })
-      }
+        } )
     },
     validateUser(){
       const re = /^[a-zA-Z0-9]*$/

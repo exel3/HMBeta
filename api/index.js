@@ -20,7 +20,7 @@ const getUser = (req, res) => {
   return user
 }
 
-const deleteToken = (req,res) => {
+const deleteToken = (req, res) => {
   const cookies = new Cookies(req, res)
   cookies.set('token', null, {
     maxAge: 1 * 1,
@@ -39,15 +39,15 @@ app.get('/', (req, res) => {
   res.statusCode = 200
   res.json(getToken(req, res))
 })
-app.post('/', (req, res) => {
+app.post('/client/login', (req, res) => {
   const post = {
     "username": req.body.username,
     "password": req.body.password
   }
 
-  axios.post('https://happymatch-backend.herokuapp.com/api/clients/loginClient', post)
+  axios.post('https://happymatch.herokuapp.com/api/client/login', post)
     .then(response => {
-      const { token, id, username, locals } = response.data.data
+      const { token, id, username, locals } = response.data
       const cookies = new Cookies(req, res)
       if (token) {
 
@@ -63,7 +63,43 @@ app.post('/', (req, res) => {
 
 
         res.json({
-          data: response.data.data
+          data: response.data
+        })
+
+      }
+    })
+    .catch(e => {
+      res.statusCode = 400
+      res.json({
+        error: e.message
+      })
+    })
+})
+app.post('/admin/login', (req, res) => {
+  const post = {
+    "username": req.body.username,
+    "password": req.body.password
+  }
+
+  axios.post('https://happymatch.herokuapp.com/api/admin/login', post)
+    .then(response => {
+      const { token, id, username } = response.data
+      const cookies = new Cookies(req, res)
+      if (token) {
+
+        cookies.set('token', 'Bearer ' + token, {
+          maxAge: 3600000 * 12,
+          httpOnly: true
+        })
+
+        cookies.set('user', JSON.stringify({ id, username }), {
+          maxAge: 3600000 * 12,
+          httpOnly: true
+        })
+
+
+        res.json({
+          data: response.data
         })
 
       }
@@ -226,8 +262,8 @@ app.get('/getGroupsBan', (req, res) => {
   console.log('entro api')
   const token = getToken(req, res)
   const user = getUser(req, res)
-  const {id} = user
-  console.log('idUser: ',id)
+  const { id } = user
+  console.log('idUser: ', id)
 
 
   axios.get(`https://happymatch-backend.herokuapp.com/api/getgroupsbanbyclientid/${id}`, {
@@ -247,10 +283,10 @@ app.get('/getGroupsBan', (req, res) => {
     })
 })
 
-app.delete('/clearSesion', (req,res)=> {
+app.delete('/clearSesion', (req, res) => {
   try {
-  deleteToken(req,res)
-  res.end('Token deleted')
+    deleteToken(req, res)
+    res.end('Token deleted')
   }
   catch (error) {
     res.end(error)

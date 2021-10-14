@@ -1,8 +1,8 @@
 <template>
   <tr>
-    <td><BaseInput :value="currentUser.userName" :status="status" @input="currentUser.userName =  $event" /></td>
+    <td><BaseInput :value="currentUser.username" :status="status" @input="currentUser.username =  $event" /></td>
     <td><BaseInput :value="currentUser.password" :status="status" @input="currentUser.password =  $event" /></td>
-    <td><BaseInput :value="currentUser.email" :status="status" @input="currentUser.email =  $event" /></td>
+    <td><BaseInput :value="currentUser.emailAddress" :status="status" @input="currentUser.emailAddress =  $event" /></td>
     <td class="tdOptions">
       <BaseButtonTable
         v-if="status === true"
@@ -68,9 +68,9 @@ export default {
       this.currentUser = this.user
     },
     updateUser() {
-      const reEmail = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
+      const reemailAddress = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
     
-     if (this.currentUser.userName.length < 8)  {this.$toasted.show(`El nombre de usuario debe contener 8 o mas caracteres`, {
+     if (this.currentUser.username.length < 8)  {this.$toasted.show(`El nombre de usuario debe contener 8 o mas caracteres`, {
           theme: 'toasted-primary',
           position: 'top-right',
           duration: 5000,
@@ -81,7 +81,7 @@ export default {
           duration: 5000,
         }) }
 
-        else if( !reEmail.test(this.currentUser.email) ){ this.$toasted.show(`Formato de email incorrecto`, {
+        else if( !reemailAddress.test(this.currentUser.emailAddress) ){ this.$toasted.show(`Formato de emailAddress incorrecto`, {
           theme: 'toasted-primary',
           position: 'top-right',
           duration: 5000,

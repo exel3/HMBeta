@@ -5,8 +5,8 @@
       <div class="contentCard">
         <form>
           <div>
-          <label for="email">Email</label>
-          <input id="email" v-model="newUser.email" type="email" autocomplete="off">
+          <label for="emailAddress">Email</label>
+          <input id="emailAddress" v-model="newUser.emailAddress" type="emailAddress" autocomplete="off">
           </div>
           <div>
           <label for="contraseña">Contraseña</label>
@@ -14,7 +14,7 @@
           </div>
            <div>
           <label for="usuario">Usuario</label>
-          <input id="usuario"  v-model="newUser.userName" type="text" name="newUser" autocomplete="off">
+          <input id="usuario"  v-model="newUser.username" type="text" name="newUser" autocomplete="off">
           </div>
         </form>
       </div>
@@ -83,58 +83,38 @@ export default {
   data: () => ({
     currentUsers: [],
     userSelected: {},
-    newUser: { userName: '', email: '', password: '', id: null },
+    newUser: { username: '', emailAddress: '', password: '', id: null },
     showDeleteModal: false,
     searchValue: '',
     tableFilter: []
   }),
-  mounted() {
-    this.getUsers()
-  },
+async fetch() {
+    await this.$axios
+      .$get('/api/getAllClients')
+      .then((response) => {
+        this.currentUsers = response.clients
+        console.log(this.currentUsers)
+         this.tableFilter = this.currentUsers
+      })
+      .catch((e) => {
+        console.log(e)
+      })
+},
   methods: {
     cancelClick(user) {
       this.getUsers()
     },
-    getUsers() {
-       this.currentUsers = [
-        {
-          userName: 'SableParis',
-          email: 'contacto@sableparis.com',
-          password: '123456Sable',
-          id: 12323,
-        },
-        {
-          userName: 'PeñonDelAguila',
-          email: 'contacto@peniondelaguila.com',
-          password: 'penion12',
-          id: 134543,
-        },
-        {
-          userName: 'ZonaParque',
-          email: 'zonaparque@gmail.com',
-          password: 'zp1234',
-          id: 34543,
-        },
-        {
-          userName: 'McDonaldsPellegrini',
-          email: 'contacto@mcdonalds.com',
-          password: 'mcPellegrini',
-          id: 7864,
-        },
-      ]
-      this.tableFilter = this.currentUsers
-    },
      searchFilter() {
       this.tableFilter = this.currentUsers.filter((u) =>
-        u.userName.toLowerCase().includes(this.searchValue.toLowerCase()) || u.email.toLowerCase().includes(this.searchValue.toLowerCase()) 
+        u.username.toLowerCase().includes(this.searchValue.toLowerCase()) || u.emailAddress.toLowerCase().includes(this.searchValue.toLowerCase()) 
       )
     },
     addNewUser() {
-      const reEmail =
+      const reemailAddress =
         /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
-      if (this.newUser.userName.length < 8) {
+      if (this.newUser.username.length < 6) {
         this.$toasted.show(
-          `El nombre de usuario debe contener 8 o mas caracteres`,
+          `El nombre de usuario debe contener 6 o mas caracteres`,
           {
             theme: 'toasted-primary',
             position: 'top-right',
@@ -147,15 +127,34 @@ export default {
           position: 'top-right',
           duration: 5000,
         })
-      } else if (!reEmail.test(this.newUser.email)) {
+      } else if (!reemailAddress.test(this.newUser.emailAddress)) {
         this.$toasted.show(`Formato de email incorrecto`, {
           theme: 'toasted-primary',
           position: 'top-right',
           duration: 5000,
         })
       } else {
-        this.newUser.id = Date.now()
-        this.currentUsers.push(this.newUser)
+        const username = this.newUser.username
+      const emailAddress = this.newUser.emailAddress
+      const password = this.newUser.password
+      const body = { username, emailAddress, password }
+      console.log(body)
+
+      this.$axios
+        .$post('/api/createNewClient', body)
+        .then((res) => {
+          this.newUser.id = res.id
+           this.currentUsers.push(this.newUser)
+        })
+        .catch((e) => {
+          this.$toasted.show(`Error al crear cliente: ${e}`, {
+          theme: 'toasted-primary',
+          position: 'top-right',
+          duration: 5000,
+        })
+        })
+        
+       
       }
     },
     updateUser(userC) {

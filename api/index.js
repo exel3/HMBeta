@@ -11,6 +11,7 @@ module.exports = { path: '/api', handler: app }
 const getToken = (req, res) => {
   const cookies = new Cookies(req, res)
   const token = cookies.get('token')
+  console.log(token)
   return token
 }
 
@@ -75,6 +76,50 @@ app.post('/client/login', (req, res) => {
       })
     })
 })
+app.get('/getAllClients', (req,res) => {
+  const page = 1
+  const token = getToken(req, res)
+  const get = { headers: { Authorization: token } }
+  axios.get(`https://happymatch.herokuapp.com/api/client/getAllClients/page/${page}`, get)
+  .then(
+    response => {
+      res.json(response.data)
+    }
+  )
+  .catch(e => {
+    res.statusCode = e.response.status
+    res.json({
+      error: e.message
+    })
+  })
+})
+app.post('/createNewClient', (req,res) => {
+  const body = req.body
+  const token = getToken(req, res)
+  const headers = {
+    headers:
+      { Authorization: token }
+  }
+  const data = {
+    data: {
+      username: body.username,
+      emailAddress: body.emailAddress,
+      password: body.password,
+    }
+  }
+  axios.post('https://happymatch.herokuapp.com/api/client/create', headers, data)
+  .then(
+    response => {
+      res.json(response.data)
+    }
+  )
+  .catch(e => {
+    res.statusCode = e.response.status
+    res.json({
+      error: e.message
+    })
+  })
+})
 app.post('/admin/login', (req, res) => {
   const post = {
     "username": req.body.username,
@@ -115,7 +160,7 @@ app.get('/getGroupTables/:localId', (req, res) => {
   const { localId } = req.params
   const token = getToken(req, res)
   const get = { headers: { Authorization: token } }
-  axios.get(`https://happymatch-backend.herokuapp.com/api/groupTables/getAllGroupTablesByLocalId/${localId}`, get)
+  axios.get(`https://happymatch.herokuapp.com/api/groupTables/getAllGroupTablesByLocalId/${localId}`, get)
     .then(
       response => {
         res.json(response.data)
@@ -138,7 +183,7 @@ app.get('/getQuestions/:localId', (req, res) => {
   const { localId } = req.params
   const token = getToken(req, res)
   const get = { headers: { Authorization: token } }
-  axios.get(`https://happymatch-backend.herokuapp.com/api/questions/getQuestionsByLocalId/${localId}`, get)
+  axios.get(`https://happymatch.herokuapp.com/api/questions/getQuestionsByLocalId/${localId}`, get)
     .then(
       response => {
         res.json(response.data)
@@ -165,7 +210,7 @@ app.post('/createQuestions', (req, res) => {
       arrayQuestions: body.questions
     }
   }
-  axios.post('https://happymatch-backend.herokuapp.com/api/questions/create', headers, data)
+  axios.post('https://happymatch.herokuapp.com/api/questions/create', headers, data)
     .then(
       response => {
         res.json(response.data)
@@ -191,7 +236,7 @@ app.post('/updateQuestions', (req, res) => {
     arrayQuestions: body.questions
   }
 
-  axios.put(`https://happymatch-backend.herokuapp.com/api/questions/update/${localId}`, data, {
+  axios.put(`https://happymatch.herokuapp.com/api/questions/update/${localId}`, data, {
     headers: {
       'Content-Type': 'application/json',
       'Authorization': `${token}`
@@ -219,7 +264,7 @@ app.post('/banGroupTable/:idGroup', (req, res) => {
     reason: body.reason
   }
   console.log('idGroup: ', idGroup, ' Token: ', token)
-  axios.post(`https://happymatch-backend.herokuapp.com/api/groupBans/${idGroup}`, data, {
+  axios.post(`https://happymatch.herokuapp.com/api/groupBans/${idGroup}`, data, {
     headers: {
       'Content-Type': 'application/json',
       'Authorization': `${token}`
@@ -241,7 +286,7 @@ app.delete('/unBanGroupTable/:idGroup', (req, res) => {
 
   const token = getToken(req, res)
 
-  axios.post(`https://happymatch-backend.herokuapp.com/api/groupBans/unban/${idGroup}`, {
+  axios.post(`https://happymatch.herokuapp.com/api/groupBans/unban/${idGroup}`, {
     headers: {
       'Content-Type': 'application/json',
       'Authorization': `${token}`
@@ -266,7 +311,7 @@ app.get('/getGroupsBan', (req, res) => {
   console.log('idUser: ', id)
 
 
-  axios.get(`https://happymatch-backend.herokuapp.com/api/getgroupsbanbyclientid/${id}`, {
+  axios.get(`https://happymatch.herokuapp.com/api/getgroupsbanbyclientid/${id}`, {
     headers: {
       'Content-Type': 'application/json',
       'Authorization': `${token}`

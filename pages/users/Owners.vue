@@ -1,5 +1,7 @@
 <template lang="">
-  <section>
+<p v-if="$fetchState.pending" class="fetchState">Cargando...</p>
+  <p v-else-if="$fetchState.error" class="fetchState">Error al cargar los datos</p>
+  <section v-else>
     <article class="newUser">
       <div class="titleCard"><p>Agregar nuevo dueño</p></div>
       <div class="contentCard">
@@ -94,7 +96,6 @@ export default {
       .$get('/api/getAllClients')
       .then((response) => {
         this.currentUsers = response.clients
-        console.log(this.currentUsers)
         this.tableFilter = this.currentUsers
       })
       .catch((e) => {
@@ -284,6 +285,9 @@ article {
   margin-bottom: 0;
   background-color: #fff;
   border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+.fetchState {
+  z-index: 200
 }
 
 .titleCard p {

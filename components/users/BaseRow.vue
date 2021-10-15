@@ -1,7 +1,7 @@
 <template>
   <tr>
     <td><BaseInput :value="currentUser.username" :status="status" @input="currentUser.username =  $event" /></td>
-    <td><BaseInput :value="currentUser.password" :status="status" @input="currentUser.password =  $event" /></td>
+    <td><BaseInput placeholder="No visible" :status="status" @input="currentUser.password =  $event" /></td>
     <td><BaseInput :value="currentUser.emailAddress" :status="status" @input="currentUser.emailAddress =  $event" /></td>
     <td class="tdOptions">
       <BaseButtonTable

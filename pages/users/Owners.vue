@@ -6,20 +6,20 @@
         <form>
           <div>
           <label for="emailAddress">Email</label>
-          <input id="emailAddress" v-model="newUser.emailAddress" type="emailAddress" autocomplete="off">
+          <input id="emailAddress" v-model="newUser.emailAddress" type="emailAddress" :disabled="loadingMode" autocomplete="off">
           </div>
           <div>
           <label for="contraseña">Contraseña</label>
-          <input id="contraseña" v-model="newUser.password" type="text"  autocomplete="off">
+          <input id="contraseña" v-model="newUser.password" type="text"  :disabled="loadingMode" autocomplete="off">
           </div>
            <div>
           <label for="usuario">Usuario</label>
-          <input id="usuario"  v-model="newUser.username" type="text" name="newUser" autocomplete="off">
+          <input id="usuario"  v-model="newUser.username" type="text" name="newUser" :disabled="loadingMode" autocomplete="off">
           </div>
         </form>
       </div>
       <div class="containerAddBtn">
-        <button @click.prevent="addNewUser()">Agregar</button>
+        <button :disabled="loadingMode" @click.prevent="callMethod(addNewUser)">Agregar</button>
       </div>
     </article>
     <article class="userList">
@@ -86,27 +86,35 @@ export default {
     newUser: { username: '', emailAddress: '', password: '', id: null },
     showDeleteModal: false,
     searchValue: '',
-    tableFilter: []
+    tableFilter: [],
+    loadingMode: false,
   }),
-async fetch() {
+  async fetch() {
     await this.$axios
       .$get('/api/getAllClients')
       .then((response) => {
         this.currentUsers = response.clients
         console.log(this.currentUsers)
-         this.tableFilter = this.currentUsers
+        this.tableFilter = this.currentUsers
       })
       .catch((e) => {
         console.log(e)
       })
-},
+  },
   methods: {
+      callMethod(method) {
+      this.loadingMode = true
+       method()
+  
+    },
     cancelClick(user) {
       this.getUsers()
     },
-     searchFilter() {
-      this.tableFilter = this.currentUsers.filter((u) =>
-        u.username.toLowerCase().includes(this.searchValue.toLowerCase()) || u.emailAddress.toLowerCase().includes(this.searchValue.toLowerCase()) 
+    searchFilter() {
+      this.tableFilter = this.currentUsers.filter(
+        (u) =>
+          u.username.toLowerCase().includes(this.searchValue.toLowerCase()) ||
+          u.emailAddress.toLowerCase().includes(this.searchValue.toLowerCase())
       )
     },
     addNewUser() {
@@ -135,26 +143,50 @@ async fetch() {
         })
       } else {
         const username = this.newUser.username
-      const emailAddress = this.newUser.emailAddress
-      const password = this.newUser.password
-      const body = { username, emailAddress, password }
-      console.log(body)
-
-      this.$axios
-        .$post('/api/createNewClient', body)
-        .then((res) => {
-          this.newUser.id = res.id
-           this.currentUsers.push(this.newUser)
-        })
-        .catch((e) => {
-          this.$toasted.show(`Error al crear cliente: ${e}`, {
+        const emailAddress = this.newUser.emailAddress
+        const password = this.newUser.password
+        const body = { username, emailAddress, password }
+        console.log(body)
+        this.$toasted.show(`Guardando cambios..`, {
           theme: 'toasted-primary',
           position: 'top-right',
           duration: 5000,
         })
-        })
-        
-       
+        this.$axios
+          .$post('/api/createNewClient', body)
+          .then((res) => {
+            this.newUser.id = res.id
+            this.currentUsers.push(this.newUser)
+            this.$toasted.show(`Cambios guardados`, {
+              theme: 'toasted-primary',
+              position: 'top-right',
+              duration: 5000,
+            })
+                this.loadingMode = false
+          })
+          .catch((e) => {
+            if(JSON.stringify(e.response.data.error["Errors List"]) === '{"username error":"Username in use"}'){
+               this.$toasted.show(`ERROR: Nombre de usuario en uso`, {
+              theme: 'toasted-primary',
+              position: 'top-right',
+              duration: 10000,
+            })
+            } else if (JSON.stringify(e.response.data.error["Errors List"]) === '{"emailAddress error":"EmailAddress in use"}') {
+                 this.$toasted.show(`ERROR: Email en uso`, {
+              theme: 'toasted-primary',
+              position: 'top-right',
+              duration: 10000,
+            })
+            } 
+            else {
+            this.$toasted.show(`Error al crear cliente: ${JSON.stringify(e.response.data.error["Errors List"])}`, {
+              theme: 'toasted-primary',
+              position: 'top-right',
+              duration: 5000,
+            })}
+            console.log(e.response.data.error["Errors List"])
+                this.loadingMode = false
+          })
       }
     },
     updateUser(userC) {
@@ -181,17 +213,17 @@ async fetch() {
   th {
     padding: 0.5rem 0.1rem;
   }
-    .newUser {
-  max-height: 25rem;
-}
-  .titleCard {
-  display: grid;
-  grid-auto-flow: row;
-  justify-content: center;
-  gap: 1rem 0;
+  .newUser {
+    max-height: 25rem;
   }
-    .contentCard form {
-    display:grid;
+  .titleCard {
+    display: grid;
+    grid-auto-flow: row;
+    justify-content: center;
+    gap: 1rem 0;
+  }
+  .contentCard form {
+    display: grid;
     grid-auto-flow: row;
     align-items: center;
     gap: 1rem 0;
@@ -208,18 +240,18 @@ async fetch() {
   th {
     padding: 1rem;
   }
-    .newUser {
-  max-height: 15rem;
-}
-    .titleCard {
-  display: grid;
-  grid-auto-flow: column;
-  justify-content: space-between;
+  .newUser {
+    max-height: 15rem;
+  }
+  .titleCard {
+    display: grid;
+    grid-auto-flow: column;
+    justify-content: space-between;
   }
   .contentCard form {
-      display: grid;
-  grid-auto-flow: column;
-  gap: 0 1rem;
+    display: grid;
+    grid-auto-flow: column;
+    gap: 0 1rem;
   }
 }
 section {
@@ -277,7 +309,7 @@ input {
   padding: 0.625rem 0.75rem;
   font-weight: 400;
   line-height: 1.5;
-  color: #8898aa;
+  color: #656a6f;
   background-color: #fff;
   background-clip: padding-box;
   border: 1px solid #dee2e6;
@@ -368,7 +400,7 @@ td {
 .searchContainer input {
   box-sizing: border-box;
   height: 2.5rem;
-   padding: 0 3rem;
+  padding: 0 3rem;
   outline: none;
   border: 1px solid #dcdfe6;
   border-radius: 4px;
@@ -382,7 +414,7 @@ td {
 }
 .clearIcon {
   position: absolute;
-  top:0.55rem;
+  top: 0.55rem;
   left: calc(100% - 3rem);
   z-index: 1;
   cursor: pointer;

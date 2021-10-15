@@ -11,7 +11,6 @@ module.exports = { path: '/api', handler: app }
 const getToken = (req, res) => {
   const cookies = new Cookies(req, res)
   const token = cookies.get('token')
-  console.log(token)
   return token
 }
 
@@ -98,25 +97,25 @@ app.post('/createNewClient', (req,res) => {
   const token = getToken(req, res)
   const headers = {
     headers:
-      { Authorization: token }
+      { authorization: token }
   }
   const data = {
-    data: {
       username: body.username,
       emailAddress: body.emailAddress,
       password: body.password,
-    }
   }
-  axios.post('https://happymatch.herokuapp.com/api/client/create', headers, data)
+
+  axios.post('https://happymatch.herokuapp.com/api/client/create', data,  headers)
   .then(
     response => {
       res.json(response.data)
     }
   )
   .catch(e => {
+    console.log(e.response.data)
     res.statusCode = e.response.status
     res.json({
-      error: e.message
+      error: e.response.data
     })
   })
 })

@@ -113,6 +113,6 @@ export default {
     extend(config, ctx) {} 
 },
 server: {
-    host: "0.0.0.0"
+    host: "192.168.100.2" // TODO: 0.0.0.0 on prod 
 }
 }

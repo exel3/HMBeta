@@ -21,7 +21,7 @@
         </form>
       </div>
       <div class="containerAddBtn">
-        <button :disabled="loadingMode" @click.prevent="callMethod(addNewUser)">Agregar</button>
+        <button :disabled="loadingMode" @click.prevent="addNewUser">Agregar</button>
       </div>
     </article>
     <article class="userList">
@@ -103,11 +103,6 @@ export default {
       })
   },
   methods: {
-      callMethod(method) {
-      this.loadingMode = true
-       method()
-  
-    },
     cancelClick(user) {
       this.getUsers()
     },
@@ -119,6 +114,7 @@ export default {
       )
     },
     addNewUser() {
+        this.loadingMode = true
       const reemailAddress =
         /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
       if (this.newUser.username.length < 6) {
@@ -191,7 +187,49 @@ export default {
       }
     },
     updateUser(userC) {
-      // TODO: connection with update user endpoint
+        this.loadingMode = true
+      const clientID = userC.id
+      const body = {
+        username : userC.username,
+        emailAddress: userC.emailAddress,
+        password: userC.password
+      }
+      console.log(userC.id)
+        this.$axios
+          .$put(`/api/updateClient/${clientID}`, body)
+            .then((res) => {
+            this.newUser.id = res.id
+            this.currentUsers.push(this.newUser)
+            this.$toasted.show(`Cambios guardados`, {
+              theme: 'toasted-primary',
+              position: 'top-right',
+              duration: 5000,
+            })
+                this.loadingMode = false
+          })
+          .catch((e) => {
+            if(JSON.stringify(e.response.data.error["Errors List"]) === '{"username error":"Username in use"}'){
+               this.$toasted.show(`ERROR: Nombre de usuario en uso`, {
+              theme: 'toasted-primary',
+              position: 'top-right',
+              duration: 10000,
+            })
+            } else if (JSON.stringify(e.response.data.error["Errors List"]) === '{"emailAddress error":"EmailAddress in use"}') {
+                 this.$toasted.show(`ERROR: Email en uso`, {
+              theme: 'toasted-primary',
+              position: 'top-right',
+              duration: 10000,
+            })
+            } 
+            else {
+            this.$toasted.show(`Error al crear cliente: ${JSON.stringify(e.response.data.error["Errors List"])}`, {
+              theme: 'toasted-primary',
+              position: 'top-right',
+              duration: 5000,
+            })}
+            console.log(e.response.data.error["Errors List"])
+                this.loadingMode = false
+          })
     },
     deleteUser() {
       this.currentUsers = this.currentUsers.filter(
@@ -287,7 +325,9 @@ article {
   border-bottom: 1px solid rgba(0, 0, 0, 0.05);
 }
 .fetchState {
-  z-index: 200
+  position: absolute;
+  z-index: 50;
+  color: white;
 }
 
 .titleCard p {

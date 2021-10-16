@@ -119,6 +119,33 @@ app.post('/createNewClient', (req,res) => {
     })
   })
 })
+app.put('/updateClient/:clientID', (req,res) => {
+  const { clientID } = req.params
+  const body = req.body
+  const token = getToken(req, res)
+  const headers = {
+    headers:
+      { authorization: token }
+  }
+  const data = {
+      username: body.username,
+      emailAddress: body.emailAddress,
+      password: body.password,
+  }
+
+  axios.put(`https://happymatch.herokuapp.com/api/client/update/${clientID}`, data,  headers)
+  .then(
+    response => {
+      res.json(response.data)
+    }
+  )
+  .catch(e => {
+    res.statusCode = e.response.status
+    res.json({
+      error: e.response.data
+    })
+  })
+})
 app.post('/admin/login', (req, res) => {
   const post = {
     "username": req.body.username,

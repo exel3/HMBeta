@@ -1,8 +1,8 @@
 <template>
   <tr>
-    <td><BaseInput :value="currentUser.username" :status="status" @input="currentUser.username =  $event" /></td>
+    <td><BaseInput :valueinput="currentUser.username" :status="status" @input="currentUser.username =  $event" /></td>
     <td><BaseInput placeholder="No visible" :status="status" @input="currentUser.password =  $event" /></td>
-    <td><BaseInput :value="currentUser.emailAddress" :status="status" @input="currentUser.emailAddress =  $event" /></td>
+    <td><BaseInput :valueinput="currentUser.emailAddress" :status="status" @input="currentUser.emailAddress =  $event" /></td>
     <td class="tdOptions">
       <BaseButtonTable
         v-if="status === true"
@@ -70,12 +70,12 @@ export default {
     updateUser() {
       const reemailAddress = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
     
-     if (this.currentUser.username.length < 8)  {this.$toasted.show(`El nombre de usuario debe contener 8 o mas caracteres`, {
+     if (this.currentUser.username.length < 6)  {this.$toasted.show(`El nombre de usuario debe contener 6 o mas caracteres`, {
           theme: 'toasted-primary',
           position: 'top-right',
           duration: 5000,
         }) }
-          else if(this.currentUser.password.length < 8){ this.$toasted.show(`La contraseña debe contener 8 o mas caracteres`, {
+          else if(this.currentUser.password.length < 6){ this.$toasted.show(`La contraseña debe contener 6 o mas caracteres`, {
           theme: 'toasted-primary',
           position: 'top-right',
           duration: 5000,

@@ -1,5 +1,5 @@
 <template lang="">
-<p v-if="$fetchState.pending" class="fetchState">Cargando...</p>
+<Loading v-if="!$fetchState.pending" class="fetchState" />
   <p v-else-if="$fetchState.error" class="fetchState">Error al cargar los datos</p>
   <section v-else>
     <article class="newUser">
@@ -75,12 +75,14 @@
 </template>
 <script>
 import DeleteModal from '@/components/users/DeleteModal.vue'
-import BaseRow from '~/components/users/BaseRow.vue'
+import BaseRow from '@/components/users/BaseRow.vue'
+import Loading from '@/components/ui/Loading.vue'
 export default {
   name: 'Owners',
   components: {
     DeleteModal,
     BaseRow,
+    Loading
   },
   data: () => ({
     currentUsers: [],

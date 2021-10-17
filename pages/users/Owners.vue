@@ -1,5 +1,5 @@
 <template lang="">
-<Loading v-if="!$fetchState.pending" class="fetchState" />
+<Loading v-if="$fetchState.pending" class="fetchState" />
   <p v-else-if="$fetchState.error" class="fetchState">Error al cargar los datos</p>
   <section v-else>
     <article class="newUser">
@@ -65,7 +65,10 @@
 @click="showDeleteModal = true; userSelected = user" 
 @update:user="updateUser(user)" 
 @click:delete="showDeleteModal=true; userSelected=user"
-@cancel:click="cancelClick(user)"
+@cancel:click="cancelClick"
+@input:username="user.username=$event"
+@input:emailAddress="user.emailAddress=$event"
+@input:password="user.password=$event"
 />
 	</tbody>
 </table>
@@ -82,7 +85,7 @@ export default {
   components: {
     DeleteModal,
     BaseRow,
-    Loading
+    Loading,
   },
   data: () => ({
     currentUsers: [],
@@ -98,15 +101,25 @@ export default {
       .$get('/api/getAllClients')
       .then((response) => {
         this.currentUsers = response.clients
-        this.tableFilter = this.currentUsers
+      this.tableFilter = response.clients
       })
       .catch((e) => {
         console.log(e)
       })
   },
   methods: {
-    cancelClick(user) {
-      this.getUsers()
+    async cancelClick() {
+   await this.$axios
+      .$get('/api/getAllClients')
+      .then((response) => {
+         this.currentUsers = []
+        this.tableFilter =[]
+        this.currentUsers = response.clients
+      this.tableFilter = response.clients
+      })
+      .catch((e) => {
+        console.log(e)
+      })
     },
     searchFilter() {
       this.tableFilter = this.currentUsers.filter(
@@ -116,25 +129,32 @@ export default {
       )
     },
     addNewUser() {
-        this.loadingMode = true
-      const reemailAddress =
+      this.loadingMode = true
+      const regEmailAddress =
         /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
-      if (this.newUser.username.length < 6) {
+      const regUser = /^(?=[a-zA-Z0-9._]{5,20}$)(?!.*[_.]{2})[^_.].*[^_.]$/
+      const regPassword =
+        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,16}/
+
+      if (!regUser.test(this.newUser.username)) {
         this.$toasted.show(
-          `El nombre de usuario debe contener 6 o mas caracteres`,
+          `El nombre de usuario debe contener entre 5 y 10 caracteres`,
           {
             theme: 'toasted-primary',
             position: 'top-right',
             duration: 5000,
           }
         )
-      } else if (this.newUser.password.length < 8) {
-        this.$toasted.show(`La contraseña debe contener 8 o mas caracteres`, {
-          theme: 'toasted-primary',
-          position: 'top-right',
-          duration: 5000,
-        })
-      } else if (!reemailAddress.test(this.newUser.emailAddress)) {
+      } else if (!regPassword.test(this.newUser.password)) {
+        this.$toasted.show(
+          `La contraseña debe contener mínimo 8 y máximo 16 caracteres, al menos una letra mayúscula, una letra minúscula, un número y un carácter especial`,
+          {
+            theme: 'toasted-primary',
+            position: 'top-right',
+            duration: 10000,
+          }
+        )
+      } else if (!regEmailAddress.test(this.newUser.emailAddress)) {
         this.$toasted.show(`Formato de email incorrecto`, {
           theme: 'toasted-primary',
           position: 'top-right',
@@ -161,84 +181,131 @@ export default {
               position: 'top-right',
               duration: 5000,
             })
-                this.loadingMode = false
+            this.loadingMode = false
           })
           .catch((e) => {
-            if(JSON.stringify(e.response.data.error["Errors List"]) === '{"username error":"Username in use"}'){
-               this.$toasted.show(`ERROR: Nombre de usuario en uso`, {
-              theme: 'toasted-primary',
-              position: 'top-right',
-              duration: 10000,
-            })
-            } else if (JSON.stringify(e.response.data.error["Errors List"]) === '{"emailAddress error":"EmailAddress in use"}') {
-                 this.$toasted.show(`ERROR: Email en uso`, {
-              theme: 'toasted-primary',
-              position: 'top-right',
-              duration: 10000,
-            })
-            } 
-            else {
-            this.$toasted.show(`Error al crear cliente: ${JSON.stringify(e.response.data.error["Errors List"])}`, {
-              theme: 'toasted-primary',
-              position: 'top-right',
-              duration: 5000,
-            })}
-            console.log(e.response.data.error["Errors List"])
-                this.loadingMode = false
+            if (
+              JSON.stringify(e.response.data.error['Errors List']) ===
+              '{"username error":"Username in use"}'
+            ) {
+              this.$toasted.show(`ERROR: Nombre de usuario en uso`, {
+                theme: 'toasted-primary',
+                position: 'top-right',
+                duration: 10000,
+              })
+            } else if (
+              JSON.stringify(e.response.data.error['Errors List']) ===
+              '{"emailAddress error":"EmailAddress in use"}'
+            ) {
+              this.$toasted.show(`ERROR: Email en uso`, {
+                theme: 'toasted-primary',
+                position: 'top-right',
+                duration: 10000,
+              })
+            } else {
+              this.$toasted.show(
+                `Error al crear cliente: ${JSON.stringify(
+                  e.response.data.error['Errors List']
+                )}`,
+                {
+                  theme: 'toasted-primary',
+                  position: 'top-right',
+                  duration: 5000,
+                }
+              )
+            }
+            console.log(e.response.data.error['Errors List'])
+            this.loadingMode = false
           })
       }
     },
     updateUser(userC) {
-        this.loadingMode = true
+      this.loadingMode = true
       const clientID = userC.id
       const body = {
-        username : userC.username,
+        username: userC.username,
         emailAddress: userC.emailAddress,
-        password: userC.password
+        password: userC.password,
       }
-      console.log(userC.id)
-        this.$axios
-          .$put(`/api/updateClient/${clientID}`, body)
-            .then((res) => {
-            this.newUser.id = res.id
-            this.currentUsers.push(this.newUser)
-            this.$toasted.show(`Cambios guardados`, {
-              theme: 'toasted-primary',
-              position: 'top-right',
-              duration: 5000,
-            })
-                this.loadingMode = false
+      this.$axios
+        .$put(`/api/updateClient/${clientID}`, body)
+        .then((res) => {
+          this.newUser.id = res.id
+          this.currentUsers.push(this.newUser)
+          this.$toasted.show(`Cambios guardados`, {
+            theme: 'toasted-primary',
+            position: 'top-right',
+            duration: 5000,
           })
-          .catch((e) => {
-            if(JSON.stringify(e.response.data.error["Errors List"]) === '{"username error":"Username in use"}'){
-               this.$toasted.show(`ERROR: Nombre de usuario en uso`, {
+          this.loadingMode = false
+        })
+        .catch((e) => {
+          if (
+            JSON.stringify(e.response.data.error['Errors List']) ===
+            '{"username error":"Username in use"}'
+          ) {
+            this.$toasted.show(`ERROR: Nombre de usuario en uso`, {
               theme: 'toasted-primary',
               position: 'top-right',
               duration: 10000,
             })
-            } else if (JSON.stringify(e.response.data.error["Errors List"]) === '{"emailAddress error":"EmailAddress in use"}') {
-                 this.$toasted.show(`ERROR: Email en uso`, {
+          } else if (
+            JSON.stringify(e.response.data.error['Errors List']) ===
+            '{"emailAddress error":"EmailAddress in use"}'
+          ) {
+            this.$toasted.show(`ERROR: Email en uso`, {
               theme: 'toasted-primary',
               position: 'top-right',
               duration: 10000,
             })
-            } 
-            else {
-            this.$toasted.show(`Error al crear cliente: ${JSON.stringify(e.response.data.error["Errors List"])}`, {
-              theme: 'toasted-primary',
-              position: 'top-right',
-              duration: 5000,
-            })}
-            console.log(e.response.data.error["Errors List"])
-                this.loadingMode = false
-          })
+          } else {
+            this.$toasted.show(
+              `Error al actualizar cliente: ${JSON.stringify(
+                e.response.data.error['Errors List']
+              )}`,
+              {
+                theme: 'toasted-primary',
+                position: 'top-right',
+                duration: 5000,
+              }
+            )
+          }
+          this.loadingMode = false
+        })
     },
     deleteUser() {
-      this.currentUsers = this.currentUsers.filter(
-        (u) => u.id !== this.userSelected.id
-      )
-      this.showDeleteModal = false
-      this.tableFilter = this.currentUsers
+      this.loadingMode = true
+      const clientID = this.userSelected.id
+
+      this.$axios
+        .$delete(`/api/deleteClient/${clientID}`)
+        .then((res) => {
+          this.$toasted.show(`Cambios guardados`, {
+            theme: 'toasted-primary',
+            position: 'top-right',
+            duration: 5000,
+          })
+          this.currentUsers = this.currentUsers.filter(
+            (u) => u.id !== this.userSelected.id
+          )
+          this.showDeleteModal = false
+          this.tableFilter = this.currentUsers
+          this.loadingMode = false
+        })
+        .catch((e) => {
+          this.$toasted.show(
+            `Error al borrar cliente: ${JSON.stringify(
+              e.response.data.error['Errors List']
+            )}`,
+            {
+              theme: 'toasted-primary',
+              position: 'top-right',
+              duration: 5000,
+            }
+          )
+
+          this.loadingMode = false
+        })
     },
   },
 }

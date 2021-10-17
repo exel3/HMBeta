@@ -1,8 +1,26 @@
 <template>
   <tr>
-    <td><BaseInput :valueinput="currentUser.username" :status="status" @input="currentUser.username =  $event" /></td>
-    <td><BaseInput placeholder="No visible" :status="status" @input="currentUser.password =  $event" /></td>
-    <td><BaseInput :valueinput="currentUser.emailAddress" :status="status" @input="currentUser.emailAddress =  $event" /></td>
+    <td>
+      <BaseInput
+        :valueinput="user.username"
+        :status="status"
+        @input="$emit('input:username', $event)"
+      />
+    </td>
+    <td>
+      <BaseInput
+        placeholder="No visible"
+        :status="status"
+       @input="$emit('input:password', $event)"
+      />
+    </td>
+    <td>
+      <BaseInput
+        :valueinput="user.emailAddress"
+        :status="status"
+     @input="$emit('input:emailAddress', $event)"
+      />
+    </td>
     <td class="tdOptions">
       <BaseButtonTable
         v-if="status === true"
@@ -17,24 +35,20 @@
         backcolor="#5e72e4"
         bordercolor="#5e72e4"
         imgsrc="done.svg"
-        @click="
-          updateUser()
-        "
+        @click="updateUser()"
       />
       <BaseButtonTable
         v-if="status === false"
         backcolor="white"
         bordercolor="#5e72e4"
         imgsrc="cancel.svg"
-        @click="
-         clickCancel()
-        "
+        @click="clickCancel()"
       />
       <BaseButtonTable
         backcolor="#f5365c"
         bordercolor="#f5365c"
         imgsrc="delete.svg"
-        @click="$emit('click:delete',currentUser)"
+        @click="$emit('click:delete', user)"
       />
     </td>
   </tr>
@@ -43,7 +57,7 @@
 import BaseInput from '@/components/users/BaseInput.vue'
 import BaseButtonTable from '@/components/ui/BaseButtonTable.vue'
 export default {
-  name: 'BaseUser',
+  name: 'BaseRow',
   components: {
     BaseInput,
     BaseButtonTable,
@@ -56,39 +70,49 @@ export default {
   },
   data: () => ({
     status: true,
-    currentUser: {},
   }),
-  mounted() {
-    this.currentUser = this.user
-  },
   methods: {
     clickCancel() {
       this.$emit('cancel:click')
-       this.status = !status
-      this.currentUser = this.user
+      this.status = !status
     },
     updateUser() {
-      const reemailAddress = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
-    
-     if (this.currentUser.username.length < 6)  {this.$toasted.show(`El nombre de usuario debe contener 6 o mas caracteres`, {
-          theme: 'toasted-primary',
-          position: 'top-right',
-          duration: 5000,
-        }) }
-          else if(this.currentUser.password.length < 6){ this.$toasted.show(`La contraseña debe contener 6 o mas caracteres`, {
-          theme: 'toasted-primary',
-          position: 'top-right',
-          duration: 5000,
-        }) }
+      const regEmailAddress =
+        /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
+      const regUser = /^(?=[a-zA-Z0-9._]{5,20}$)(?!.*[_.]{2})[^_.].*[^_.]$/
+      const regPassword =
+        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,16}/
 
-        else if( !reemailAddress.test(this.currentUser.emailAddress) ){ this.$toasted.show(`Formato de emailAddress incorrecto`, {
+      if (!regUser.test(this.user.username)) {
+        this.$toasted.show(
+          `El nombre de usuario debe contener entre 5 y 10 caracteres`,
+          {
+            theme: 'toasted-primary',
+            position: 'top-right',
+            duration: 5000,
+          }
+        )
+      } else if (!regPassword.test(this.user.password)) {
+        this.$toasted.show(
+          `La contraseña debe contener mínimo 8 y máximo 16 caracteres, al menos una letra mayúscula, una letra minúscula, un número y un carácter especial`,
+          {
+            theme: 'toasted-primary',
+            position: 'top-right',
+            duration: 10000,
+          }
+        )
+      } else if (!regEmailAddress.test(this.user.emailAddress)) {
+        this.$toasted.show(`Formato de email incorrecto`, {
           theme: 'toasted-primary',
           position: 'top-right',
           duration: 5000,
-        }) }
-        else {this.$emit('update:user', this.currentUser);this.status = !status}
-    }
-  }
+        })
+      } else {
+        this.$emit('update:user', this.user)
+        this.status = !status
+      }
+    },
+  },
 }
 </script>
 <style>
@@ -97,7 +121,7 @@ export default {
   align-items: center;
   justify-content: start;
   grid-auto-flow: column;
-  gap: 0 0.5rem
+  gap: 0 0.5rem;
 }
 
 td {

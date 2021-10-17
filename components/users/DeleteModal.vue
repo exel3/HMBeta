@@ -15,6 +15,18 @@ export default {
 }
 </script>
 <style scoped>
+@media (max-width: 1000px) {
+  .modalBox {
+      width: 15rem;
+  height: 20rem;
+  }
+}
+@media (min-width: 1000px) {
+  .modalBox {
+      width: 30rem;
+  height: 20rem;
+  }
+}
 .containerModal {
   position: absolute;
   width: 100%;
@@ -31,8 +43,6 @@ export default {
   border-radius: 0.375rem;
   box-shadow: 0 0 2rem 0 rgb(136 152 170 / 15%);
   border: none;
-  width: 30rem;
-  height: 20rem;
   background: white;
   padding: 1.25rem;
   position: relative;

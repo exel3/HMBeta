@@ -24,7 +24,8 @@
           </div>
           <div v-if="user.type==='admin'" class="selectContainer">
           <label for="owner">Dueño</label>
-        <select id="owner" name="owner" @change="setOwnerSelected($event.target.value)">
+        <select id="owner" name="owner"  @change="setOwnerSelected($event.target.value)" >
+           <option disabled selected value></option>
           <option
             v-for="owner in owners"
             :key="'dropBox' + owner.id"
@@ -72,7 +73,7 @@
 		<th>Nombre</th>
 		<th>Direccion</th>
 		<th>Ciudad</th>
-    <th>Pais</th>
+    <th>Dueño</th>
     <th>Opciones</th>
 	</tr>
 	</thead>
@@ -80,9 +81,10 @@
 <BaseRow v-for="local in tableFilter" 
 :key="local.id" 
 :local="local"
+:owners="owners"
 @click="showDeleteModal = true; localSelected = local"  
 @click:delete="showDeleteModal=true; localSelected=local"
-@click:edit="showEditModal=true; localSelected=local"
+@click:edit="showEditModal=true; localSelected={...local, clientName:$event}"
 />
 	</tbody>
 
@@ -128,17 +130,14 @@ export default {
   async fetch() {
     await this.$axios
       .$get('/api/getUser')
-      .then((response) => {
+      .then(async (response) => {
         this.user = response
-        console.log(response)
-
         this.user.type === 'admin'
-          ? this.$axios
+          ? await this.$axios
               .$get('/api/getAllLocals')
-              .then((response) => {
-                this.currentlocals = response.locals
-                this.tableFilter = response.locals
-                this.$axios
+              .then(
+                async (response) => {
+                await this.$axios
                   .$get('/api/getAllClients')
                   .then((response) => {
                     this.owners = response.clients
@@ -150,6 +149,8 @@ export default {
                       duration: 5000,
                     })
                   })
+                      this.currentlocals = response.locals
+                this.tableFilter = response.locals
               })
               .catch((e) => {
                 this.$toasted.show(`Error al recuperar locales: ${e}`, {
@@ -158,7 +159,7 @@ export default {
                   duration: 5000,
                 })
               })
-          : this.$axios
+          : await this.$axios
               .$get(`/api/getLocalsByClient/${this.user.id}`)
               .then((response) => {
                 this.currentlocals = response.locals
@@ -218,10 +219,7 @@ export default {
     searchFilter() {
       this.tableFilter = this.currentlocals.filter(
         (u) =>
-          u.name.toLowerCase().includes(this.searchValue.toLowerCase()) ||
-          u.locationAddress
-            .toLowerCase()
-            .includes(this.searchValue.toLowerCase())
+          u.name.toLowerCase().includes(this.searchValue.toLowerCase()) || u.location_address.toLowerCase().includes(this.searchValue.toLowerCase()) || u.client.toLowerCase().includes(this.searchValue.toLowerCase())  ||  u.location_city_name.toLowerCase().includes(this.searchValue.toLowerCase()) ||  u.location_country_name.toLowerCase().includes(this.searchValue.toLowerCase()) 
       )
     },
     setOwnerSelected(ownerName) {

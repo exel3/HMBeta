@@ -1,17 +1,23 @@
 <template>
   <tr>
-    <td><p>{{ local.name }}</p></td>
-    <td><p>{{ local.location_address }}</p></td>
-      <td><p>{{ local.location_city_name }}</p></td>
-    <td><p>{{ local.location_country_name}}</p></td>
+    <td>
+      <p>{{ local.name }}</p>
+    </td>
+    <td>
+      <p>{{ local.location_address }}</p>
+    </td>
+    <td>
+      <p>{{ local.location_city_name }}</p>
+    </td>
+    <td>
+      <p>{{ clientName }}</p>
+    </td>
     <td class="tdOptions">
       <BaseButtonTable
         backcolor="#f7fafc"
         bordercolor="#f7fafc"
         imgsrc="edit.svg"
-        @click="
-          $emit('click:edit')
-        "
+        @click="$emit('click:edit', clientName)"
       />
       <BaseButtonTable
         backcolor="#f5365c"
@@ -34,14 +40,30 @@ export default {
       type: Object,
       required: true,
     },
+    owners: {
+      type: Array,
+      required: true,
+    },
   },
+  data:() => ({
+    clientName: ''
+  }),
+  mounted() {
+    this.setClientName()
+  },
+  methods: {
+    setClientName() {
+      this.clientName = this.owners.find((o) => o.id === this.local.client).username
+    }
+  }
+
 }
 </script>
 <style>
 @media (min-width: 1000px) {
-td {
- padding: 1rem;
-}
+  td {
+    padding: 1rem;
+  }
 }
 @media (max-width: 1000px) {
   td {
@@ -61,7 +83,6 @@ td {
   cursor: pointer;
 }
 td p {
-      line-break: anywhere;
+  line-break: anywhere;
 }
-
 </style>

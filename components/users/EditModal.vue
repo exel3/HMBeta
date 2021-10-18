@@ -4,30 +4,25 @@
       <label>Nombre de usuario:</label>
       <BaseInput
         :valueinput="user.username"
-        :status="status"
         @input="newUser.username = $event"
       />
        <label>Password:</label>
       <BaseInput
         placeholder="No visible"
-        :status="status"
      @input="newUser.password = $event"
       />
          <label>Correo electronico:</label>
       <BaseInput
         :valueinput="user.emailAddress"
-        :status="status"
        @input="newUser.emailAddress = $event"
       />
 
       <div class="tdOptions">
         <BaseButtonEdit
-          v-if="status === true"
           backcolor="#f7fafc"
           bordercolor="#f7fafc"
           text="edit.svg"
           @click="
-            status = !status
             $emit('click:edit')
           "
         />

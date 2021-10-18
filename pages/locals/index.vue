@@ -1,29 +1,31 @@
 <template lang="">
-  <section>
+<Loading v-if="$fetchState.pending" class="fetchState" />
+  <p v-else-if="$fetchState.error" class="fetchState">Error al cargar los datos</p>
+  <section v-else>
     <article class="newlocal">
       <div class="titleCard"><p>Agregar nuevo local</p></div>
       <div class="contentCard">
         <form>
           <div>
-          <label for="location_address">Nombre</label>
-          <input id="location_address" v-model="newlocal.name" type="location_address" autocomplete="off">
+          <label for="locationAddress">Nombre</label>
+          <input id="locationAddress" v-model="newlocal.name" type="locationAddress" :disabled="loadingMode" autocomplete="off">
           </div>
           <div>
           <label for="contraseña">Direccion</label>
-          <input id="contraseña" v-model="newlocal.location_address" type="text"  autocomplete="off">
+          <input id="contraseña" v-model="newlocal.locationAddress" type="text"  :disabled="loadingMode" autocomplete="off">
           </div>
            <div>
           <label for="usuario">Ciudad</label>
-          <input id="usuario"  v-model="newlocal.location_city_name" type="text" name="newlocal" autocomplete="off">
+          <input id="usuario"  v-model="newlocal.locationCityName" type="text" name="newlocal" :disabled="loadingMode" autocomplete="off">
           </div>
-           <div>
+            <div>
           <label for="usuario">Pais</label>
-          <input id="usuario"  v-model="newlocal.location_country_name" type="text" name="newlocal" autocomplete="off">
+          <input id="usuario"  v-model="newlocal.locationCountryName" type="text" name="newlocal" :disabled="loadingMode" autocomplete="off">
           </div>
         </form>
       </div>
       <div class="containerAddBtn">
-        <button @click.prevent="addNewlocal()">Agregar</button>
+        <button :disabled="loadingMode" @click.prevent="addNewlocal">Agregar</button>
       </div>
     </article>
     <article class="localList">
@@ -51,6 +53,7 @@
           </div>
         </div>
        </div>
+        <div class="bodyTableContainer">
      <table>
 	<thead>
 	<tr>
@@ -62,111 +65,243 @@
 	</tr>
 	</thead>
 	<tbody>
-<BaseRow v-for="local in localsFilter" 
+<BaseRow v-for="local in tableFilter" 
 :key="local.id" 
 :local="local"
-@click="showDeleteModal = true; localSelected = local" 
-@update:local="updatelocal(local)" 
+@click="showDeleteModal = true; localSelected = local"  
 @click:delete="showDeleteModal=true; localSelected=local"
-@cancel:click="cancelClick(local)"
+@click:edit="showEditModal=true; localSelected=local"
 />
 	</tbody>
+
 </table>
+  </div>
     </article>
+    <EditModal v-if="showEditModal" :local="localSelected" @click:cancel="showEditModal=false" @update:local="updatelocal($event); showEditModal=false" @cancel:click="showEditModal=false"  />
     <DeleteModal v-if="showDeleteModal" @delete:local="deletelocal" @cancel:delete="showDeleteModal = false"/>
   </section>
 </template>
 <script>
-import DeleteModal from '@/components/users/DeleteModal.vue'
-import BaseRow from '~/components/locals/BaseRow.vue'
+import DeleteModal from '@/components/locals/DeleteModal.vue'
+import EditModal from '@/components/locals/EditModal.vue'
+import BaseRow from '@/components/locals/BaseRow.vue'
+import Loading from '@/components/ui/Loading.vue'
 export default {
   name: 'Locals',
   components: {
     DeleteModal,
+    EditModal,
     BaseRow,
+    Loading,
   },
   data: () => ({
     currentlocals: [],
     localSelected: {},
-    newlocal: { name: '', location_address: '', location_city_name: '', location_country_name: '',id: null },
+    newlocal: { name: '', locationAddress: '', locationCityName: '', locationCountryName: '',id: null },
     showDeleteModal: false,
+    showEditModal: false,
     searchValue: '',
-    localsFilter: []
+    tableFilter: [],
+    loadingMode: false,
   }),
-  mounted() {
-    this.getlocals()
+  async fetch() {
+    await this.$axios
+      .$get('/api/getAllLocals')
+      .then((response) => {
+        this.currentlocals = response.locals
+      this.tableFilter = response.locals
+      })
+      .catch((e) => {
+        console.log(e)
+      })
   },
   methods: {
-    cancelClick(local) {
-      this.getlocals()
+   async getlocals(){
+         this.loadingMode = true
+      await this.$axios
+      .$get('/api/getAlllocals')
+      .then((response) => {
+        this.currentlocals = response.locals
+      this.tableFilter = response.locals
+         this.loadingMode = false
+      })
+      .catch((e) => {
+        console.log(e)
+           this.loadingMode = false
+      })
     },
-    getlocals() {
-      this.currentlocals = [
-        {
-          name: 'Matria',
-          location_address: 'Pellegrini 1000',
-          location_city_name: 'Rosario',
-          location_country_name: 'Argentina',
-          id: 12323,
-        },
-        {
-          name: 'KingBeer',
-          location_address: 'Pellegrini 1000',
-          location_city_name: 'Rosario',
-          location_country_name: 'Argentina',
-          id: 134543,
-        },
-        {
-          name: 'Worldbeer',
-          location_address: 'Pellegrini 1000',
-          location_city_name: 'Rosario',
-          location_country_name: 'Argentina',
-          id: 34543,
-        },
-      ]
-      this.localsFilter = this.currentlocals
-    },
-     searchFilter() {
-      this.localsFilter = this.currentlocals.filter((u) =>
-        u.name.toLowerCase().includes(this.searchValue.toLowerCase()) || u.location_address.toLowerCase().includes(this.searchValue.toLowerCase()) 
+    searchFilter() {
+      this.tableFilter = this.currentlocals.filter(
+        (u) =>
+          u.name.toLowerCase().includes(this.searchValue.toLowerCase()) ||
+          u.locationAddress.toLowerCase().includes(this.searchValue.toLowerCase())
       )
     },
     addNewlocal() {
-      if (this.newlocal.name.length < 8) {
+        if (this.newlocal.name.length < 1) {
         this.$toasted.show(
-          `El nombre de usuario debe contener 8 o mas caracteres`,
+          `El nombre no puede estar vacio`,
           {
             theme: 'toasted-primary',
             position: 'top-right',
             duration: 5000,
           }
         )
-      } else if (this.newlocal.location_city_name.length < 8) {
-        this.$toasted.show(`La contraseña debe contener 8 o mas caracteres`, {
+         this.loadingMode = false
+      } else if (this.newlocal.locationAddress.length < 0) {
+        this.$toasted.show(
+          `La direccion no puede estar vacia`,
+          {
+            theme: 'toasted-primary',
+            position: 'top-right',
+            duration: 10000,
+          }
+        )
+         this.loadingMode = false
+      } 
+      else {
+        const name = this.newlocal.name
+        const locationAddress = this.newlocal.locationAddress
+        const locationCityName = this.newlocal.locationCityName
+        const body = { name, locationAddress, locationCityName }
+        console.log(body)
+        this.$toasted.show(`Guardando cambios..`, {
           theme: 'toasted-primary',
           position: 'top-right',
           duration: 5000,
         })
-      } else if (this.newlocal.location_address) {
-        this.$toasted.show(`Formato de location_address incorrecto`, {
-          theme: 'toasted-primary',
-          position: 'top-right',
-          duration: 5000,
-        })
-      } else {
-        this.newlocal.id = Date.now()
-        this.currentlocals.push(this.newlocal)
+        this.$axios
+          .$post('/api/createNewClient', body)
+          .then((res) => {
+            this.newlocal.id = res.id
+            this.currentlocals.push(this.newlocal)
+            this.$toasted.show(`Cambios guardados`, {
+              theme: 'toasted-primary',
+              position: 'top-right',
+              duration: 5000,
+            })
+            this.loadingMode = false
+          })
+          .catch((e) => {
+            if (
+              JSON.stringify(e.response.data.error['Errors List']) ===
+              '{"name error":"name in use"}'
+            ) {
+              this.$toasted.show(`ERROR: Nombre de usuario en uso`, {
+                theme: 'toasted-primary',
+                position: 'top-right',
+                duration: 10000,
+              })
+            } else if (
+              JSON.stringify(e.response.data.error['Errors List']) ===
+              '{"locationAddress error":"locationAddress in use"}'
+            ) {
+              this.$toasted.show(`ERROR: Email en uso`, {
+                theme: 'toasted-primary',
+                position: 'top-right',
+                duration: 10000,
+              })
+            } else {
+              this.$toasted.show(
+                `Error al crear cliente: ${JSON.stringify(
+                  e.response.data.error['Errors List']
+                )}`,
+                {
+                  theme: 'toasted-primary',
+                  position: 'top-right',
+                  duration: 5000,
+                }
+              )
+            }
+            console.log(e.response.data.error['Errors List'])
+            this.loadingMode = false
+          })
       }
     },
     updatelocal(localC) {
-      // TODO: connection with update local endpoint
+      this.loadingMode = true
+      const localID = localC.id
+      const body = localC
+      this.$axios
+        .$put(`/api/updateLocal/${localID}`, body)
+        .then((res) => {
+          this.newlocal.id = res.id
+          this.currentlocals.push(this.newlocal)
+          this.$toasted.show(`Cambios guardados`, {
+            theme: 'toasted-primary',
+            position: 'top-right',
+            duration: 5000,
+          })
+          this.getlocals()
+          this.loadingMode = false
+        })
+        .catch((e) => {
+          if (
+            JSON.stringify(e.response.data.error['Errors List']) ===
+            '{"name error":"name in use"}'
+          ) {
+            this.$toasted.show(`ERROR: Nombre de usuario en uso`, {
+              theme: 'toasted-primary',
+              position: 'top-right',
+              duration: 10000,
+            })
+          } else if (
+            JSON.stringify(e.response.data.error['Errors List']) ===
+            '{"locationAddress error":"locationAddress in use"}'
+          ) {
+            this.$toasted.show(`ERROR: Email en uso`, {
+              theme: 'toasted-primary',
+              position: 'top-right',
+              duration: 10000,
+            })
+          } else {
+            this.$toasted.show(
+              `Error al actualizar local: ${JSON.stringify(
+                e.response.data.error['Errors List']
+              )}`,
+              {
+                theme: 'toasted-primary',
+                position: 'top-right',
+                duration: 5000,
+              }
+            )
+          }
+          this.loadingMode = false
+        })
     },
     deletelocal() {
-      this.currentlocals = this.currentlocals.filter(
-        (u) => u.id !== this.localSelected.id
-      )
-      this.showDeleteModal = false
-      this.localsFilter = this.currentlocals
+      this.loadingMode = true
+      const clientID = this.localSelected.id
+
+      this.$axios
+        .$delete(`/api/deleteClient/${clientID}`)
+        .then((res) => {
+          this.$toasted.show(`Cambios guardados`, {
+            theme: 'toasted-primary',
+            position: 'top-right',
+            duration: 5000,
+          })
+          this.currentlocals = this.currentlocals.filter(
+            (u) => u.id !== this.localSelected.id
+          )
+          this.showDeleteModal = false
+          this.tableFilter = this.currentlocals
+          this.loadingMode = false
+        })
+        .catch((e) => {
+          this.$toasted.show(
+            `Error al borrar cliente: ${JSON.stringify(
+              e.response.data.error['Errors List']
+            )}`,
+            {
+              theme: 'toasted-primary',
+              position: 'top-right',
+              duration: 5000,
+            }
+          )
+
+          this.loadingMode = false
+        })
     },
   },
 }
@@ -177,22 +312,22 @@ export default {
     padding: 0 0.1rem;
   }
   td {
-    padding: 0.5rem 0.1rem;
+    padding: 0.1rem 0.1rem;
   }
   th {
     padding: 0.5rem 0.1rem;
   }
-    .newlocal {
-  max-height: 25rem;
-}
-  .titleCard {
-  display: grid;
-  grid-auto-flow: row;
-  justify-content: center;
-  gap: 1rem 0;
+  .newlocal {
+    max-height: 25rem;
   }
-    .contentCard form {
-    display:grid;
+  .titleCard {
+    display: grid;
+    grid-auto-flow: row;
+    justify-content: center;
+    gap: 1rem 0;
+  }
+  .contentCard form {
+    display: grid;
     grid-auto-flow: row;
     align-items: center;
     gap: 1rem 0;
@@ -203,24 +338,23 @@ export default {
     padding: 0 5rem;
   }
   td {
-    padding: 1rem;
+    padding: 0.5rem;
   }
-
   th {
-    padding: 1rem;
+    padding: 0.5rem;
   }
-    .newlocal {
-  max-height: 15rem;
-}
-    .titleCard {
-  display: grid;
-  grid-auto-flow: column;
-  justify-content: space-between;
+  .newlocal {
+    max-height: 15rem;
+  }
+  .titleCard {
+    display: grid;
+    grid-auto-flow: column;
+    justify-content: space-between;
   }
   .contentCard form {
-      display: grid;
-  grid-auto-flow: column;
-  gap: 0 1rem;
+    display: grid;
+    grid-auto-flow: column;
+    gap: 0 1rem;
   }
 }
 section {
@@ -240,11 +374,16 @@ article {
   box-shadow: 0 0 2rem 0 rgb(136 152 170 / 15%);
   border-radius: 0.375rem;
   z-index: 2;
-  overflow: hidden;
 }
 
+.bodyTableContainer {
+ overflow-y:scroll;
+ width: 100%;
+ height: 35rem;
+}
 .localList {
-  min-height: 40rem;
+  height: 40rem;
+   overflow: hidden;
 }
 
 .titleCard {
@@ -253,6 +392,11 @@ article {
   margin-bottom: 0;
   background-color: #fff;
   border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+.fetchState {
+  position: absolute;
+  z-index: 50;
+  color: white;
 }
 
 .titleCard p {
@@ -278,7 +422,7 @@ input {
   padding: 0.625rem 0.75rem;
   font-weight: 400;
   line-height: 1.5;
-  color: #8898aa;
+  color: #656a6f;
   background-color: #fff;
   background-clip: padding-box;
   border: 1px solid #dee2e6;
@@ -352,6 +496,9 @@ td {
   text-transform: none;
   color: #525f7f;
 }
+.newlocal {
+  overflow: hidden;
+}
 .searchContainer {
   height: 100%;
   width: 20rem;
@@ -369,7 +516,7 @@ td {
 .searchContainer input {
   box-sizing: border-box;
   height: 2.5rem;
-   padding: 0 3rem;
+  padding: 0 3rem;
   outline: none;
   border: 1px solid #dcdfe6;
   border-radius: 4px;
@@ -383,7 +530,7 @@ td {
 }
 .clearIcon {
   position: absolute;
-  top:0.55rem;
+  top: 0.55rem;
   left: calc(100% - 3rem);
   z-index: 1;
   cursor: pointer;

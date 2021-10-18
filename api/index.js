@@ -11,6 +11,7 @@ module.exports = { path: '/api', handler: app }
 const getToken = (req, res) => {
   const cookies = new Cookies(req, res)
   const token = cookies.get('token')
+  console.log(token)
   return token
 }
 
@@ -154,6 +155,46 @@ app.delete('/deleteClient/:clientID', (req,res) => {
       { authorization: token }
   }
   axios.delete(`https://happymatch.herokuapp.com/api/client/delete/${clientID}`,  headers)
+  .then(
+    response => {
+      res.json(response.data)
+    }
+  )
+  .catch(e => {
+    res.statusCode = e.response.status
+    res.json({
+      error: e.response.data
+    })
+  })
+})
+app.get('/getAllLocals', (req,res) => {
+  const page = 1
+  const token = getToken(req, res)
+  const get = { headers: { Authorization: token } }
+  axios.get(`https://happymatch.herokuapp.com/api/local/getAllLocals/page/${page}`, get)
+  .then(
+    response => {
+      res.json(response.data)
+    }
+  )
+  .catch(e => {
+    res.statusCode = e.response.status
+    res.json({
+      error: e.message
+    })
+  })
+})
+app.put('/updateLocal/:localID', (req,res) => {
+  const { localID } = req.params
+  const body = req.body
+  const token = getToken(req, res)
+  const headers = {
+    headers:
+      { authorization: token }
+  }
+  const data = body
+  console.log(body.clientID)
+  axios.put(`https://happymatch.herokuapp.com/api/local/update/${localID}`, data,  headers)
   .then(
     response => {
       res.json(response.data)

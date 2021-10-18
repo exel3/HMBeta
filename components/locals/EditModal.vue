@@ -21,13 +21,6 @@
 
       <div class="tdOptions">
         <BaseButtonEdit
-          backcolor="#f7fafc"
-          bordercolor="#f7fafc"
-          text="edit.svg"
-          @click="$emit('click:edit')"
-        />
-
-        <BaseButtonEdit
           backcolor="#5e72e4"
           bordercolor="#5e72e4"
           text="Confirmar"
@@ -98,7 +91,7 @@ export default {
 </script>
 <style scoped>
 .editModalContainer {
-  position: absolute;
+  position: fixed;
   height: 100%;
   width: 100%;
   z-index: 2;
@@ -106,6 +99,8 @@ export default {
   backdrop-filter: blur(2px);
   box-sizing: border-box;
   overflow: hidden;
+  top:65px;
+  left: 0;
 }
 .editModal {
   position: absolute;

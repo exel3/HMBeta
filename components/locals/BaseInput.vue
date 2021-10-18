@@ -30,7 +30,7 @@ export default {
       border: none;
       background: transparent;
       height: 2rem;
-      width: 100%;
+     width: calc(100% - 0.5rem);
       padding: 0.3rem;
 }
 .inputBaseAlert {
@@ -39,7 +39,7 @@ export default {
      border-radius: 0.2rem;
       background: transparent;
       height: 100%;
-      width: 100%;
+     width: calc(100% - 0.5rem);
 }
 .inputBase:enabled {
    border: 1px solid #dee2e6;

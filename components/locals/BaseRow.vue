@@ -38,8 +38,17 @@ export default {
 }
 </script>
 <style>
+@media (min-width: 1000px) {
 td {
-  padding: 1rem;
+ padding: 1rem;
+}
+}
+@media (max-width: 1000px) {
+  td {
+    padding: 0.1rem 0.5rem;
+  }
+}
+td {
   border-bottom: 1px solid #ebeef5;
   line-height: 1;
   text-align: start;
@@ -50,6 +59,9 @@ td {
 }
 .tdOptions img {
   cursor: pointer;
+}
+td p {
+      line-break: anywhere;
 }
 
 </style>

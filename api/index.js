@@ -167,6 +167,97 @@ app.delete('/deleteClient/:clientID', (req,res) => {
     })
   })
 })
+app.get('/getAllAdmins', (req,res) => {
+  const page = 1
+  const token = getToken(req, res)
+  const get = { headers: { Authorization: token } }
+  axios.get(`https://happymatch.herokuapp.com/api/admin/getAllAdmins/page/${page}`, get)
+  .then(
+    response => {
+      res.json(response.data)
+    }
+  )
+  .catch(e => {
+    res.statusCode = e.response.status
+    res.json({
+      error: e.message
+    })
+  })
+})
+app.post('/createNewAdmin', (req,res) => {
+  const body = req.body
+  const token = getToken(req, res)
+  const headers = {
+    headers:
+      { authorization: token }
+  }
+  const data = {
+      username: body.username,
+      emailAddress: body.emailAddress,
+      password: body.password,
+  }
+
+  axios.post('https://happymatch.herokuapp.com/api/admin/create', data,  headers)
+  .then(
+    response => {
+      res.json(response.data)
+    }
+  )
+  .catch(e => {
+    console.log(e.response.data)
+    res.statusCode = e.response.status
+    res.json({
+      error: e.response.data
+    })
+  })
+})
+app.put('/updateAdmin/:adminID', (req,res) => {
+  const { adminID } = req.params
+  const body = req.body
+  const token = getToken(req, res)
+  const headers = {
+    headers:
+      { authorization: token }
+  }
+  const data = {
+      username: body.username,
+      emailAddress: body.emailAddress,
+      password: body.password,
+  }
+
+  axios.put(`https://happymatch.herokuapp.com/api/admin/update/${adminID}`, data,  headers)
+  .then(
+    response => {
+      res.json(response.data)
+    }
+  )
+  .catch(e => {
+    res.statusCode = e.response.status
+    res.json({
+      error: e.response.data
+    })
+  })
+})
+app.delete('/deleteAdmin/:adminID', (req,res) => {
+  const { adminID } = req.params
+  const token = getToken(req, res)
+  const headers = {
+    headers:
+      { authorization: token }
+  }
+  axios.delete(`https://happymatch.herokuapp.com/api/admin/delete/${adminID}`,  headers)
+  .then(
+    response => {
+      res.json(response.data)
+    }
+  )
+  .catch(e => {
+    res.statusCode = e.response.status
+    res.json({
+      error: e.response.data
+    })
+  })
+})
 app.get('/getAllLocals', (req,res) => {
   const page = 1
   const token = getToken(req, res)

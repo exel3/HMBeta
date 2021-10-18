@@ -11,14 +11,24 @@ export default {
 </script>
 
 <style scoped>
+@media (max-width: 1000px) {
+  .loadingContainer{
+width: 100%;
+  }
+  
+}
+@media (min-width: 1000px) {
+  .loadingContainer{
+width: calc(100% - 10rem);
+  }
+  
+}
  .loadingContainer {
 position:absolute;
-width: calc(100% - 10rem);
 height: 100%;
 display: grid;
 align-items: center;
 justify-content: center;
-backdrop-filter: blur(4px)
  }
  .spinner {
    border: 4px solid #4488fe;

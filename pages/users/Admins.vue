@@ -1,25 +1,27 @@
 <template lang="">
-  <section>
+<Loading v-if="$fetchState.pending" class="fetchState" />
+  <p v-else-if="$fetchState.error" class="fetchState">Error al cargar los datos</p>
+  <section v-else>
     <article class="newUser">
       <div class="titleCard"><p>Agregar nuevo administrador</p></div>
       <div class="contentCard">
         <form>
           <div>
-          <label for="email">Email</label>
-          <input id="email" v-model="newUser.email" type="email" autocomplete="off">
+          <label for="emailAddress">Email</label>
+          <input id="emailAddress" v-model="newUser.emailAddress" type="emailAddress" :disabled="loadingMode" autocomplete="off">
           </div>
           <div>
           <label for="contraseña">Contraseña</label>
-          <input id="contraseña" v-model="newUser.password" type="text"  autocomplete="off">
+          <input id="contraseña" v-model="newUser.password" type="text"  :disabled="loadingMode" autocomplete="off">
           </div>
            <div>
           <label for="usuario">Usuario</label>
-          <input id="usuario"  v-model="newUser.userName" type="text" name="newUser" autocomplete="off">
+          <input id="usuario"  v-model="newUser.username" type="text" name="newUser" :disabled="loadingMode" autocomplete="off">
           </div>
         </form>
       </div>
       <div class="containerAddBtn">
-        <button @click.prevent="addNewUser()">Agregar</button>
+        <button :disabled="loadingMode" @click.prevent="addNewUser">Agregar</button>
       </div>
     </article>
     <article class="userList">
@@ -47,6 +49,7 @@
           </div>
         </div>
        </div>
+        <div class="bodyTableContainer">
      <table>
 	<thead>
 	<tr>
@@ -60,107 +63,257 @@
 <BaseRow v-for="user in tableFilter" 
 :key="user.id" 
 :user="user"
-@click="showDeleteModal = true; userSelected = user" 
-@update:user="updateUser(user)" 
+@click="showDeleteModal = true; userSelected = user"  
 @click:delete="showDeleteModal=true; userSelected=user"
-@cancel:click="cancelClick(user)"
+@click:edit="showEditModal=true; userSelected=user"
 />
 	</tbody>
+
 </table>
+  </div>
     </article>
+    <EditModal v-if="showEditModal" :user="userSelected" @click:cancel="showEditModal=false" @update:user="updateUser($event); showEditModal=false" @cancel:click="showEditModal=false"  />
     <DeleteModal v-if="showDeleteModal" @delete:user="deleteUser" @cancel:delete="showDeleteModal = false"/>
   </section>
 </template>
 <script>
 import DeleteModal from '@/components/users/DeleteModal.vue'
-import BaseRow from '~/components/users/BaseRow.vue'
+import EditModal from '@/components/users/EditModal.vue'
+import BaseRow from '@/components/users/BaseRow.vue'
+import Loading from '@/components/ui/Loading.vue'
 export default {
-  name: 'Admins',
+  name: 'Owners',
   components: {
     DeleteModal,
+    EditModal,
     BaseRow,
+    Loading,
   },
   data: () => ({
     currentUsers: [],
     userSelected: {},
-    newUser: { userName: '', email: '', password: '', id: null },
+    newUser: { username: '', emailAddress: '', password: '', id: null },
     showDeleteModal: false,
+    showEditModal: false,
     searchValue: '',
-    tableFilter: []
+    tableFilter: [],
+    loadingMode: false,
   }),
-  mounted() {
-    this.getUsers()
+  async fetch() {
+    await this.$axios
+      .$get('/api/getAllAdmins')
+      .then((response) => {
+        this.currentUsers = response.admins
+      this.tableFilter = response.admins
+      })
+      .catch((e) => {
+        console.log(e)
+      })
   },
   methods: {
-    cancelClick(user) {
-      this.getUsers()
+   async getUsers(){
+         this.loadingMode = true
+      await this.$axios
+      .$get('/api/getAllAdmins')
+      .then((response) => {
+        this.currentUsers = response.admins
+      this.tableFilter = response.admins
+         this.loadingMode = false
+      })
+      .catch((e) => {
+        console.log(e)
+           this.loadingMode = false
+      })
     },
-    getUsers() {
-      this.currentUsers = [
-        {
-          userName: 'Guillermo',
-          email: 'guillermo@happymatch.com',
-          password: '123456Sable',
-          id: 12323,
-        },
-        {
-          userName: 'Mateo',
-          email: 'mateo@happymatch.com',
-          password: 'penion12',
-          id: 134543,
-        },
-        {
-          userName: 'Prueba',
-          email: 'prueba@happymatch.com',
-          password: 'zp1234',
-          id: 34543,
-        },
-      ]
-      this.tableFilter = this.currentUsers
-    },
-     searchFilter() {
-      this.tableFilter = this.currentUsers.filter((u) =>
-        u.userName.toLowerCase().includes(this.searchValue.toLowerCase()) || u.email.toLowerCase().includes(this.searchValue.toLowerCase()) 
+    searchFilter() {
+      this.tableFilter = this.currentUsers.filter(
+        (u) =>
+          u.username.toLowerCase().includes(this.searchValue.toLowerCase()) ||
+          u.emailAddress.toLowerCase().includes(this.searchValue.toLowerCase())
       )
     },
     addNewUser() {
-      const reEmail =
+      this.loadingMode = true
+      const regEmailAddress =
         /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
-      if (this.newUser.userName.length < 8) {
+      const regUser = /^(?=[a-zA-Z0-9._]{5,20}$)(?!.*[_.]{2})[^_.].*[^_.]$/
+      const regPassword =
+        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,16}/
+
+      if (!regUser.test(this.newUser.username)) {
         this.$toasted.show(
-          `El nombre de usuario debe contener 8 o mas caracteres`,
+          `El nombre de usuario debe contener entre 5 y 10 caracteres`,
           {
             theme: 'toasted-primary',
             position: 'top-right',
             duration: 5000,
           }
         )
-      } else if (this.newUser.password.length < 8) {
-        this.$toasted.show(`La contraseña debe contener 8 o mas caracteres`, {
-          theme: 'toasted-primary',
-          position: 'top-right',
-          duration: 5000,
-        })
-      } else if (!reEmail.test(this.newUser.email)) {
+         this.loadingMode = false
+      } else if (!regPassword.test(this.newUser.password)) {
+        this.$toasted.show(
+          `La contraseña debe contener mínimo 8 y máximo 16 caracteres, al menos una letra mayúscula, una letra minúscula, un número y un carácter especial`,
+          {
+            theme: 'toasted-primary',
+            position: 'top-right',
+            duration: 10000,
+          }
+        )
+         this.loadingMode = false
+      } else if (!regEmailAddress.test(this.newUser.emailAddress)) {
         this.$toasted.show(`Formato de email incorrecto`, {
           theme: 'toasted-primary',
           position: 'top-right',
           duration: 5000,
         })
+         this.loadingMode = false
       } else {
-        this.newUser.id = Date.now()
-        this.currentUsers.push(this.newUser)
+        const username = this.newUser.username
+        const emailAddress = this.newUser.emailAddress
+        const password = this.newUser.password
+        const body = { username, emailAddress, password }
+        console.log(body)
+        this.$toasted.show(`Guardando cambios..`, {
+          theme: 'toasted-primary',
+          position: 'top-right',
+          duration: 5000,
+        })
+        this.$axios
+          .$post('/api/createNewAdmin', body)
+          .then((res) => {
+            this.newUser.id = res.id
+            this.currentUsers.push(this.newUser)
+            this.$toasted.show(`Cambios guardados`, {
+              theme: 'toasted-primary',
+              position: 'top-right',
+              duration: 5000,
+            })
+            this.loadingMode = false
+          })
+          .catch((e) => {
+            if (
+              JSON.stringify(e.response.data.error['Errors List']) ===
+              '{"username error":"Username in use"}'
+            ) {
+              this.$toasted.show(`ERROR: Nombre de usuario en uso`, {
+                theme: 'toasted-primary',
+                position: 'top-right',
+                duration: 10000,
+              })
+            } else if (
+              JSON.stringify(e.response.data.error['Errors List']) ===
+              '{"emailAddress error":"EmailAddress in use"}'
+            ) {
+              this.$toasted.show(`ERROR: Email en uso`, {
+                theme: 'toasted-primary',
+                position: 'top-right',
+                duration: 10000,
+              })
+            } else {
+              this.$toasted.show(
+                `Error al crear administrador: ${JSON.stringify(
+                  e.response.data.error['Errors List']
+                )}`,
+                {
+                  theme: 'toasted-primary',
+                  position: 'top-right',
+                  duration: 5000,
+                }
+              )
+            }
+            console.log(e.response.data.error['Errors List'])
+            this.loadingMode = false
+          })
       }
     },
     updateUser(userC) {
-      // TODO: connection with update user endpoint
+      this.loadingMode = true
+      const AdminID = userC.id
+      const body = {
+        username: userC.username,
+        emailAddress: userC.emailAddress,
+        password: userC.password,
+      }
+      this.$axios
+        .$put(`/api/updateAdmin/${AdminID}`, body)
+        .then((res) => {
+          this.newUser.id = res.id
+          this.currentUsers.push(this.newUser)
+          this.$toasted.show(`Cambios guardados`, {
+            theme: 'toasted-primary',
+            position: 'top-right',
+            duration: 5000,
+          })
+          this.getUsers()
+          this.loadingMode = false
+        })
+        .catch((e) => {
+          if (
+            JSON.stringify(e.response.data.error['Errors List']) ===
+            '{"username error":"Username in use"}'
+          ) {
+            this.$toasted.show(`ERROR: Nombre de usuario en uso`, {
+              theme: 'toasted-primary',
+              position: 'top-right',
+              duration: 10000,
+            })
+          } else if (
+            JSON.stringify(e.response.data.error['Errors List']) ===
+            '{"emailAddress error":"EmailAddress in use"}'
+          ) {
+            this.$toasted.show(`ERROR: Email en uso`, {
+              theme: 'toasted-primary',
+              position: 'top-right',
+              duration: 10000,
+            })
+          } else {
+            this.$toasted.show(
+              `Error al actualizar Admine: ${JSON.stringify(
+                e.response.data.error['Errors List']
+              )}`,
+              {
+                theme: 'toasted-primary',
+                position: 'top-right',
+                duration: 5000,
+              }
+            )
+          }
+          this.loadingMode = false
+        })
     },
     deleteUser() {
-      this.currentUsers = this.currentUsers.filter(
-        (u) => u.id !== this.userSelected.id
-      )
-      this.showDeleteModal = false
-      this.tableFilter = this.currentUsers
+      this.loadingMode = true
+      const AdminID = this.userSelected.id
+
+      this.$axios
+        .$delete(`/api/deleteAdmin/${AdminID}`)
+        .then((res) => {
+          this.$toasted.show(`Cambios guardados`, {
+            theme: 'toasted-primary',
+            position: 'top-right',
+            duration: 5000,
+          })
+          this.currentUsers = this.currentUsers.filter(
+            (u) => u.id !== this.userSelected.id
+          )
+          this.showDeleteModal = false
+          this.tableFilter = this.currentUsers
+          this.loadingMode = false
+        })
+        .catch((e) => {
+          this.$toasted.show(
+            `Error al borrar Admine: ${JSON.stringify(
+              e.response.data.error['Errors List']
+            )}`,
+            {
+              theme: 'toasted-primary',
+              position: 'top-right',
+              duration: 5000,
+            }
+          )
+
+          this.loadingMode = false
+        })
     },
   },
 }
@@ -171,22 +324,22 @@ export default {
     padding: 0 0.1rem;
   }
   td {
-    padding: 0.5rem 0.1rem;
+    padding: 0.1rem 0.1rem;
   }
   th {
     padding: 0.5rem 0.1rem;
   }
   .newUser {
-  max-height: 25rem;
-}
+    max-height: 25rem;
+  }
   .titleCard {
-  display: grid;
-  grid-auto-flow: row;
-  justify-content: center;
-  gap: 1rem 0;
+    display: grid;
+    grid-auto-flow: row;
+    justify-content: center;
+    gap: 1rem 0;
   }
   .contentCard form {
-    display:grid;
+    display: grid;
     grid-auto-flow: row;
     align-items: center;
     gap: 1rem 0;
@@ -197,24 +350,23 @@ export default {
     padding: 0 5rem;
   }
   td {
-    padding: 1rem;
+    padding: 0.5rem;
   }
-
   th {
-    padding: 1rem;
+    padding: 0.5rem;
   }
   .newUser {
-  max-height: 15rem;
-}
-    .titleCard {
-  display: grid;
-  grid-auto-flow: column;
-  justify-content: space-between;
+    max-height: 15rem;
+  }
+  .titleCard {
+    display: grid;
+    grid-auto-flow: column;
+    justify-content: space-between;
   }
   .contentCard form {
-      display: grid;
-  grid-auto-flow: column;
-  gap: 0 1rem;
+    display: grid;
+    grid-auto-flow: column;
+    gap: 0 1rem;
   }
 }
 section {
@@ -234,12 +386,16 @@ article {
   box-shadow: 0 0 2rem 0 rgb(136 152 170 / 15%);
   border-radius: 0.375rem;
   z-index: 2;
-  overflow: hidden;
 }
 
-
+.bodyTableContainer {
+ overflow-y:scroll;
+ width: 100%;
+ height: 35rem;
+}
 .userList {
-  min-height: 40rem;
+  height: 40rem;
+   overflow: hidden;
 }
 
 .titleCard {
@@ -248,6 +404,11 @@ article {
   margin-bottom: 0;
   background-color: #fff;
   border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+.fetchState {
+  position: absolute;
+  z-index: 50;
+  color: white;
 }
 
 .titleCard p {
@@ -273,7 +434,7 @@ input {
   padding: 0.625rem 0.75rem;
   font-weight: 400;
   line-height: 1.5;
-  color: #8898aa;
+  color: #656a6f;
   background-color: #fff;
   background-clip: padding-box;
   border: 1px solid #dee2e6;
@@ -347,6 +508,9 @@ td {
   text-transform: none;
   color: #525f7f;
 }
+.newUser {
+  overflow: hidden;
+}
 .searchContainer {
   height: 100%;
   width: 20rem;
@@ -364,7 +528,7 @@ td {
 .searchContainer input {
   box-sizing: border-box;
   height: 2.5rem;
-   padding: 0 3rem;
+  padding: 0 3rem;
   outline: none;
   border: 1px solid #dcdfe6;
   border-radius: 4px;
@@ -378,7 +542,7 @@ td {
 }
 .clearIcon {
   position: absolute;
-  top:0.55rem;
+  top: 0.55rem;
   left: calc(100% - 3rem);
   z-index: 1;
   cursor: pointer;

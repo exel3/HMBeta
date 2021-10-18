@@ -49,6 +49,7 @@
           </div>
         </div>
        </div>
+        <div class="bodyTableContainer">
      <table>
 	<thead>
 	<tr>
@@ -62,28 +63,29 @@
 <BaseRow v-for="user in tableFilter" 
 :key="user.id" 
 :user="user"
-@click="showDeleteModal = true; userSelected = user" 
-@update:user="updateUser(user)" 
+@click="showDeleteModal = true; userSelected = user"  
 @click:delete="showDeleteModal=true; userSelected=user"
-@cancel:click="cancelClick"
-@input:username="user.username=$event"
-@input:emailAddress="user.emailAddress=$event"
-@input:password="user.password=$event"
+@click:edit="showEditModal=true; userSelected=user"
 />
 	</tbody>
+
 </table>
+  </div>
     </article>
+    <EditModal v-if="showEditModal" :user="userSelected" @click:cancel="showEditModal=false" @update:user="updateUser($event); showEditModal=false" @cancel:click="showEditModal=false"  />
     <DeleteModal v-if="showDeleteModal" @delete:user="deleteUser" @cancel:delete="showDeleteModal = false"/>
   </section>
 </template>
 <script>
 import DeleteModal from '@/components/users/DeleteModal.vue'
+import EditModal from '@/components/users/EditModal.vue'
 import BaseRow from '@/components/users/BaseRow.vue'
 import Loading from '@/components/ui/Loading.vue'
 export default {
   name: 'Owners',
   components: {
     DeleteModal,
+    EditModal,
     BaseRow,
     Loading,
   },
@@ -92,6 +94,7 @@ export default {
     userSelected: {},
     newUser: { username: '', emailAddress: '', password: '', id: null },
     showDeleteModal: false,
+    showEditModal: false,
     searchValue: '',
     tableFilter: [],
     loadingMode: false,
@@ -108,17 +111,18 @@ export default {
       })
   },
   methods: {
-    async cancelClick() {
-   await this.$axios
+   async getUsers(){
+         this.loadingMode = true
+      await this.$axios
       .$get('/api/getAllClients')
       .then((response) => {
-         this.currentUsers = []
-        this.tableFilter =[]
         this.currentUsers = response.clients
       this.tableFilter = response.clients
+         this.loadingMode = false
       })
       .catch((e) => {
         console.log(e)
+           this.loadingMode = false
       })
     },
     searchFilter() {
@@ -145,6 +149,7 @@ export default {
             duration: 5000,
           }
         )
+         this.loadingMode = false
       } else if (!regPassword.test(this.newUser.password)) {
         this.$toasted.show(
           `La contraseña debe contener mínimo 8 y máximo 16 caracteres, al menos una letra mayúscula, una letra minúscula, un número y un carácter especial`,
@@ -154,12 +159,14 @@ export default {
             duration: 10000,
           }
         )
+         this.loadingMode = false
       } else if (!regEmailAddress.test(this.newUser.emailAddress)) {
         this.$toasted.show(`Formato de email incorrecto`, {
           theme: 'toasted-primary',
           position: 'top-right',
           duration: 5000,
         })
+         this.loadingMode = false
       } else {
         const username = this.newUser.username
         const emailAddress = this.newUser.emailAddress
@@ -237,6 +244,7 @@ export default {
             position: 'top-right',
             duration: 5000,
           })
+          this.getUsers()
           this.loadingMode = false
         })
         .catch((e) => {
@@ -316,7 +324,7 @@ export default {
     padding: 0 0.1rem;
   }
   td {
-    padding: 0.5rem 0.1rem;
+    padding: 0.1rem 0.1rem;
   }
   th {
     padding: 0.5rem 0.1rem;
@@ -342,11 +350,10 @@ export default {
     padding: 0 5rem;
   }
   td {
-    padding: 1rem;
+    padding: 0.5rem;
   }
-
   th {
-    padding: 1rem;
+    padding: 0.5rem;
   }
   .newUser {
     max-height: 15rem;
@@ -379,11 +386,16 @@ article {
   box-shadow: 0 0 2rem 0 rgb(136 152 170 / 15%);
   border-radius: 0.375rem;
   z-index: 2;
-  overflow: hidden;
 }
 
+.bodyTableContainer {
+ overflow-y:scroll;
+ width: 100%;
+ height: 35rem;
+}
 .userList {
-  min-height: 40rem;
+  height: 40rem;
+   overflow: hidden;
 }
 
 .titleCard {
@@ -495,6 +507,9 @@ td {
   font-size: 0.875rem;
   text-transform: none;
   color: #525f7f;
+}
+.newUser {
+  overflow: hidden;
 }
 .searchContainer {
   height: 100%;

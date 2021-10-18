@@ -1,11 +1,11 @@
 <template lang="">
-  <div class='baseButtonContainer' :style="{background: backcolor, border: bordercolor + ' 1px solid'}" @click="$emit('click')">
-    <img :src="getSrc()">
+  <div class='baseButtoEditContainer' :style="{background: backcolor, border: bordercolor + ' 1px solid', color: color}" @click="$emit('click')">
+    <p>{{text}}</p>
   </div>
 </template>
 <script>
 export default {
-  name: 'BaseButtonTable',
+  name: 'BaseButtonEdit',
   props: {
     backcolor: {
       type: String,
@@ -15,21 +15,22 @@ export default {
       type: String,
       default: 'transparent'
     },
-    imgsrc: {
+    text: {
       type: String,
-      default: "edit.svg"
+      required: true
     },
+    color: {
+      type: String,
+      default: 'white'
+    }
   },
   methods: {
-    getSrc() {
-      return require(`@/assets/icons/${this.imgsrc}`)
-    },
   },
 }
 </script>
 <style scoped>
-.baseButtonContainer {
-  padding: 0.1rem 0.4rem;
+.baseButtoEditContainer {
+  padding: 0.5rem 0.4rem;
   user-select: none;
   border-radius: 0.25rem;
   cursor: pointer;

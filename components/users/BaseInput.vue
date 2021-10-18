@@ -29,8 +29,9 @@ export default {
   color: black;
       border: none;
       background: transparent;
-      height: 100%;
+      height: 2rem;
       width: 100%;
+      padding: 0.3rem;
 }
 .inputBaseAlert {
     color: black;

@@ -47,6 +47,7 @@ export default {
 }
 
 .backgroundGreen {
+  left:0;
   position: absolute;
   top: 4rem;
   width: 100%;

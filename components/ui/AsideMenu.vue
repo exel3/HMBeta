@@ -12,7 +12,7 @@
       mainurl="/profile"
       :options="[{ title: 'Editar perfil', url: '/profile' }]"
     />
-    <ItemAsideMenu
+    <ItemAsideMenu v-if="user.type==='admin'"
       title="Usuarios"
       imgsrc="group.svg"
       mainurl="/users/owners/"
@@ -54,6 +54,27 @@ import ItemAsideMenu from './ItemAsideMenu.vue'
 export default {
   name: 'AsideMenu',
   components: { ItemAsideMenu },
+  data: () => ({
+    user: {}
+  }),
+  async fetch() {
+    await this.$axios
+      .$get('/api/getUser')
+      .then((response) => {
+        this.user = response
+        console.log(response)
+      })
+      .catch((e) => {
+          this.$toasted.show(
+          `Error al recuperar el tipo de usuario: ${e}`,
+          {
+            theme: 'toasted-primary',
+            position: 'top-right',
+            duration: 5000,
+          }
+        )
+      })
+  },
   methods: {
     async clearSesion() {
       await this.$axios

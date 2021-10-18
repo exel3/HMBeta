@@ -1,5 +1,5 @@
 <template>
-  <input :value="valueinput" :class="inputBase" :disabled="status" @input="$emit('input', $event.target.value); getBorderColor($event.target.value)">
+  <input :value="valueinput" :class="inputBase" :disabled="status" @input="$emit('input', $event.target.value)">
 </template>
 <script>
 export default {

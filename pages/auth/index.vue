@@ -71,10 +71,10 @@ export default {
      
         const authPromises = [this.$axios.$post(`/api/client/login`, post), this.$axios.$post(`/api/admin/login`, post)]
         Promise.any(authPromises).then((result) => {
-          const { id, locals } = result.data
-          this.setClient({ id, locals })
+          const { type } = result.data
+          this.setUser({...post,type })
             this.loadingMode = false
-          this.$router.push('clients')
+          this.$router.push('locals')
         })
        .catch (error => {
           this.loadingMode = false

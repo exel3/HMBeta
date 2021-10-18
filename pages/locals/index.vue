@@ -15,12 +15,24 @@
           <input id="contraseña" v-model="newlocal.locationAddress" type="text"  :disabled="loadingMode" autocomplete="off">
           </div>
            <div>
-          <label for="usuario">Ciudad</label>
-          <input id="usuario"  v-model="newlocal.locationCityName" type="text" name="newlocal" :disabled="loadingMode" autocomplete="off">
+          <label for="city">Ciudad</label>
+          <input id="city"  v-model="newlocal.locationCityName" type="text" name="newlocal" :disabled="loadingMode" autocomplete="off">
           </div>
             <div>
-          <label for="usuario">Pais</label>
-          <input id="usuario"  v-model="newlocal.locationCountryName" type="text" name="newlocal" :disabled="loadingMode" autocomplete="off">
+          <label for="country">Pais</label>
+          <input id="country"  v-model="newlocal.locationCountryName" type="text" name="newlocal" :disabled="loadingMode" autocomplete="off">
+          </div>
+          <div v-if="user.type==='admin'" class="selectContainer">
+          <label for="owner">Dueño</label>
+        <select id="owner" name="owner" @change="setOwnerSelected($event.target.value)">
+          <option
+            v-for="owner in owners"
+            :key="'dropBox' + owner.id"
+            :value="owner.username"
+          >
+            {{owner.username}}
+          </option>
+        </select>
           </div>
         </form>
       </div>
@@ -95,9 +107,18 @@ export default {
     Loading,
   },
   data: () => ({
+    user: {},
+    owners: [],
+    ownerSelected: {},
     currentlocals: [],
     localSelected: {},
-    newlocal: { name: '', locationAddress: '', locationCityName: '', locationCountryName: '',id: null },
+    newlocal: {
+      name: '',
+      locationAddress: '',
+      locationCityName: '',
+      locationCountryName: '',
+      id: null,
+    },
     showDeleteModal: false,
     showEditModal: false,
     searchValue: '',
@@ -106,72 +127,149 @@ export default {
   }),
   async fetch() {
     await this.$axios
-      .$get('/api/getAllLocals')
+      .$get('/api/getUser')
       .then((response) => {
-        this.currentlocals = response.locals
-      this.tableFilter = response.locals
+        this.user = response
+        console.log(response)
+
+        this.user.type === 'admin'
+          ? this.$axios
+              .$get('/api/getAllLocals')
+              .then((response) => {
+                this.currentlocals = response.locals
+                this.tableFilter = response.locals
+                this.$axios
+                  .$get('/api/getAllClients')
+                  .then((response) => {
+                    this.owners = response.clients
+                  })
+                  .catch((e) => {
+                    this.$toasted.show(`Error al recuperar dueños: ${e}`, {
+                      theme: 'toasted-primary',
+                      position: 'top-right',
+                      duration: 5000,
+                    })
+                  })
+              })
+              .catch((e) => {
+                this.$toasted.show(`Error al recuperar locales: ${e}`, {
+                  theme: 'toasted-primary',
+                  position: 'top-right',
+                  duration: 5000,
+                })
+              })
+          : this.$axios
+              .$get(`/api/getLocalsByClient/${this.user.id}`)
+              .then((response) => {
+                this.currentlocals = response.locals
+                this.tableFilter = response.locals
+              })
+              .catch((e) => {
+                this.$toasted.show(`Error al recuperar locales: ${e}`, {
+                  theme: 'toasted-primary',
+                  position: 'top-right',
+                  duration: 5000,
+                })
+              })
       })
       .catch((e) => {
-        console.log(e)
+        this.$toasted.show(`Error al recuperar el tipo de usuario: ${e}`, {
+          theme: 'toasted-primary',
+          position: 'top-right',
+          duration: 5000,
+        })
       })
   },
   methods: {
-   async getlocals(){
-         this.loadingMode = true
-      await this.$axios
-      .$get('/api/getAlllocals')
-      .then((response) => {
-        this.currentlocals = response.locals
-      this.tableFilter = response.locals
-         this.loadingMode = false
-      })
-      .catch((e) => {
-        console.log(e)
-           this.loadingMode = false
-      })
+    async getlocals() {
+      this.loadingMode = true
+      this.user.type === 'admin'
+        ? await this.$axios
+            .$get('/api/getAllLocals')
+            .then((response) => {
+              this.currentlocals = response.locals
+              this.tableFilter = response.locals
+              this.loadingMode = false
+            })
+            .catch((e) => {
+              this.loadingMode = false
+              this.$toasted.show(`Error al recuperar locales: ${e}`, {
+                theme: 'toasted-primary',
+                position: 'top-right',
+                duration: 5000,
+              })
+            })
+        : this.$axios
+            .$get(`/api/getLocalsByClient/${this.user.id}`)
+            .then((response) => {
+              this.currentlocals = response.locals
+              this.tableFilter = response.locals
+              this.loadingMode = false
+            })
+            .catch((e) => {
+              this.loadingMode = false
+              this.$toasted.show(`Error al recuperar locales: ${e}`, {
+                theme: 'toasted-primary',
+                position: 'top-right',
+                duration: 5000,
+              })
+            })
     },
     searchFilter() {
       this.tableFilter = this.currentlocals.filter(
         (u) =>
           u.name.toLowerCase().includes(this.searchValue.toLowerCase()) ||
-          u.locationAddress.toLowerCase().includes(this.searchValue.toLowerCase())
+          u.locationAddress
+            .toLowerCase()
+            .includes(this.searchValue.toLowerCase())
       )
     },
+    setOwnerSelected(ownerName) {
+      this.ownerSelected = this.owners.find((o) => ownerName === o.username)
+    },
     addNewlocal() {
-        if (this.newlocal.name.length < 1) {
-        this.$toasted.show(
-          `El nombre no puede estar vacio`,
-          {
-            theme: 'toasted-primary',
-            position: 'top-right',
-            duration: 5000,
-          }
-        )
-         this.loadingMode = false
+      this.user.type === 'client' && (this.ownerSelected.id = this.user.id)
+      if (this.newlocal.name.length < 1) {
+        this.$toasted.show(`El nombre no puede estar vacio`, {
+          theme: 'toasted-primary',
+          position: 'top-right',
+          duration: 5000,
+        })
+        this.loadingMode = false
       } else if (this.newlocal.locationAddress.length < 0) {
-        this.$toasted.show(
-          `La direccion no puede estar vacia`,
-          {
-            theme: 'toasted-primary',
-            position: 'top-right',
-            duration: 10000,
-          }
-        )
-         this.loadingMode = false
-      } 
-      else {
+        this.$toasted.show(`La direccion no puede estar vacia`, {
+          theme: 'toasted-primary',
+          position: 'top-right',
+          duration: 10000,
+        })
+        this.loadingMode = false
+      } else if (!this.ownerSelected.id) {
+        this.$toasted.show(`El dueño no puede estar vacio`, {
+          theme: 'toasted-primary',
+          position: 'top-right',
+          duration: 10000,
+        })
+        this.loadingMode = false
+      } else {
         const name = this.newlocal.name
         const locationAddress = this.newlocal.locationAddress
         const locationCityName = this.newlocal.locationCityName
-        const body = { name, locationAddress, locationCityName }
-        console.log(body)
+        const locationCountryName = this.newlocal.locationCountryName
+        const clientID = this.ownerSelected.id
+        const body = {
+          name,
+          locationAddress,
+          locationCityName,
+          locationCountryName,
+          clientID,
+        }
         this.$toasted.show(`Guardando cambios..`, {
           theme: 'toasted-primary',
           position: 'top-right',
           duration: 5000,
         })
         this.$axios
-          .$post('/api/createNewClient', body)
+          .$post('/api/createNewLocal', body)
           .then((res) => {
             this.newlocal.id = res.id
             this.currentlocals.push(this.newlocal)
@@ -187,7 +285,7 @@ export default {
               JSON.stringify(e.response.data.error['Errors List']) ===
               '{"name error":"name in use"}'
             ) {
-              this.$toasted.show(`ERROR: Nombre de usuario en uso`, {
+              this.$toasted.show(`ERROR: Nombre de local en uso`, {
                 theme: 'toasted-primary',
                 position: 'top-right',
                 duration: 10000,
@@ -203,7 +301,7 @@ export default {
               })
             } else {
               this.$toasted.show(
-                `Error al crear cliente: ${JSON.stringify(
+                `Error al crear local: ${JSON.stringify(
                   e.response.data.error['Errors List']
                 )}`,
                 {
@@ -377,13 +475,13 @@ article {
 }
 
 .bodyTableContainer {
- overflow-y:scroll;
- width: 100%;
- height: 35rem;
+  overflow-y: scroll;
+  width: 100%;
+  height: 35rem;
 }
 .localList {
   height: 40rem;
-   overflow: hidden;
+  overflow: hidden;
 }
 
 .titleCard {

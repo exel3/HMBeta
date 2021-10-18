@@ -46,9 +46,11 @@ app.post('/client/login', (req, res) => {
     "password": req.body.password
   }
 
-  axios.post('https://happymatch.herokuapp.com/api/client/login', post)
+axios.post('https://happymatch.herokuapp.com/api/client/login', post)
     .then(response => {
-      const { token, id, username, locals } = response.data
+      const {client, token} = response.data
+      const {id, username } = client
+      const dataClient = {id, username, type:'client'}
       const cookies = new Cookies(req, res)
       if (token) {
 
@@ -57,14 +59,14 @@ app.post('/client/login', (req, res) => {
           httpOnly: true
         })
 
-        cookies.set('user', JSON.stringify({ id, username, locals }), {
+        cookies.set('user', JSON.stringify(dataClient), {
           maxAge: 3600000 * 12,
           httpOnly: true
         })
 
 
         res.json({
-          data: response.data
+          data: dataClient
         })
 
       }
@@ -275,6 +277,47 @@ app.get('/getAllLocals', (req,res) => {
     })
   })
 })
+app.get('/getLocalsByClient/:clientID', (req,res) => {
+  const page = 1
+  const {clientID} = req.params
+  const token = getToken(req, res)
+  const get = { headers: { Authorization: token } }
+  axios.get(`https://happymatch.herokuapp.com/api/local/getAllLocals/client/${clientID}/page/${page}`, get)
+  .then(
+    response => {
+      res.json(response.data)
+    }
+  )
+  .catch(e => {
+    res.statusCode = e.response.status
+    res.json({
+      error: e.message
+    })
+  })
+})
+app.post('/createNewLocal', (req,res) => {
+  const body = req.body
+  const token = getToken(req, res)
+  const headers = {
+    headers:
+      { authorization: token }
+  }
+  const data = body
+
+  axios.post('https://happymatch.herokuapp.com/api/local/create', data,  headers)
+  .then(
+    response => {
+      res.json(response.data)
+    }
+  )
+  .catch(e => {
+    console.log(e.response.data)
+    res.statusCode = e.response.status
+    res.json({
+      error: e.response.data
+    })
+  })
+})
 app.put('/updateLocal/:localID', (req,res) => {
   const { localID } = req.params
   const body = req.body
@@ -306,7 +349,9 @@ app.post('/admin/login', (req, res) => {
 
   axios.post('https://happymatch.herokuapp.com/api/admin/login', post)
     .then(response => {
-      const { token, id, username } = response.data
+      const {token, admin} = response.data
+      const { id, username } = admin
+      const dataAdmin = {id,username, type:'admin'}
       const cookies = new Cookies(req, res)
       if (token) {
 
@@ -315,14 +360,14 @@ app.post('/admin/login', (req, res) => {
           httpOnly: true
         })
 
-        cookies.set('user', JSON.stringify({ id, username }), {
+        cookies.set('user', JSON.stringify(dataAdmin), {
           maxAge: 3600000 * 12,
           httpOnly: true
         })
 
 
         res.json({
-          data: response.data
+          data: dataAdmin
         })
 
       }

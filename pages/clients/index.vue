@@ -5,7 +5,7 @@
       <div class="selectLocalCard">
         <div class="selectContainer">
         <label for="locals">Local</label>
-        <select id="locals" name="cars">
+        <select id="locals" name="locals">
           <option
             v-for="local in locals"
             :key="'dropBox' + local.id"

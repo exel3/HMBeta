@@ -17,7 +17,7 @@
        @input="newUser.emailAddress = $event"
       />
 
-      <div class="tdOptions">
+      <div class="tdOptionsUser">
         <BaseButtonEdit
           backcolor="#5e72e4"
           bordercolor="#5e72e4"
@@ -41,7 +41,7 @@
 import BaseInput from '@/components/users/BaseInput.vue'
 import BaseButtonEdit from '@/components/users/BaseButtonEdit.vue'
 export default {
-  name: 'EditModal',
+  name: 'EditModalUser',
   components: {
     BaseInput,
     BaseButtonEdit,
@@ -145,10 +145,12 @@ export default {
   }
 }
 
-.tdOptions {
+.tdOptionsUser {
   display: grid;
   grid-auto-flow: row;
   gap: 1rem;
-  margin-top: 5rem;
+  position: absolute;
+  bottom: 5rem;
+  width: calc(100% - 2rem);
 }
 </style>

@@ -82,7 +82,7 @@ import EditModal from '@/components/users/EditModal.vue'
 import BaseRow from '@/components/users/BaseRow.vue'
 import Loading from '@/components/ui/Loading.vue'
 export default {
-  name: 'Owners',
+  name: 'Admins',
   components: {
     DeleteModal,
     EditModal,

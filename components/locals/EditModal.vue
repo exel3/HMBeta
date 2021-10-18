@@ -1,6 +1,6 @@
 <template>
-  <div class="editModalContainer">
-    <div class="editModal">
+  <div class="editModalLocalContainer">
+    <div class="editModalLocal">
       <label>Nombre de local:</label>
       <BaseInput :valueinput="local.name" @input="newlocal.name = $event" />
       <label>Direccion:</label>
@@ -19,7 +19,7 @@
         @input="newlocal.locationCountryName = $event"
       />
 
-      <div class="tdOptions">
+      <div class="tdOptionsLocal">
         <BaseButtonEdit
           backcolor="#5e72e4"
           bordercolor="#5e72e4"
@@ -43,7 +43,7 @@
 import BaseInput from '@/components/locals/BaseInput.vue'
 import BaseButtonEdit from '@/components/locals/BaseButtonEdit.vue'
 export default {
-  name: 'EditModal',
+  name: 'EditModalLocalLocal',
   components: {
     BaseInput,
     BaseButtonEdit,
@@ -90,7 +90,7 @@ export default {
 }
 </script>
 <style scoped>
-.editModalContainer {
+.editModalLocalContainer {
   position: fixed;
   height: 100%;
   width: 100%;
@@ -102,7 +102,7 @@ export default {
   top:65px;
   left: 0;
 }
-.editModal {
+.editModalLocal {
   position: absolute;
   box-sizing: border-box;
   top: 0;
@@ -133,10 +133,12 @@ export default {
   }
 }
 
-.tdOptions {
+.tdOptionsLocal {
   display: grid;
   grid-auto-flow: row;
   gap: 1rem;
-  margin-top: 5rem;
+  position: absolute;
+  bottom: 5rem;
+  width: calc(100% - 2rem);
 }
 </style>

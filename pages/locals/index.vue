@@ -24,7 +24,7 @@
           </div>
           <div v-if="user.type==='admin'" class="selectContainer">
           <label for="owner">Dueño</label>
-        <select id="owner" name="owner"  @change="setOwnerSelected($event.target.value)" >
+        <select id="owner" class="selectOwner" name="owner"  @change="setOwnerSelected($event.target.value)" >
            <option disabled selected value></option>
           <option
             v-for="owner in owners"
@@ -91,7 +91,7 @@
 </table>
   </div>
     </article>
-    <EditModal v-if="showEditModal" :local="localSelected" @click:cancel="showEditModal=false" @update:local="updatelocal($event); showEditModal=false" @cancel:click="showEditModal=false"  />
+    <EditModal v-if="showEditModal" :local="localSelected" :owners="owners" :user="user" @click:cancel="showEditModal=false" @update:local="updateLocal($event); showEditModal=false" @cancel:click="showEditModal=false"  />
     <DeleteModal v-if="showDeleteModal" @delete:local="deletelocal" @cancel:delete="showDeleteModal = false"/>
   </section>
 </template>
@@ -112,7 +112,7 @@ export default {
     user: {},
     owners: [],
     ownerSelected: {},
-    currentlocals: [],
+    currentLocals: [],
     localSelected: {},
     newlocal: {
       name: '',
@@ -149,7 +149,7 @@ export default {
                       duration: 5000,
                     })
                   })
-                      this.currentlocals = response.locals
+                      this.currentLocals = response.locals
                 this.tableFilter = response.locals
               })
               .catch((e) => {
@@ -162,7 +162,7 @@ export default {
           : await this.$axios
               .$get(`/api/getLocalsByClient/${this.user.id}`)
               .then((response) => {
-                this.currentlocals = response.locals
+                this.currentLocals = response.locals
                 this.tableFilter = response.locals
               })
               .catch((e) => {
@@ -184,13 +184,17 @@ export default {
   methods: {
     async getlocals() {
       this.loadingMode = true
+      this.$fetchState.pending= true
+       this.currentLocals = []
+              this.tableFilter = []
       this.user.type === 'admin'
         ? await this.$axios
             .$get('/api/getAllLocals')
             .then((response) => {
-              this.currentlocals = response.locals
+              this.currentLocals = response.locals
               this.tableFilter = response.locals
               this.loadingMode = false
+               this.$fetchState.pending= false
             })
             .catch((e) => {
               this.loadingMode = false
@@ -203,9 +207,10 @@ export default {
         : this.$axios
             .$get(`/api/getLocalsByClient/${this.user.id}`)
             .then((response) => {
-              this.currentlocals = response.locals
-              this.tableFilter = response.locals
+              this.currentLocals = response.locals
+              this.tableFilter = this.currentLocals
               this.loadingMode = false
+              this.$fetchState.pending= false
             })
             .catch((e) => {
               this.loadingMode = false
@@ -217,7 +222,7 @@ export default {
             })
     },
     searchFilter() {
-      this.tableFilter = this.currentlocals.filter(
+      this.tableFilter = this.currentLocals.filter(
         (u) =>
           u.name.toLowerCase().includes(this.searchValue.toLowerCase()) || u.location_address.toLowerCase().includes(this.searchValue.toLowerCase()) || u.client.toLowerCase().includes(this.searchValue.toLowerCase())  ||  u.location_city_name.toLowerCase().includes(this.searchValue.toLowerCase()) ||  u.location_country_name.toLowerCase().includes(this.searchValue.toLowerCase()) 
       )
@@ -268,9 +273,9 @@ export default {
         })
         this.$axios
           .$post('/api/createNewLocal', body)
-          .then((res) => {
-            this.newlocal.id = res.id
-            this.currentlocals.push(this.newlocal)
+          .then(async (res) => {
+            // this.newlocal.id = res.id
+          await this.getlocals()
             this.$toasted.show(`Cambios guardados`, {
               theme: 'toasted-primary',
               position: 'top-right',
@@ -309,26 +314,24 @@ export default {
                 }
               )
             }
-            console.log(e.response.data.error['Errors List'])
             this.loadingMode = false
           })
       }
     },
-    updatelocal(localC) {
+    updateLocal(localC) {
+       this.$fetchState.pending= true
       this.loadingMode = true
       const localID = localC.id
       const body = localC
       this.$axios
         .$put(`/api/updateLocal/${localID}`, body)
-        .then((res) => {
-          this.newlocal.id = res.id
-          this.currentlocals.push(this.newlocal)
+        .then(async (res) => {
           this.$toasted.show(`Cambios guardados`, {
             theme: 'toasted-primary',
             position: 'top-right',
             duration: 5000,
           })
-          this.getlocals()
+          await this.getlocals()
           this.loadingMode = false
         })
         .catch((e) => {
@@ -367,21 +370,20 @@ export default {
     },
     deletelocal() {
       this.loadingMode = true
-      const clientID = this.localSelected.id
-
+      const localID = this.localSelected.id
       this.$axios
-        .$delete(`/api/deleteClient/${clientID}`)
+        .$delete(`/api/deleteLocal/${localID}`)
         .then((res) => {
           this.$toasted.show(`Cambios guardados`, {
             theme: 'toasted-primary',
             position: 'top-right',
             duration: 5000,
           })
-          this.currentlocals = this.currentlocals.filter(
+          this.currentLocals = this.currentLocals.filter(
             (u) => u.id !== this.localSelected.id
           )
           this.showDeleteModal = false
-          this.tableFilter = this.currentlocals
+          this.tableFilter = this.currentLocals
           this.loadingMode = false
         })
         .catch((e) => {
@@ -414,7 +416,7 @@ export default {
     padding: 0.5rem 0.1rem;
   }
   .newlocal {
-    max-height: 25rem;
+    max-height: 30rem;
   }
   .titleCard {
     display: grid;
@@ -504,6 +506,21 @@ article {
   display: grid;
   align-items: center;
   justify-content: center;
+}
+
+.selectOwner {
+   width: 100%;
+  height: 2rem;
+  padding: 0 0.75rem;
+  font-weight: 400;
+  line-height: 1.5;
+  color: #656a6f;
+  background-color: #fff;
+  background-clip: padding-box;
+  border: 1px solid #dee2e6;
+  border-radius: 0.25rem;
+  box-shadow: 0 3px 2px rgb(233 236 239 / 5%);
+  box-sizing: border-box;
 }
 
 label {

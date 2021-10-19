@@ -10,7 +10,7 @@
           v-for="(option, index) in options"
           :key="title + index"
           :to="option.url"
-          class="li"
+          class="liItem"
           >{{ option.title }}</nuxt-link
         >
       </ul>
@@ -71,7 +71,7 @@ export default {
   gap: 0 1rem;
 }
 
-.li {
+.liItem {
   display: grid;
   align-items: center;
   justify-content: start;

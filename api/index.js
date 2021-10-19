@@ -327,8 +327,29 @@ app.put('/updateLocal/:localID', (req,res) => {
       { authorization: token }
   }
   const data = body
-  console.log(body.clientID)
+ 
   axios.put(`https://happymatch.herokuapp.com/api/local/update/${localID}`, data,  headers)
+  .then(
+    response => {
+      console.log(response.data)
+      res.json(response.data)
+    }
+  )
+  .catch(e => {
+    res.statusCode = e.response.status
+    res.json({
+      error: e.response.data
+    })
+  })
+})
+app.delete('/deleteLocal/:localID', (req,res) => {
+  const { localID } = req.params
+  const token = getToken(req, res)
+  const headers = {
+    headers:
+      { authorization: token }
+  }
+  axios.delete(`https://happymatch.herokuapp.com/api/local/delete/${localID}`,  headers)
   .then(
     response => {
       res.json(response.data)

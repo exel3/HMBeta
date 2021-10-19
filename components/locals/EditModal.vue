@@ -13,6 +13,19 @@
         :valueinput="local.location_city_name"
         @input="newlocal.locationCityName = $event"
       />
+          <div v-if="user.type==='admin'" class="selectContainer">
+          <label for="owner">Dueño:</label>
+        <select id="owner" class="selectOwner" name="owner" @change="setOwnerSelected($event.target.value)" >
+          <option
+            v-for="owner in owners"
+            :key="'dropBox' + owner.id"
+            :value="owner.username"
+            :selected="owner.username===local.clientName? 'selected': false"
+          >
+            {{owner.username}}
+          </option>
+        </select>
+          </div>
       <label>Pais:</label>
       <BaseInput
         :valueinput="local.location_country_name"
@@ -25,7 +38,7 @@
           bordercolor="#5e72e4"
           text="Confirmar"
           color="white"
-          @click="updatelocal()"
+          @click="updateEditLocal()"
         />
         <BaseButtonEdit
           backcolor="white"
@@ -53,6 +66,14 @@ export default {
       type: Object,
       required: true,
     },
+    owners: {
+      type: Array,
+      required: true
+    },
+    user: {
+      type: Object,
+      required: true
+    }
   },
   data: () => ({
     newlocal: {},
@@ -64,12 +85,19 @@ export default {
     this.newlocal.id = this.local.id
     this.newlocal.name = this.local.name
     this.newlocal.clientID = this.local.client
+    this.newlocal.clientName = this.local.clientName
+   
   },
   methods: {
     clickCancel() {
       this.$emit('cancel:click')
     },
-    updatelocal() {
+      setOwnerSelected(ownerName) {
+      this.newlocal.clientID = this.owners.find(o => ownerName === o.username).id
+      console.log(ownerName, this.owners)
+      console.log(this.newlocal.clientID)
+    },
+    updateEditLocal() {
       if (this.newlocal.name.length < 1) {
         this.$toasted.show(`El nombre no puede estar vacio`, {
           theme: 'toasted-primary',
@@ -80,7 +108,13 @@ export default {
         this.$toasted.show(`La direccion no puede estar vacia`, {
           theme: 'toasted-primary',
           position: 'top-right',
-          duration: 10000,
+          duration: 5000,
+        })
+        } else if (this.newlocal.clientName.length < 0) {
+        this.$toasted.show(`El dueño no puede estar vacio`, {
+          theme: 'toasted-primary',
+          position: 'top-right',
+          duration: 5000,
         })
       } else {
         this.$emit('update:local', this.newlocal)
@@ -117,7 +151,7 @@ export default {
   padding: 1rem;
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 0.5rem;
   padding-top: 2rem;
 }
 .background {
@@ -140,5 +174,20 @@ export default {
   position: absolute;
   bottom: 5rem;
   width: calc(100% - 2rem);
+}
+.selectOwner {
+   width: 100%;
+  height: 2.5rem;
+  padding:0 0.75rem;
+  font-weight: 400;
+  line-height: 1.5;
+  color: #656a6f;
+  background-color: #fff;
+  background-clip: padding-box;
+  border: 1px solid #dee2e6;
+  border-radius: 0.25rem;
+  box-shadow: 0 3px 2px rgb(233 236 239 / 5%);
+  box-sizing: border-box;
+  margin-top:0.5rem;
 }
 </style>

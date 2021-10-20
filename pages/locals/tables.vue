@@ -1,24 +1,75 @@
 <template lang="">
-  <section>
-    <article class="newTable">
-      <div class="titleCard"><p>Agregar nueva mesa</p></div>
+<Loading v-if="$fetchState.pending" class="fetchState" />
+  <p v-else-if="$fetchState.error" class="fetchState">Error al cargar los datos</p>
+  <section v-else>
+       <article class="newTable">
+      <div class="titleCard"><p>Seleccionar</p></div>
       <div class="contentCard">
         <form>
-           <div>
-          <label for="tablename">Nombre</label>
-          <input id="tablename"  v-model="newTable.name" type="text" name="newTable" autocomplete="off">
+           <div v-if="user.type === 'admin'" class="selectContainer">
+          <label for="local">Dueño</label>
+        <select id="local" class="selectlocal" name="local"  @change="setOwnerSelected($event.target.value)" >
+           <option disabled selected value></option>
+          <option
+            v-for="local in locals"
+            :key="'dropBox' + local.id"
+            :value="local.name"
+          >
+            {{local.name}}
+          </option>
+        </select>
           </div>
-            <div>
-          <label for="QR">QR</label>
-          <input id="QR" v-model="newTable.QR" type="text"  autocomplete="off">
+          <div class="selectContainer">
+          <label for="local">Local</label>
+        <select id="local" class="selectlocal" name="local"  @change="setLocalSelected($event.target.value)" >
+           <option disabled selected value></option>
+          <option
+            v-for="local in locals"
+            :key="'dropBox' + local.id"
+            :value="local.name"
+          >
+            {{local.name}}
+          </option>
+        </select>
           </div>
         </form>
       </div>
       <div class="containerAddBtn">
-        <button @click.prevent="addnewTable()">Agregar</button>
+        <button :disabled="loadingMode" @click.prevent="addnewTable">Agregar</button>
       </div>
     </article>
-    <article class="tableList">
+    <article class="newTable">
+      <div class="titleCard"><p>Agregar nueva mesa</p></div>
+      <div class="contentCard">
+        <form>
+          <div>
+          <label for="locationAddress">Nombre</label>
+          <input id="locationAddress" v-model="newTable.name" type="locationAddress" :disabled="loadingMode" autocomplete="off">
+          </div>
+          <div>
+          <label for="contraseña">QR</label>
+          <input id="contraseña" v-model="newTable.locationAddress" type="text"  :disabled="loadingMode" autocomplete="off">
+          </div>
+          <div class="selectContainer">
+          <label for="local">Local</label>
+        <select id="local" class="selectlocal" name="local"  @change="setLocalSelected($event.target.value)" >
+           <option disabled selected value></option>
+          <option
+            v-for="local in locals"
+            :key="'dropBox' + local.id"
+            :value="local.name"
+          >
+            {{local.name}}
+          </option>
+        </select>
+          </div>
+        </form>
+      </div>
+      <div class="containerAddBtn">
+        <button :disabled="loadingMode" @click.prevent="addnewTable">Agregar</button>
+      </div>
+    </article>
+    <article class="localList">
        <div class="titleCard">
          <p>Lista de mesas</p>
           <div class="searchContainer">
@@ -43,6 +94,7 @@
           </div>
         </div>
        </div>
+        <div class="bodyTableContainer">
      <table>
 	<thead>
 	<tr>
@@ -55,131 +107,375 @@
 <BaseRow v-for="table in tableFilter" 
 :key="table.id" 
 :table="table"
-@click="showDeleteModal = true; tableSelected = table" 
-@update:table="updatetable(table)" 
-@click:delete="showDeleteModal=true; tableSelected=table"
-@cancel:click="cancelClick(table)"
+:locals="locals"
+@click="showDeleteModal = true; tableSelected = local"  
+@click:delete="showDeleteModal=true; tableSelected=local"
+@click:edit="showEditModal=true; tableSelected={...local, clientName:$event}"
 />
 	</tbody>
+
 </table>
+  </div>
     </article>
-    <DeleteModal v-if="showDeleteModal" @delete:table="deletetable" @cancel:delete="showDeleteModal = false"/>
+    <EditModal v-if="showEditModal" :local="tableSelected" :locals="locals" :user="user" @click:cancel="showEditModal=false" @update:local="updateLocal($event); showEditModal=false" @cancel:click="showEditModal=false"  />
+    <DeleteModal v-if="showDeleteModal" @delete:local="deletelocal" @cancel:delete="showDeleteModal = false"/>
   </section>
 </template>
 <script>
-import DeleteModal from '@/components/tables/DeleteModalTables.vue'
-import BaseRow from '~/components/tables/BaseRowTables.vue'
+import DeleteModal from '@/components/tables/DeleteModal.vue'
+import EditModal from '@/components/tables/EditModal.vue'
+import BaseRow from '@/components/tables/BaseRow.vue'
+import Loading from '@/components/ui/Loading.vue'
 export default {
-  name: 'Tables',
+  name: '',
   components: {
     DeleteModal,
+    EditModal,
     BaseRow,
+    Loading,
   },
   data: () => ({
-    currentTable: [],
+    user: {},
+    locals: [],
+    owners: [],
+    ownersWithLocals: [],
     tableSelected: {},
-    newTable: { name: '', email: '', QR: '', id: null },
+    currentTables: [],
+    localSelected: {},
+    ownerSelected: {},
+    newTable: {
+      name: '',
+      QR: '',
+      id: null,
+    },
     showDeleteModal: false,
+    showEditModal: false,
     searchValue: '',
-    tableFilter: []
+    tableFilter: [],
+    loadingMode: false,
   }),
-  mounted() {
-    this.gettables()
-  },
-  methods: {
-    cancelClick(table) {
-      this.gettables()
-    },
-    gettables() {
-      this.currentTable = [
-        {
-          name: 'Mesa 1',
-          QR: '65465465465',
-          id: 12323,
-        },
-        {
-          name: 'Mesa 2',
-          QR: '65465465465',
-          id: 56411,
-        },
-        {
-          name: 'Mesa 3',
-         QR: '65465465465',
-          id: 45654789,
-        },
-          {
-          name: 'Mesa 4',
-         QR: '65465465465',
-          id: 333344,
-        },
-          {
-          name: 'Mesa 5',
-         QR: '65465465465',
-          id: 890955,
-        },
-          {
-          name: 'Mesa 6',
-         QR: '65465465465',
-          id: 324678,
-        },
-          {
-          name: 'Mesa 7',
-         QR: '65465465465',
-          id: 4545,
-        },
-          {
-          name: 'Mesa 8',
-         QR: '65465465465',
-          id: 8765,
-        },
-          {
-          name: 'Mesa 9',
-         QR: '65465465465',
-          id: 1233213,
-        },
-          {
-          name: 'Mesa 10',
-         QR: '65465465465',
-          id: 345423,
-        },
-      ]
-      this.tableFilter = this.currentTable
-    },
-     searchFilter() {
-      this.tableFilter = this.currentTable.filter((u) =>
-        u.name.toLowerCase().includes(this.searchValue.toLowerCase()) 
-      )
-    },
-    addnewTable() {
-      if (this.newTable.name.length < 1) {
-        this.$toasted.show(
-          `El nombre de mesa debe contener 1 o mas caracteres`,
-          {
-            theme: 'toasted-primary',
-            position: 'top-right',
-            duration: 5000,
-          }
-        )
-      } else if (this.newTable.QR.length < 8) {
-        this.$toasted.show(`El QR debe contener 8 o mas caracteres`, {
+  async fetch() {
+    await this.$axios
+      .$get('/api/getUser')
+      .then(async (response) => {
+        this.user = response
+        this.user.type === 'admin'
+          ? await this.$axios
+              .$get('/api/getAllClients')
+              .then(async (response) => {
+                this.owners = response.clients // owners.locals = [id,id]
+                await this.$axios
+                  .$get('/api/getAllLocals')
+                  .then(async (response) => {
+                    this.locals = response.locals
+                    this.ownersWithLocals = this.owners.map((o) => {
+                      const localsArray = this.locals.filter((l) =>
+                        o.locals.includes(l.id)
+                      )
+                      const resp = { ...o, localsArray }
+                      return resp
+                    })
+                    if (response.locals.length > 0) {
+                      this.ownerSelected = this.ownersWithLocals[0]
+                      this.currentTables = response.locals[0].tables
+                      this.tableFilter = response.locals[0].tables
+                      await this.getAllTablesByClientAndLocal()
+                    }
+                  })
+                  .catch((e) => {
+                    this.$toasted.show(`Error al recuperar dueños: ${e}`, {
+                      theme: 'toasted-primary',
+                      position: 'top-right',
+                      duration: 5000,
+                    })
+                  })
+              })
+              .catch((e) => {
+                this.$toasted.show(`Error al recuperar locales: ${e}`, {
+                  theme: 'toasted-primary',
+                  position: 'top-right',
+                  duration: 5000,
+                })
+              })
+          : await this.$axios
+              .$get(`/api/getLocalsByClient/${this.user.id}`)
+              .then((response) => {
+                this.currentTables = response.locals
+                this.tableFilter = response.locals
+              })
+              .catch((e) => {
+                this.$toasted.show(`Error al recuperar locales: ${e}`, {
+                  theme: 'toasted-primary',
+                  position: 'top-right',
+                  duration: 5000,
+                })
+              })
+      })
+      .catch((e) => {
+        this.$toasted.show(`Error al recuperar el tipo de usuario: ${e}`, {
           theme: 'toasted-primary',
           position: 'top-right',
           duration: 5000,
         })
+      })
+  },
+  methods: {
+    async getlocals() {
+      this.loadingMode = true
+      this.$fetchState.pending = true
+      this.currentTables = []
+      this.tableFilter = []
+      this.user.type === 'admin'
+        ? await this.$axios
+            .$get('/api/getAllLocals')
+            .then((response) => {
+              this.currentTables = response.locals
+              this.tableFilter = response.locals
+              this.loadingMode = false
+              this.$fetchState.pending = false
+            })
+            .catch((e) => {
+              this.loadingMode = false
+              this.$toasted.show(`Error al recuperar locales: ${e}`, {
+                theme: 'toasted-primary',
+                position: 'top-right',
+                duration: 5000,
+              })
+            })
+        : this.$axios
+            .$get(`/api/getLocalsByClient/${this.user.id}`)
+            .then((response) => {
+              this.currentTables = response.locals
+              this.tableFilter = this.currentTables
+              this.loadingMode = false
+              this.$fetchState.pending = false
+            })
+            .catch((e) => {
+              this.loadingMode = false
+              this.$toasted.show(`Error al recuperar locales: ${e}`, {
+                theme: 'toasted-primary',
+                position: 'top-right',
+                duration: 5000,
+              })
+            })
+    },
+    async getAllTablesByClientAndLocal() {
+         this.loadingMode = true
+      const clientID = this.ownerSelected.id
+       const localID = this.ownerSelected.locals[0]
+       console.log(this.ownerSelected)
+      await this.$axios
+        .$get(`/api/getAllTablesByClientAndLocal/${clientID}/${localID}`)
+        .then((res) => {
+          this.currentTables = res.data.tables
+          this.tableFilter = res.data.tables
+          this.loadingMode = false
+        })
+        .catch((e) => {
+             this.loadingMode = false
+          this.$toasted.show(
+            `Error al recuperar locales: ${JSON.stringify(
+              e.response.data.error['Errors List']
+            )}`,
+            {
+              theme: 'toasted-primary',
+              position: 'top-right',
+              duration: 5000,
+            }
+          )
+        })
+    },
+    searchFilter() {
+      this.tableFilter = this.currentTables.filter(
+        (u) =>
+          u.name.toLowerCase().includes(this.searchValue.toLowerCase()) ||
+          u.location_address
+            .toLowerCase()
+            .includes(this.searchValue.toLowerCase()) ||
+          u.client.toLowerCase().includes(this.searchValue.toLowerCase()) ||
+          u.location_city_name
+            .toLowerCase()
+            .includes(this.searchValue.toLowerCase()) ||
+          u.location_country_name
+            .toLowerCase()
+            .includes(this.searchValue.toLowerCase())
+      )
+    },
+    setLocalSelected(localName) {
+      this.localSelected = this.ownerSelected.localsArray.find(
+        (o) => localName === o.name
+      )
+      this.tableSelected = this.localSelected.tables
+    },
+    setOwnerSelected(ownerName) {
+      this.ownerSelected = this.ownersWithLocals.find(
+        (o) => ownerName === o.username
+      )
+      this.localSelected = null
+      this.tableSelected = null
+    },
+    addnewTable() {
+      this.user.type === 'client' &&
+        (this.localSelected.clientID = this.user.id)
+      if (this.newTable.name.length < 1) {
+        this.$toasted.show(`El nombre no puede estar vacio`, {
+          theme: 'toasted-primary',
+          position: 'top-right',
+          duration: 5000,
+        })
+        this.loadingMode = false
+      } else if (this.newTable.QR.length < 0) {
+        this.$toasted.show(`El QR no puede estar vacio`, {
+          theme: 'toasted-primary',
+          position: 'top-right',
+          duration: 10000,
+        })
+        this.loadingMode = false
       } else {
-        this.newTable.id = Date.now()
-        this.currentTable.push(this.newTable)
+        const name = this.newTable.name
+        const QR = this.newTable.QR
+        const localID = this.localSelected.id
+        const clientID = this.localSelected.clientID
+        const body = {
+          name,
+          QR,
+          clientID,
+          localID,
+        }
+        this.$toasted.show(`Guardando cambios..`, {
+          theme: 'toasted-primary',
+          position: 'top-right',
+          duration: 5000,
+        })
+        this.$axios
+          .$post('/api/createNewTable', body)
+          .then(async (res) => {
+            // this.newTable.id = res.id
+            await this.getlocals()
+            this.$toasted.show(`Cambios guardados`, {
+              theme: 'toasted-primary',
+              position: 'top-right',
+              duration: 5000,
+            })
+            this.loadingMode = false
+          })
+          .catch((e) => {
+            if (
+              JSON.stringify(e.response.data.error['Errors List']) ===
+              '{"name error":"name in use"}'
+            ) {
+              this.$toasted.show(`ERROR: Nombre de local en uso`, {
+                theme: 'toasted-primary',
+                position: 'top-right',
+                duration: 10000,
+              })
+            } else if (
+              JSON.stringify(e.response.data.error['Errors List']) ===
+              '{"locationAddress error":"locationAddress in use"}'
+            ) {
+              this.$toasted.show(`ERROR: Email en uso`, {
+                theme: 'toasted-primary',
+                position: 'top-right',
+                duration: 10000,
+              })
+            } else {
+              this.$toasted.show(
+                `Error al crear local: ${JSON.stringify(
+                  e.response.data.error['Errors List']
+                )}`,
+                {
+                  theme: 'toasted-primary',
+                  position: 'top-right',
+                  duration: 5000,
+                }
+              )
+            }
+            this.loadingMode = false
+          })
       }
     },
-    updatetable(tableC) {
-      // TODO: connection with update table endpoint
+    updateLocal(localC) {
+      this.$fetchState.pending = true
+      this.loadingMode = true
+      const localID = localC.id
+      const body = localC
+      this.$axios
+        .$put(`/api/updateLocal/${localID}`, body)
+        .then(async (res) => {
+          this.$toasted.show(`Cambios guardados`, {
+            theme: 'toasted-primary',
+            position: 'top-right',
+            duration: 5000,
+          })
+          await this.getlocals()
+          this.loadingMode = false
+        })
+        .catch((e) => {
+          if (
+            JSON.stringify(e.response.data.error['Errors List']) ===
+            '{"name error":"name in use"}'
+          ) {
+            this.$toasted.show(`ERROR: Nombre de usuario en uso`, {
+              theme: 'toasted-primary',
+              position: 'top-right',
+              duration: 10000,
+            })
+          } else if (
+            JSON.stringify(e.response.data.error['Errors List']) ===
+            '{"locationAddress error":"locationAddress in use"}'
+          ) {
+            this.$toasted.show(`ERROR: Email en uso`, {
+              theme: 'toasted-primary',
+              position: 'top-right',
+              duration: 10000,
+            })
+          } else {
+            this.$toasted.show(
+              `Error al actualizar local: ${JSON.stringify(
+                e.response.data.error['Errors List']
+              )}`,
+              {
+                theme: 'toasted-primary',
+                position: 'top-right',
+                duration: 5000,
+              }
+            )
+          }
+          this.loadingMode = false
+        })
     },
-    deletetable() {
-      this.currentTable = this.currentTable.filter(
-        (u) => u.id !== this.tableSelected.id
-      )
-      this.showDeleteModal = false
-      this.tableFilter = this.currentTable
+    deletelocal() {
+      this.loadingMode = true
+      const localID = this.localSelected.id
+      this.$axios
+        .$delete(`/api/deleteLocal/${localID}`)
+        .then((res) => {
+          this.$toasted.show(`Cambios guardados`, {
+            theme: 'toasted-primary',
+            position: 'top-right',
+            duration: 5000,
+          })
+          this.currentTables = this.currentTables.filter(
+            (u) => u.id !== this.localSelected.id
+          )
+          this.showDeleteModal = false
+          this.tableFilter = this.currentTables
+          this.loadingMode = false
+        })
+        .catch((e) => {
+          this.$toasted.show(
+            `Error al borrar cliente: ${JSON.stringify(
+              e.response.data.error['Errors List']
+            )}`,
+            {
+              theme: 'toasted-primary',
+              position: 'top-right',
+              duration: 5000,
+            }
+          )
+
+          this.loadingMode = false
+        })
     },
   },
 }
@@ -190,22 +486,22 @@ export default {
     padding: 0 0.1rem;
   }
   td {
-    padding: 0.5rem 0.1rem;
+    padding: 0.1rem 0.1rem;
   }
   th {
     padding: 0.5rem 0.1rem;
   }
-    .newTable {
-  max-height: 25rem;
-}
-  .titleCard {
-  display: grid;
-  grid-auto-flow: row;
-  justify-content: center;
-  gap: 1rem 0;
+  .newTable {
+    max-height: 30rem;
   }
-    .contentCard form {
-    display:grid;
+  .titleCard {
+    display: grid;
+    grid-auto-flow: row;
+    justify-content: center;
+    gap: 1rem 0;
+  }
+  .contentCard form {
+    display: grid;
     grid-auto-flow: row;
     align-items: center;
     gap: 1rem 0;
@@ -216,24 +512,23 @@ export default {
     padding: 0 5rem;
   }
   td {
-    padding: 1rem;
+    padding: 0.5rem;
   }
-
   th {
-    padding: 1rem;
+    padding: 0.5rem;
   }
-    .newTable {
-  max-height: 15rem;
-}
-    .titleCard {
-  display: grid;
-  grid-auto-flow: column;
-  justify-content: space-between;
+  .newTable {
+    max-height: 15rem;
+  }
+  .titleCard {
+    display: grid;
+    grid-auto-flow: column;
+    justify-content: space-between;
   }
   .contentCard form {
-      display: grid;
-  grid-auto-flow: column;
-  gap: 0 1rem;
+    display: grid;
+    grid-auto-flow: column;
+    gap: 0 1rem;
   }
 }
 section {
@@ -253,11 +548,16 @@ article {
   box-shadow: 0 0 2rem 0 rgb(136 152 170 / 15%);
   border-radius: 0.375rem;
   z-index: 2;
-  overflow: hidden;
 }
 
-.tableList {
-  min-height: 40rem;
+.bodyTableContainer {
+  overflow-y: scroll;
+  width: 100%;
+  height: 35rem;
+}
+.localList {
+  height: 40rem;
+  overflow: hidden;
 }
 
 .titleCard {
@@ -266,6 +566,11 @@ article {
   margin-bottom: 0;
   background-color: #fff;
   border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+.fetchState {
+  position: absolute;
+  z-index: 50;
+  color: white;
 }
 
 .titleCard p {
@@ -277,6 +582,21 @@ article {
   display: grid;
   align-items: center;
   justify-content: center;
+}
+
+.selectlocal {
+  width: 100%;
+  height: 2rem;
+  padding: 0 0.75rem;
+  font-weight: 400;
+  line-height: 1.5;
+  color: #656a6f;
+  background-color: #fff;
+  background-clip: padding-box;
+  border: 1px solid #dee2e6;
+  border-radius: 0.25rem;
+  box-shadow: 0 3px 2px rgb(233 236 239 / 5%);
+  box-sizing: border-box;
 }
 
 label {
@@ -291,7 +611,7 @@ input {
   padding: 0.625rem 0.75rem;
   font-weight: 400;
   line-height: 1.5;
-  color: #8898aa;
+  color: #656a6f;
   background-color: #fff;
   background-clip: padding-box;
   border: 1px solid #dee2e6;
@@ -365,6 +685,9 @@ td {
   text-transform: none;
   color: #525f7f;
 }
+.newTable {
+  overflow: hidden;
+}
 .searchContainer {
   height: 100%;
   width: 20rem;
@@ -382,7 +705,7 @@ td {
 .searchContainer input {
   box-sizing: border-box;
   height: 2.5rem;
-   padding: 0 3rem;
+  padding: 0 3rem;
   outline: none;
   border: 1px solid #dcdfe6;
   border-radius: 4px;
@@ -396,7 +719,7 @@ td {
 }
 .clearIcon {
   position: absolute;
-  top:0.55rem;
+  top: 0.55rem;
   left: calc(100% - 3rem);
   z-index: 1;
   cursor: pointer;

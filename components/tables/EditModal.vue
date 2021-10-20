@@ -56,7 +56,7 @@
 import BaseInput from '@/components/locals/BaseInput.vue'
 import BaseButtonEdit from '@/components/locals/BaseButtonEdit.vue'
 export default {
-  name: 'EditModalTables',
+  name: 'EditModalLocalLocal',
   components: {
     BaseInput,
     BaseButtonEdit,
@@ -94,6 +94,8 @@ export default {
     },
       setOwnerSelected(ownerName) {
       this.newlocal.clientID = this.owners.find(o => ownerName === o.username).id
+      console.log(ownerName, this.owners)
+      console.log(this.newlocal.clientID)
     },
     updateEditLocal() {
       if (this.newlocal.name.length < 1) {

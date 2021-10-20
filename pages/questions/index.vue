@@ -1,6 +1,5 @@
 <template>
   <section>
-    <transition name="fade">
       <article class="newQuestionArticle">
         <div class="titleCard"><p>Nueva pregunta</p></div>
         <div class="newQuestionContainer">
@@ -38,7 +37,6 @@
           </button>
         </div>
       </article>
-    </transition>
     <article class="userList">
       <div class="titleCard"><p>Lista de preguntas</p></div>
     </article>

@@ -115,7 +115,6 @@ app.post('/createNewClient', (req,res) => {
     }
   )
   .catch(e => {
-    console.log(e.response.data)
     res.statusCode = e.response.status
     res.json({
       error: e.response.data
@@ -206,7 +205,6 @@ app.post('/createNewAdmin', (req,res) => {
     }
   )
   .catch(e => {
-    console.log(e.response.data)
     res.statusCode = e.response.status
     res.json({
       error: e.response.data
@@ -311,7 +309,6 @@ app.post('/createNewLocal', (req,res) => {
     }
   )
   .catch(e => {
-    console.log(e.response.data)
     res.statusCode = e.response.status
     res.json({
       error: e.response.data
@@ -331,7 +328,6 @@ app.put('/updateLocal/:localID', (req,res) => {
   axios.put(`https://happymatch.herokuapp.com/api/local/update/${localID}`, data,  headers)
   .then(
     response => {
-      console.log(response.data)
       res.json(response.data)
     }
   )
@@ -399,6 +395,25 @@ app.post('/admin/login', (req, res) => {
         error: e.message
       })
     })
+})
+app.get('/getAllTablesByClientAndLocal/:clientID/:localID', (req,res) => {
+  const page = 1
+  const { clientID,localID } = req.params
+  const token = getToken(req, res)
+  const get = { headers: { Authorization: token } }
+  console.log('clientID: ',clientID, ' localID: ',localID)
+  axios.get(`https://happymatch.herokuapp.com/api/table/getAllTables/client/${clientID}/local/${localID}/page/${page}`, get)
+  .then(
+    response => {
+      res.json(response.data)
+    }
+  )
+  .catch(e => {
+    res.statusCode = e.response.status
+    res.json({
+      error: e.message
+    })
+  })
 })
 app.get('/getGroupTables/:localId', (req, res) => {
   const { localId } = req.params
@@ -472,9 +487,6 @@ app.post('/updateQuestions', (req, res) => {
   const body = req.body
   const token = getToken(req, res)
   const localId = body.localId
-
-  console.log('localID: ', localId)
-  console.log('token: ', token)
 
   const data = {
     arrayQuestions: body.questions

@@ -30,6 +30,8 @@
     "express": "4.17.1",
     "firebase": "^8.9.1",
     "nuxt": "2.15.7",
+    "uuid": "^8.3.2",
+    "vue-qr": "^3.2.2",
     "vuex": "3.6.2"
   },
   "devDependencies": {
@@ -52,8 +54,9 @@
     "husky": "7.0.1",
     "jest": "27.0.5",
     "lint-staged": "11.1.1",
+    "postcss": "^8.3.11",
     "prettier": "2.3.2",
-    "stylelint": "13.13.1",
+    "stylelint": "^13.13.1",
     "stylelint-config-prettier": "8.0.2",
     "stylelint-config-standard": "22.0.0",
     "vue-jest": "3.0.4",

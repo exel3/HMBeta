@@ -45,13 +45,17 @@
           </div>
           <div>
           <label for="qr">QR</label>
-          <input id="qr" v-model="newTable.qr" type="text"  :disabled="loadingMode" autocomplete="off">
+          <input id="qr" v-model="newTable.qr" type="text"  :disabled="true" autocomplete="off">
           </div>
         </form>
       </div>
-      <div class="containerAddBtn">
+      <div class="containerAddQrBtn">
+        <button :disabled="loadingMode" @click.prevent="generateQr">Generar QR</button>
         <button :disabled="loadingMode" @click.prevent="addNewTable">Agregar</button>
       </div>
+      <div class="qrContainer">
+         <vueQr v-if="newTable.qr !== ''" :logoSrc="getLogoQr()" :logoScale="4" :text="newTable.qr" :size="200" />
+        </div>
     </article>
     <article class="localList">
        <div class="titleCard">
@@ -110,6 +114,8 @@ import DeleteModal from '@/components/tables/DeleteModal.vue'
 import EditModal from '@/components/tables/EditModal.vue'
 import BaseRow from '@/components/tables/BaseRow.vue'
 import Loading from '@/components/ui/Loading.vue'
+import vueQr from 'vue-qr/src/packages/vue-qr.vue'
+import { v4 as uuidv4 } from 'uuid'
 export default {
   name: '',
   components: {
@@ -117,6 +123,7 @@ export default {
     EditModal,
     BaseRow,
     Loading,
+    vueQr,
   },
   data: () => ({
     user: {},
@@ -153,7 +160,7 @@ export default {
                   .$get('/api/getAllLocals')
                   .then(async (response) => {
                     this.locals = response.locals
-                     this.localsFilter = response.locals
+                    this.localsFilter = response.locals
                     this.ownersWithLocals = this.owners.map((o) => {
                       const localsArray = this.locals.filter((l) =>
                         o.locals.includes(l.id)
@@ -250,6 +257,20 @@ export default {
               })
             })
     },
+    generateQr(){
+      if(this.newTable.name.length < 1){
+               this.$toasted.show(`El nombre de la mesa no puede estar vacio al generar un QR`, {
+                theme: 'toasted-primary',
+                position: 'top-right',
+                duration: 5000,
+              })
+      } else {
+      
+      this.newTable.qr = uuidv4()}
+    },
+    getLogoQr() {
+      return require('@/assets/images/logoBgBlack.jpg')
+    },
     async getAllTablesByClientAndLocal() {
       this.loadingMode = true
       let clientID = ''
@@ -259,7 +280,7 @@ export default {
       } else {
         clientID = this.ownerSelected.id
       }
-    
+
       await this.$axios
         .$get(`/api/getAllTablesByClientAndLocal/${clientID}/${localID}`)
         .then((res) => {
@@ -286,40 +307,41 @@ export default {
       this.tableFilter = this.currentTables.filter(
         (u) =>
           u.name.toLowerCase().includes(this.searchValue.toLowerCase()) ||
-          u.qr
-            .toLowerCase()
-            .includes(this.searchValue.toLowerCase())
+          u.qr.toLowerCase().includes(this.searchValue.toLowerCase())
       )
     },
-   async  setLocalSelected(localName) {
-      this.localSelected = this.locals.find(
-        (o) => localName === o.name
+    async setLocalSelected(localName) {
+      this.localSelected = this.locals.find((o) => localName === o.name)
+      this.tableFilter = this.currentTables.filter((t) =>
+        this.localSelected.tables.includes(t.id)
       )
-      this.tableFilter = this.currentTables.filter(t => this.localSelected.tables.includes(t.id))
-          await this.getAllTablesByClientAndLocal()
+      await this.getAllTablesByClientAndLocal()
     },
     async setOwnerSelected(ownerName) {
       this.ownerSelected = this.ownersWithLocals.find(
         (o) => ownerName === o.username
       )
-      this.localsFilter = this.locals.filter(l => l.client === this.ownerSelected.id)
+      this.localsFilter = this.locals.filter(
+        (l) => l.client === this.ownerSelected.id
+      )
       this.localSelected = {}
       this.tableSelected = {}
-      this.localsFilter.length > 0 && this.setLocalSelected(this.localsFilter[0].name)
+      this.localsFilter.length > 0 &&
+        this.setLocalSelected(this.localsFilter[0].name)
       await this.getAllTablesByClientAndLocal()
     },
     addNewTable() {
       this.user.type === 'client' &&
         (this.localSelected.clientID = this.user.id)
       if (this.newTable.name.length < 1) {
-        this.$toasted.show(`El nombre no puede estar vacio`, {
+        this.$toasted.show(`Nombre no puede estar vacio`, {
           theme: 'toasted-primary',
           position: 'top-right',
           duration: 5000,
         })
         this.loadingMode = false
-      } else if (this.newTable.qr.length < 0) {
-        this.$toasted.show(`El qr no puede estar vacio`, {
+      } else if (this.newTable.qr.length < 1) {
+        this.$toasted.show(`QR no puede estar vacio`, {
           theme: 'toasted-primary',
           position: 'top-right',
           duration: 10000,
@@ -336,7 +358,6 @@ export default {
           clientID,
           localID,
         }
-        console.log(body)
         this.$toasted.show(`Guardando cambios..`, {
           theme: 'toasted-primary',
           position: 'top-right',
@@ -393,7 +414,7 @@ export default {
       this.loadingMode = true
       const tableID = tableC.id
       const localID = tableC.local
-      const body = {...tableC, localID}
+      const body = { ...tableC, localID }
       this.$axios
         .$put(`/api/updateTable/${tableID}`, body)
         .then((res) => {
@@ -402,10 +423,10 @@ export default {
             position: 'top-right',
             duration: 5000,
           })
-          const indexT = this.currentTables.findIndex(t => t.id === tableC.id)
-           this.currentTables[indexT].name = tableC.name
-           this.currentTables[indexT].qr = tableC.qr
-           this.tableFilter = this.currentTables
+          const indexT = this.currentTables.findIndex((t) => t.id === tableC.id)
+          this.currentTables[indexT].name = tableC.name
+          this.currentTables[indexT].qr = tableC.qr
+          this.tableFilter = this.currentTables
           this.loadingMode = false
         })
         .catch((e) => {
@@ -516,7 +537,7 @@ export default {
     padding: 0.5rem;
   }
   .newTable {
-    max-height: 15rem;
+   max-height: 30rem;
   }
   .titleCard {
     display: grid;
@@ -546,6 +567,12 @@ article {
   box-shadow: 0 0 2rem 0 rgb(136 152 170 / 15%);
   border-radius: 0.375rem;
   z-index: 2;
+}
+
+.qrContainer {
+  display: grid;
+  align-items: center;
+  justify-content: center;
 }
 
 .bodyTableContainer {
@@ -632,16 +659,19 @@ input {
   display: grid;
   grid-auto-flow: row;
 }
-.containerAddBtn {
+.containerAddQrBtn {
   max-height: 4rem;
   display: grid;
   justify-items: end;
   padding-bottom: 1.25rem;
   padding-right: 1.5rem;
   box-sizing: border-box;
+  grid-auto-flow: column;
+  justify-content: end;
+  gap: 0 1rem;
 }
 
-.containerAddBtn button {
+.containerAddQrBtn button {
   width: 8rem;
   height: 2rem;
   border: none;

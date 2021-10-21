@@ -46,11 +46,11 @@ app.post('/client/login', (req, res) => {
     "password": req.body.password
   }
 
-axios.post('https://happymatch.herokuapp.com/api/client/login', post)
+  axios.post('https://happymatch.herokuapp.com/api/client/login', post)
     .then(response => {
-      const {client, token} = response.data
-      const {id, username } = client
-      const dataClient = {id, username, type:'client'}
+      const { client, token } = response.data
+      const { id, username } = client
+      const dataClient = { id, username, type: 'client' }
       const cookies = new Cookies(req, res)
       if (token) {
 
@@ -78,24 +78,24 @@ axios.post('https://happymatch.herokuapp.com/api/client/login', post)
       })
     })
 })
-app.get('/getAllClients', (req,res) => {
-  const page = 1
+app.get('/getAllClients', (req, res) => {
+  const page = 0
   const token = getToken(req, res)
   const get = { headers: { Authorization: token } }
   axios.get(`https://happymatch.herokuapp.com/api/client/getAllClients/page/${page}`, get)
-  .then(
-    response => {
-      res.json(response.data)
-    }
-  )
-  .catch(e => {
-    res.statusCode = e.response.status
-    res.json({
-      error: e.message
+    .then(
+      response => {
+        res.json(response.data)
+      }
+    )
+    .catch(e => {
+      res.statusCode = e.response.status
+      res.json({
+        error: e.message
+      })
     })
-  })
 })
-app.post('/createNewClient', (req,res) => {
+app.post('/createNewClient', (req, res) => {
   const body = req.body
   const token = getToken(req, res)
   const headers = {
@@ -103,25 +103,25 @@ app.post('/createNewClient', (req,res) => {
       { authorization: token }
   }
   const data = {
-      username: body.username,
-      emailAddress: body.emailAddress,
-      password: body.password,
+    username: body.username,
+    emailAddress: body.emailAddress,
+    password: body.password,
   }
 
-  axios.post('https://happymatch.herokuapp.com/api/client/create', data,  headers)
-  .then(
-    response => {
-      res.json(response.data)
-    }
-  )
-  .catch(e => {
-    res.statusCode = e.response.status
-    res.json({
-      error: e.response.data
+  axios.post('https://happymatch.herokuapp.com/api/client/create', data, headers)
+    .then(
+      response => {
+        res.json(response.data)
+      }
+    )
+    .catch(e => {
+      res.statusCode = e.response.status
+      res.json({
+        error: e.response.data
+      })
     })
-  })
 })
-app.put('/updateClient/:clientID', (req,res) => {
+app.put('/updateClient/:clientID', (req, res) => {
   const { clientID } = req.params
   const body = req.body
   const token = getToken(req, res)
@@ -130,62 +130,62 @@ app.put('/updateClient/:clientID', (req,res) => {
       { authorization: token }
   }
   const data = {
-      username: body.username,
-      emailAddress: body.emailAddress,
-      password: body.password,
+    username: body.username,
+    emailAddress: body.emailAddress,
+    password: body.password,
   }
 
-  axios.put(`https://happymatch.herokuapp.com/api/client/update/${clientID}`, data,  headers)
-  .then(
-    response => {
-      res.json(response.data)
-    }
-  )
-  .catch(e => {
-    res.statusCode = e.response.status
-    res.json({
-      error: e.response.data
+  axios.put(`https://happymatch.herokuapp.com/api/client/update/${clientID}`, data, headers)
+    .then(
+      response => {
+        res.json(response.data)
+      }
+    )
+    .catch(e => {
+      res.statusCode = e.response.status
+      res.json({
+        error: e.response.data
+      })
     })
-  })
 })
-app.delete('/deleteClient/:clientID', (req,res) => {
+app.delete('/deleteClient/:clientID', (req, res) => {
   const { clientID } = req.params
   const token = getToken(req, res)
   const headers = {
     headers:
       { authorization: token }
   }
-  axios.delete(`https://happymatch.herokuapp.com/api/client/delete/${clientID}`,  headers)
-  .then(
-    response => {
-      res.json(response.data)
-    }
-  )
-  .catch(e => {
-    res.statusCode = e.response.status
-    res.json({
-      error: e.response.data
+  axios.delete(`https://happymatch.herokuapp.com/api/client/delete/${clientID}`, headers)
+    .then(
+      response => {
+        res.json(response.data)
+      }
+    )
+    .catch(e => {
+      res.statusCode = e.response.status
+      res.json({
+        error: e.response.data
+      })
     })
-  })
 })
-app.get('/getAllAdmins', (req,res) => {
-  const page = 1
+app.get('/getAllAdmins', (req, res) => {
+  const page = 0
   const token = getToken(req, res)
   const get = { headers: { Authorization: token } }
   axios.get(`https://happymatch.herokuapp.com/api/admin/getAllAdmins/page/${page}`, get)
-  .then(
-    response => {
-      res.json(response.data)
-    }
-  )
-  .catch(e => {
-    res.statusCode = e.response.status
-    res.json({
-      error: e.message
+    .then(
+      response => {
+        res.json(response.data)
+      }
+    )
+    .catch(e => {
+      res.statusCode = e.response.status
+      res.json({
+        error: e.message
+      })
     })
-  })
 })
-app.post('/createNewAdmin', (req,res) => {
+app.post('/createNewAdmin', (req, res) => {
   const body = req.body
   const token = getToken(req, res)
   const headers = {
@@ -193,25 +193,25 @@ app.post('/createNewAdmin', (req,res) => {
       { authorization: token }
   }
   const data = {
-      username: body.username,
-      emailAddress: body.emailAddress,
-      password: body.password,
+    username: body.username,
+    emailAddress: body.emailAddress,
+    password: body.password,
   }
 
-  axios.post('https://happymatch.herokuapp.com/api/admin/create', data,  headers)
-  .then(
-    response => {
-      res.json(response.data)
-    }
-  )
-  .catch(e => {
-    res.statusCode = e.response.status
-    res.json({
-      error: e.response.data
+  axios.post('https://happymatch.herokuapp.com/api/admin/create', data, headers)
+    .then(
+      response => {
+        res.json(response.data)
+      }
+    )
+    .catch(e => {
+      res.statusCode = e.response.status
+      res.json({
+        error: e.response.data
+      })
     })
-  })
 })
-app.put('/updateAdmin/:adminID', (req,res) => {
+app.put('/updateAdmin/:adminID', (req, res) => {
   const { adminID } = req.params
   const body = req.body
   const token = getToken(req, res)
@@ -220,80 +220,80 @@ app.put('/updateAdmin/:adminID', (req,res) => {
       { authorization: token }
   }
   const data = {
-      username: body.username,
-      emailAddress: body.emailAddress,
-      password: body.password,
+    username: body.username,
+    emailAddress: body.emailAddress,
+    password: body.password,
   }
 
-  axios.put(`https://happymatch.herokuapp.com/api/admin/update/${adminID}`, data,  headers)
-  .then(
-    response => {
-      res.json(response.data)
-    }
-  )
-  .catch(e => {
-    res.statusCode = e.response.status
-    res.json({
-      error: e.response.data
+  axios.put(`https://happymatch.herokuapp.com/api/admin/update/${adminID}`, data, headers)
+    .then(
+      response => {
+        res.json(response.data)
+      }
+    )
+    .catch(e => {
+      res.statusCode = e.response.status
+      res.json({
+        error: e.response.data
+      })
     })
-  })
 })
-app.delete('/deleteAdmin/:adminID', (req,res) => {
+app.delete('/deleteAdmin/:adminID', (req, res) => {
   const { adminID } = req.params
   const token = getToken(req, res)
   const headers = {
     headers:
       { authorization: token }
   }
-  axios.delete(`https://happymatch.herokuapp.com/api/admin/delete/${adminID}`,  headers)
-  .then(
-    response => {
-      res.json(response.data)
-    }
-  )
-  .catch(e => {
-    res.statusCode = e.response.status
-    res.json({
-      error: e.response.data
+  axios.delete(`https://happymatch.herokuapp.com/api/admin/delete/${adminID}`, headers)
+    .then(
+      response => {
+        res.json(response.data)
+      }
+    )
+    .catch(e => {
+      res.statusCode = e.response.status
+      res.json({
+        error: e.response.data
+      })
     })
-  })
 })
-app.get('/getAllLocals', (req,res) => {
-  const page = 1
+app.get('/getAllLocals', (req, res) => {
+  const page = 0
   const token = getToken(req, res)
   const get = { headers: { Authorization: token } }
   axios.get(`https://happymatch.herokuapp.com/api/local/getAllLocals/page/${page}`, get)
-  .then(
-    response => {
-      res.json(response.data)
-    }
-  )
-  .catch(e => {
-    res.statusCode = e.response.status
-    res.json({
-      error: e.message
+    .then(
+      response => {
+        res.json(response.data)
+      }
+    )
+    .catch(e => {
+      res.statusCode = e.response.status
+      res.json({
+        error: e.message
+      })
     })
-  })
 })
-app.get('/getLocalsByClient/:clientID', (req,res) => {
-  const page = 1
-  const {clientID} = req.params
+app.get('/getLocalsByClient/:clientID', (req, res) => {
+  const page = 0
+  const { clientID } = req.params
   const token = getToken(req, res)
   const get = { headers: { Authorization: token } }
   axios.get(`https://happymatch.herokuapp.com/api/local/getAllLocals/client/${clientID}/page/${page}`, get)
-  .then(
-    response => {
-      res.json(response.data)
-    }
-  )
-  .catch(e => {
-    res.statusCode = e.response.status
-    res.json({
-      error: e.message
+    .then(
+      response => {
+        res.json(response.data)
+      }
+    )
+    .catch(e => {
+      res.statusCode = e.response.status
+      res.json({
+        error: e.message
+      })
     })
-  })
 })
-app.post('/createNewLocal', (req,res) => {
+app.post('/createNewLocal', (req, res) => {
   const body = req.body
   const token = getToken(req, res)
   const headers = {
@@ -302,20 +302,20 @@ app.post('/createNewLocal', (req,res) => {
   }
   const data = body
 
-  axios.post('https://happymatch.herokuapp.com/api/local/create', data,  headers)
-  .then(
-    response => {
-      res.json(response.data)
-    }
-  )
-  .catch(e => {
-    res.statusCode = e.response.status
-    res.json({
-      error: e.response.data
+  axios.post('https://happymatch.herokuapp.com/api/local/create', data, headers)
+    .then(
+      response => {
+        res.json(response.data)
+      }
+    )
+    .catch(e => {
+      res.statusCode = e.response.status
+      res.json({
+        error: e.response.data
+      })
     })
-  })
 })
-app.put('/updateLocal/:localID', (req,res) => {
+app.put('/updateLocal/:localID', (req, res) => {
   const { localID } = req.params
   const body = req.body
   const token = getToken(req, res)
@@ -324,39 +324,39 @@ app.put('/updateLocal/:localID', (req,res) => {
       { authorization: token }
   }
   const data = body
- 
-  axios.put(`https://happymatch.herokuapp.com/api/local/update/${localID}`, data,  headers)
-  .then(
-    response => {
-      res.json(response.data)
-    }
-  )
-  .catch(e => {
-    res.statusCode = e.response.status
-    res.json({
-      error: e.response.data
+
+  axios.put(`https://happymatch.herokuapp.com/api/local/update/${localID}`, data, headers)
+    .then(
+      response => {
+        res.json(response.data)
+      }
+    )
+    .catch(e => {
+      res.statusCode = e.response.status
+      res.json({
+        error: e.response.data
+      })
     })
-  })
 })
-app.delete('/deleteLocal/:localID', (req,res) => {
+app.delete('/deleteLocal/:localID', (req, res) => {
   const { localID } = req.params
   const token = getToken(req, res)
   const headers = {
     headers:
       { authorization: token }
   }
-  axios.delete(`https://happymatch.herokuapp.com/api/local/delete/${localID}`,  headers)
-  .then(
-    response => {
-      res.json(response.data)
-    }
-  )
-  .catch(e => {
-    res.statusCode = e.response.status
-    res.json({
-      error: e.response.data
+  axios.delete(`https://happymatch.herokuapp.com/api/local/delete/${localID}`, headers)
+    .then(
+      response => {
+        res.json(response.data)
+      }
+    )
+    .catch(e => {
+      res.statusCode = e.response.status
+      res.json({
+        error: e.response.data
+      })
     })
-  })
 })
 app.post('/admin/login', (req, res) => {
   const post = {
@@ -366,9 +366,9 @@ app.post('/admin/login', (req, res) => {
 
   axios.post('https://happymatch.herokuapp.com/api/admin/login', post)
     .then(response => {
-      const {token, admin} = response.data
+      const { token, admin } = response.data
       const { id, username } = admin
-      const dataAdmin = {id,username, type:'admin'}
+      const dataAdmin = { id, username, type: 'admin' }
       const cookies = new Cookies(req, res)
       if (token) {
 
@@ -396,24 +396,47 @@ app.post('/admin/login', (req, res) => {
       })
     })
 })
-app.get('/getAllTablesByClientAndLocal/:clientID/:localID', (req,res) => {
-  const page = 1
-  const { clientID,localID } = req.params
+app.get('/getAllTablesByClientAndLocal/:clientID/:localID', (req, res) => {
+  const page = 0
+  const { clientID, localID } = req.params
   const token = getToken(req, res)
   const get = { headers: { Authorization: token } }
-  console.log('clientID: ',clientID, ' localID: ',localID)
+  console.log('clientID: ', clientID, ' localID: ', localID)
   axios.get(`https://happymatch.herokuapp.com/api/table/getAllTables/client/${clientID}/local/${localID}/page/${page}`, get)
-  .then(
-    response => {
-      res.json(response.data)
-    }
-  )
-  .catch(e => {
-    res.statusCode = e.response.status
-    res.json({
-      error: e.message
+    .then(
+      response => {
+        console.log(response.data)
+        res.json(response.data)
+      }
+    )
+    .catch(e => {
+      res.statusCode = e.response.status
+      res.json({
+        error: e.message
+      })
     })
-  })
+})
+app.post('/createNewTable', (req, res) => {
+  const body = req.body
+  const token = getToken(req, res)
+  const headers = {
+    headers:
+      { authorization: token }
+  }
+  const data = body
+
+  axios.post('https://happymatch.herokuapp.com/api/table/create', data, headers)
+    .then(
+      response => {
+        res.json(response.data)
+      }
+    )
+    .catch(e => {
+      res.statusCode = e.response.status
+      res.json({
+        error: e.response.data
+      })
+    })
 })
 app.get('/getGroupTables/:localId', (req, res) => {
   const { localId } = req.params
@@ -432,12 +455,10 @@ app.get('/getGroupTables/:localId', (req, res) => {
       })
     })
 })
-
 app.get('/getUser', (req, res) => {
   const user = getUser(req, res)
   res.json(user)
 })
-
 app.get('/getQuestions/:localId', (req, res) => {
   const { localId } = req.params
   const token = getToken(req, res)
@@ -455,7 +476,6 @@ app.get('/getQuestions/:localId', (req, res) => {
       })
     })
 })
-
 app.post('/createQuestions', (req, res) => {
   const body = req.body
   const token = getToken(req, res)
@@ -482,7 +502,6 @@ app.post('/createQuestions', (req, res) => {
       })
     })
 })
-
 app.post('/updateQuestions', (req, res) => {
   const body = req.body
   const token = getToken(req, res)
@@ -511,7 +530,6 @@ app.post('/updateQuestions', (req, res) => {
       })
     })
 })
-
 app.post('/banGroupTable/:idGroup', (req, res) => {
   const { idGroup } = req.params
   const body = req.body
@@ -536,7 +554,6 @@ app.post('/banGroupTable/:idGroup', (req, res) => {
       })
     })
 })
-
 app.delete('/unBanGroupTable/:idGroup', (req, res) => {
   const { idGroup } = req.params
 
@@ -558,7 +575,6 @@ app.delete('/unBanGroupTable/:idGroup', (req, res) => {
       })
     })
 })
-
 app.get('/getGroupsBan', (req, res) => {
   console.log('entro api')
   const token = getToken(req, res)
@@ -583,7 +599,6 @@ app.get('/getGroupsBan', (req, res) => {
       })
     })
 })
-
 app.delete('/clearSesion', (req, res) => {
   try {
     deleteToken(req, res)

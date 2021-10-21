@@ -7,15 +7,15 @@
       <div class="contentCard">
         <form>
            <div v-if="user.type === 'admin'" class="selectContainer">
-          <label for="local">Dueño</label>
-        <select id="local" class="selectlocal" name="local"  @change="setOwnerSelected($event.target.value)" >
+          <label for="owner">Dueño</label>
+        <select id="owner" class="selectlocal" name="owner"  @change="setOwnerSelected($event.target.value)" >
            <option disabled selected value></option>
           <option
-            v-for="local in locals"
-            :key="'dropBox' + local.id"
-            :value="local.name"
+            v-for="owner in owners"
+            :key="'dropBox' + owner.id"
+            :value="owner.username"
           >
-            {{local.name}}
+            {{owner.username}}
           </option>
         </select>
           </div>
@@ -24,7 +24,7 @@
         <select id="local" class="selectlocal" name="local"  @change="setLocalSelected($event.target.value)" >
            <option disabled selected value></option>
           <option
-            v-for="local in locals"
+            v-for="local in localsFilter"
             :key="'dropBox' + local.id"
             :value="local.name"
           >
@@ -34,34 +34,18 @@
           </div>
         </form>
       </div>
-      <div class="containerAddBtn">
-        <button :disabled="loadingMode" @click.prevent="addnewTable">Agregar</button>
-      </div>
     </article>
     <article class="newTable">
       <div class="titleCard"><p>Agregar nueva mesa</p></div>
       <div class="contentCard">
         <form>
           <div>
-          <label for="locationAddress">Nombre</label>
-          <input id="locationAddress" v-model="newTable.name" type="locationAddress" :disabled="loadingMode" autocomplete="off">
+          <label for="tablename">Nombre</label>
+          <input id="tablename" v-model="newTable.name" type="name" :disabled="loadingMode" autocomplete="off">
           </div>
           <div>
-          <label for="contraseña">QR</label>
-          <input id="contraseña" v-model="newTable.locationAddress" type="text"  :disabled="loadingMode" autocomplete="off">
-          </div>
-          <div class="selectContainer">
-          <label for="local">Local</label>
-        <select id="local" class="selectlocal" name="local"  @change="setLocalSelected($event.target.value)" >
-           <option disabled selected value></option>
-          <option
-            v-for="local in locals"
-            :key="'dropBox' + local.id"
-            :value="local.name"
-          >
-            {{local.name}}
-          </option>
-        </select>
+          <label for="qr">QR</label>
+          <input id="qr" v-model="newTable.qr" type="text"  :disabled="loadingMode" autocomplete="off">
           </div>
         </form>
       </div>
@@ -99,7 +83,7 @@
 	<thead>
 	<tr>
 		<th>Nombre</th>
-		<th>QR</th>
+		<th>qr</th>
     <th>Opciones</th>
 	</tr>
 	</thead>
@@ -137,6 +121,7 @@ export default {
   data: () => ({
     user: {},
     locals: [],
+    localsFilter: [],
     owners: [],
     ownersWithLocals: [],
     tableSelected: {},
@@ -145,7 +130,7 @@ export default {
     ownerSelected: {},
     newTable: {
       name: '',
-      QR: '',
+      qr: '',
       id: null,
     },
     showDeleteModal: false,
@@ -168,6 +153,7 @@ export default {
                   .$get('/api/getAllLocals')
                   .then(async (response) => {
                     this.locals = response.locals
+                     this.localsFilter = response.locals
                     this.ownersWithLocals = this.owners.map((o) => {
                       const localsArray = this.locals.filter((l) =>
                         o.locals.includes(l.id)
@@ -179,6 +165,7 @@ export default {
                       this.ownerSelected = this.ownersWithLocals[0]
                       this.currentTables = response.locals[0].tables
                       this.tableFilter = response.locals[0].tables
+                      this.localSelected = response.locals[0]
                       await this.getAllTablesByClientAndLocal()
                     }
                   })
@@ -199,9 +186,12 @@ export default {
               })
           : await this.$axios
               .$get(`/api/getLocalsByClient/${this.user.id}`)
-              .then((response) => {
-                this.currentTables = response.locals
-                this.tableFilter = response.locals
+              .then(async (response) => {
+                this.locals = response.locals
+                this.localsFilter = response.locals
+                this.currentTables = response.locals[0].tables
+                this.tableFilter = response.locals[0].tables
+                await this.getAllTablesByClientAndLocal()
               })
               .catch((e) => {
                 this.$toasted.show(`Error al recuperar locales: ${e}`, {
@@ -246,6 +236,7 @@ export default {
             .$get(`/api/getLocalsByClient/${this.user.id}`)
             .then((response) => {
               this.currentTables = response.locals
+              this.localsFilter = this.locals
               this.tableFilter = this.currentTables
               this.loadingMode = false
               this.$fetchState.pending = false
@@ -260,19 +251,25 @@ export default {
             })
     },
     async getAllTablesByClientAndLocal() {
-         this.loadingMode = true
-      const clientID = this.ownerSelected.id
-       const localID = this.ownerSelected.locals[0]
-       console.log(this.ownerSelected)
+      this.loadingMode = true
+      let clientID = ''
+      const localID = this.localSelected.id
+      if (this.user.type === 'client') {
+        clientID = this.user.id
+      } else {
+        clientID = this.ownerSelected.id
+      }
+    
       await this.$axios
         .$get(`/api/getAllTablesByClientAndLocal/${clientID}/${localID}`)
         .then((res) => {
-          this.currentTables = res.data.tables
-          this.tableFilter = res.data.tables
+          console.log(res)
+          this.currentTables = res.tables
+          this.tableFilter = res.tables
           this.loadingMode = false
         })
         .catch((e) => {
-             this.loadingMode = false
+          this.loadingMode = false
           this.$toasted.show(
             `Error al recuperar locales: ${JSON.stringify(
               e.response.data.error['Errors List']
@@ -289,30 +286,27 @@ export default {
       this.tableFilter = this.currentTables.filter(
         (u) =>
           u.name.toLowerCase().includes(this.searchValue.toLowerCase()) ||
-          u.location_address
-            .toLowerCase()
-            .includes(this.searchValue.toLowerCase()) ||
-          u.client.toLowerCase().includes(this.searchValue.toLowerCase()) ||
-          u.location_city_name
-            .toLowerCase()
-            .includes(this.searchValue.toLowerCase()) ||
-          u.location_country_name
+          u.qr
             .toLowerCase()
             .includes(this.searchValue.toLowerCase())
       )
     },
-    setLocalSelected(localName) {
-      this.localSelected = this.ownerSelected.localsArray.find(
+   async  setLocalSelected(localName) {
+      this.localSelected = this.locals.find(
         (o) => localName === o.name
       )
-      this.tableSelected = this.localSelected.tables
+      this.tableFilter = this.currentTables.filter(t => this.localSelected.tables.includes(t.id))
+          await this.getAllTablesByClientAndLocal()
     },
-    setOwnerSelected(ownerName) {
+    async setOwnerSelected(ownerName) {
       this.ownerSelected = this.ownersWithLocals.find(
         (o) => ownerName === o.username
       )
-      this.localSelected = null
-      this.tableSelected = null
+      this.localsFilter = this.locals.filter(l => l.client === this.ownerSelected.id)
+      this.localSelected = {}
+      this.tableSelected = {}
+      this.localsFilter.length > 0 && this.setLocalSelected(this.localsFilter[0].name)
+      await this.getAllTablesByClientAndLocal()
     },
     addnewTable() {
       this.user.type === 'client' &&
@@ -324,8 +318,8 @@ export default {
           duration: 5000,
         })
         this.loadingMode = false
-      } else if (this.newTable.QR.length < 0) {
-        this.$toasted.show(`El QR no puede estar vacio`, {
+      } else if (this.newTable.qr.length < 0) {
+        this.$toasted.show(`El qr no puede estar vacio`, {
           theme: 'toasted-primary',
           position: 'top-right',
           duration: 10000,
@@ -333,15 +327,16 @@ export default {
         this.loadingMode = false
       } else {
         const name = this.newTable.name
-        const QR = this.newTable.QR
+        const qr = this.newTable.qr
         const localID = this.localSelected.id
-        const clientID = this.localSelected.clientID
+        const clientID = this.localSelected.client
         const body = {
           name,
-          QR,
+          qr,
           clientID,
           localID,
         }
+        console.log(body)
         this.$toasted.show(`Guardando cambios..`, {
           theme: 'toasted-primary',
           position: 'top-right',
@@ -364,7 +359,7 @@ export default {
               JSON.stringify(e.response.data.error['Errors List']) ===
               '{"name error":"name in use"}'
             ) {
-              this.$toasted.show(`ERROR: Nombre de local en uso`, {
+              this.$toasted.show(`ERROR: Nombre de mesa en uso`, {
                 theme: 'toasted-primary',
                 position: 'top-right',
                 duration: 10000,

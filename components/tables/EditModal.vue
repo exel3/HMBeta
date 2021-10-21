@@ -1,44 +1,22 @@
 <template>
-  <div class="editModalLocalContainer">
-    <div class="editModalLocal">
-      <label>Nombre de local:</label>
-      <BaseInput :valueinput="local.name" @input="newlocal.name = $event" />
-      <label>Direccion:</label>
+  <div class="editModaltableContainer">
+    <div class="editModaltable">
+      <label>Nombre de table:</label>
+      <BaseInput :valueinput="table.name" @input="newtable.name = $event" />
+      <label>QR:</label>
       <BaseInput
-        :valueinput="local.location_address"
-        @input="newlocal.locationAddress = $event"
+        :valueinput="table.qr"
+        @input="newtable.qr = $event"
       />
-      <label>Ciudad:</label>
-      <BaseInput
-        :valueinput="local.location_city_name"
-        @input="newlocal.locationCityName = $event"
-      />
-          <div v-if="user.type==='admin'" class="selectContainer">
-          <label for="owner">Dueño:</label>
-        <select id="owner" class="selectOwner" name="owner" @change="setOwnerSelected($event.target.value)" >
-          <option
-            v-for="owner in owners"
-            :key="'dropBox' + owner.id"
-            :value="owner.username"
-            :selected="owner.username===local.clientName? 'selected': false"
-          >
-            {{owner.username}}
-          </option>
-        </select>
-          </div>
-      <label>Pais:</label>
-      <BaseInput
-        :valueinput="local.location_country_name"
-        @input="newlocal.locationCountryName = $event"
-      />
+        
 
-      <div class="tdOptionsLocal">
+      <div class="tdOptionstable">
         <BaseButtonEdit
           backcolor="#5e72e4"
           bordercolor="#5e72e4"
           text="Confirmar"
           color="white"
-          @click="updateEditLocal()"
+          @click="updateEdittable()"
         />
         <BaseButtonEdit
           backcolor="white"
@@ -53,39 +31,29 @@
   </div>
 </template>
 <script>
-import BaseInput from '@/components/locals/BaseInput.vue'
-import BaseButtonEdit from '@/components/locals/BaseButtonEdit.vue'
+import BaseInput from '@/components/tables/BaseInput.vue'
+import BaseButtonEdit from '@/components/tables/BaseButtonEdit.vue'
 export default {
-  name: 'EditModalLocalLocal',
+  name: 'EditModalTable',
   components: {
     BaseInput,
     BaseButtonEdit,
   },
   props: {
-    local: {
+    table: {
       type: Object,
       required: true,
-    },
-    owners: {
-      type: Array,
-      required: true
-    },
-    user: {
-      type: Object,
-      required: true
     }
   },
   data: () => ({
-    newlocal: {},
+    newtable: {},
   }),
   mounted() {
-    this.newlocal.locationAddress = this.local.location_address
-    this.newlocal.locationCityName = this.local.location_city_name
-    this.newlocal.locationCountryName = this.local.location_country_name
-    this.newlocal.id = this.local.id
-    this.newlocal.name = this.local.name
-    this.newlocal.clientID = this.local.client
-    this.newlocal.clientName = this.local.clientName
+    this.newtable.qr = this.table.qr
+    this.newtable.id = this.table.id
+    this.newtable.name = this.table.name
+    this.newtable.local = this.table.local
+    this.newtable.client = this.table.client
    
   },
   methods: {
@@ -93,38 +61,24 @@ export default {
       this.$emit('cancel:click')
     },
       setOwnerSelected(ownerName) {
-      this.newlocal.clientID = this.owners.find(o => ownerName === o.username).id
-      console.log(ownerName, this.owners)
-      console.log(this.newlocal.clientID)
+      this.newtable.clientID = this.owners.find(o => ownerName === o.username).id
     },
-    updateEditLocal() {
-      if (this.newlocal.name.length < 1) {
+    updateEdittable() {
+      if (this.newtable.name.length < 1) {
         this.$toasted.show(`El nombre no puede estar vacio`, {
           theme: 'toasted-primary',
           position: 'top-right',
           duration: 5000,
         })
-      } else if (this.newlocal.locationAddress.length < 0) {
-        this.$toasted.show(`La direccion no puede estar vacia`, {
-          theme: 'toasted-primary',
-          position: 'top-right',
-          duration: 5000,
-        })
-        } else if (this.newlocal.clientName.length < 0) {
-        this.$toasted.show(`El dueño no puede estar vacio`, {
-          theme: 'toasted-primary',
-          position: 'top-right',
-          duration: 5000,
-        })
       } else {
-        this.$emit('update:local', this.newlocal)
+        this.$emit('update:table', this.newtable)
       }
     },
   },
 }
 </script>
 <style scoped>
-.editModalLocalContainer {
+.editModaltableContainer {
   position: fixed;
   height: 100%;
   width: 100%;
@@ -136,7 +90,7 @@ export default {
   top:65px;
   left: 0;
 }
-.editModalLocal {
+.editModaltable {
   position: absolute;
   box-sizing: border-box;
   top: 0;
@@ -167,7 +121,7 @@ export default {
   }
 }
 
-.tdOptionsLocal {
+.tdOptionstable {
   display: grid;
   grid-auto-flow: row;
   gap: 1rem;

@@ -438,6 +438,49 @@ app.post('/createNewTable', (req, res) => {
       })
     })
 })
+app.put('/updateTable/:tableID', (req, res) => {
+  const { tableID } = req.params
+  const body = req.body
+  const token = getToken(req, res)
+  const headers = {
+    headers:
+      { authorization: token }
+  }
+  const data = body
+
+  axios.put(`https://happymatch.herokuapp.com/api/table/update/${tableID}`, data, headers)
+    .then(
+      response => {
+        res.json(response.data)
+      }
+    )
+    .catch(e => {
+      res.statusCode = e.response.status
+      res.json({
+        error: e.response.data
+      })
+    })
+})
+app.delete('/deleteTable/:tableID', (req, res) => {
+  const { tableID } = req.params
+  const token = getToken(req, res)
+  const headers = {
+    headers:
+      { authorization: token }
+  }
+  axios.delete(`https://happymatch.herokuapp.com/api/table/delete/${tableID}`, headers)
+    .then(
+      response => {
+        res.json(response.data)
+      }
+    )
+    .catch(e => {
+      res.statusCode = e.response.status
+      res.json({
+        error: e.response.data
+      })
+    })
+})
 app.get('/getGroupTables/:localId', (req, res) => {
   const { localId } = req.params
   const token = getToken(req, res)

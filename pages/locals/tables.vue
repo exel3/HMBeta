@@ -50,7 +50,7 @@
         </form>
       </div>
       <div class="containerAddBtn">
-        <button :disabled="loadingMode" @click.prevent="addnewTable">Agregar</button>
+        <button :disabled="loadingMode" @click.prevent="addNewTable">Agregar</button>
       </div>
     </article>
     <article class="localList">
@@ -92,17 +92,17 @@
 :key="table.id" 
 :table="table"
 :locals="locals"
-@click="showDeleteModal = true; tableSelected = local"  
-@click:delete="showDeleteModal=true; tableSelected=local"
-@click:edit="showEditModal=true; tableSelected={...local, clientName:$event}"
+@click="showDeleteModal = true; tableSelected = table"  
+@click:delete="showDeleteModal=true; tableSelected=table"
+@click:edit="showEditModal=true; tableSelected={...table, localName:$event}"
 />
 	</tbody>
 
 </table>
   </div>
     </article>
-    <EditModal v-if="showEditModal" :local="tableSelected" :locals="locals" :user="user" @click:cancel="showEditModal=false" @update:local="updateLocal($event); showEditModal=false" @cancel:click="showEditModal=false"  />
-    <DeleteModal v-if="showDeleteModal" @delete:local="deletelocal" @cancel:delete="showDeleteModal = false"/>
+    <EditModal v-if="showEditModal" :table="tableSelected" @click:cancel="showEditModal=false" @update:table="updateTable($event); showEditModal=false" @cancel:click="showEditModal=false"  />
+    <DeleteModal v-if="showDeleteModal" @delete:local="deleteTable" @cancel:delete="showDeleteModal = false"/>
   </section>
 </template>
 <script>
@@ -308,7 +308,7 @@ export default {
       this.localsFilter.length > 0 && this.setLocalSelected(this.localsFilter[0].name)
       await this.getAllTablesByClientAndLocal()
     },
-    addnewTable() {
+    addNewTable() {
       this.user.type === 'client' &&
         (this.localSelected.clientID = this.user.id)
       if (this.newTable.name.length < 1) {
@@ -389,20 +389,23 @@ export default {
           })
       }
     },
-    updateLocal(localC) {
-      this.$fetchState.pending = true
+    updateTable(tableC) {
       this.loadingMode = true
-      const localID = localC.id
-      const body = localC
+      const tableID = tableC.id
+      const localID = tableC.local
+      const body = {...tableC, localID}
       this.$axios
-        .$put(`/api/updateLocal/${localID}`, body)
-        .then(async (res) => {
+        .$put(`/api/updateTable/${tableID}`, body)
+        .then((res) => {
           this.$toasted.show(`Cambios guardados`, {
             theme: 'toasted-primary',
             position: 'top-right',
             duration: 5000,
           })
-          await this.getlocals()
+          const indexT = this.currentTables.findIndex(t => t.id === tableC.id)
+           this.currentTables[indexT].name = tableC.name
+           this.currentTables[indexT].qr = tableC.qr
+           this.tableFilter = this.currentTables
           this.loadingMode = false
         })
         .catch((e) => {
@@ -439,11 +442,11 @@ export default {
           this.loadingMode = false
         })
     },
-    deletelocal() {
+    deleteTable() {
       this.loadingMode = true
-      const localID = this.localSelected.id
+      const tableID = this.tableSelected.id
       this.$axios
-        .$delete(`/api/deleteLocal/${localID}`)
+        .$delete(`/api/deleteTable/${tableID}`)
         .then((res) => {
           this.$toasted.show(`Cambios guardados`, {
             theme: 'toasted-primary',
@@ -451,7 +454,7 @@ export default {
             duration: 5000,
           })
           this.currentTables = this.currentTables.filter(
-            (u) => u.id !== this.localSelected.id
+            (u) => u.id !== this.tableSelected.id
           )
           this.showDeleteModal = false
           this.tableFilter = this.currentTables
@@ -459,7 +462,7 @@ export default {
         })
         .catch((e) => {
           this.$toasted.show(
-            `Error al borrar cliente: ${JSON.stringify(
+            `Error al borrar mesa: ${JSON.stringify(
               e.response.data.error['Errors List']
             )}`,
             {

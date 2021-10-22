@@ -257,19 +257,22 @@ export default {
               })
             })
     },
-    generateQr(){
-      if(this.newTable.name.length < 1){
-               this.$toasted.show(`El nombre de la mesa no puede estar vacio al generar un QR`, {
-                theme: 'toasted-primary',
-                position: 'top-right',
-                duration: 5000,
-              })
+    generateQr() {
+      if (this.newTable.name.length < 1) {
+        this.$toasted.show(
+          `Nombre de mesa no puede estar vacio al generar un QR`,
+          {
+            theme: 'toasted-primary',
+            position: 'top-right',
+            duration: 5000,
+          }
+        )
       } else {
-      
-      this.newTable.qr = uuidv4()}
+        this.newTable.qr = uuidv4()
+      }
     },
     getLogoQr() {
-      return require('@/assets/images/logoBgBlack.jpg')
+      return require('@/assets/images/logoBgWhite.jpg')
     },
     async getAllTablesByClientAndLocal() {
       this.loadingMode = true
@@ -354,7 +357,6 @@ export default {
         const clientID = this.localSelected.client
         const body = {
           name,
-          qr,
           clientID,
           localID,
         }
@@ -365,9 +367,31 @@ export default {
         })
         this.$axios
           .$post('/api/createNewTable', body)
-          .then(async (res) => {
-            // this.newTable.id = res.id
-            await this.getlocals()
+          .then(async (resTable) => {
+            const bodyQr = {
+              code: qr,
+              tableID: resTable.table.id,
+              url: qr,
+            }
+            await this.$axios
+              .$post('/api/createNewQR', bodyQr)
+              .then((resQr) => {
+                this.$toasted.show(`Codigo QR sincronizado`, {
+                  theme: 'toasted-primary',
+                  position: 'top-right',
+                  duration: 5000,
+                })
+                this.newTable.id = resTable.table.id
+                this.tableFilter.push(this.newTable)
+                this.loadingMode = false
+              })
+              .catch((e) => {
+                this.$toasted.show(`Error al sincronizar codigo QR: ${e}`, {
+                  theme: 'toasted-primary',
+                  position: 'top-right',
+                  duration: 5000,
+                })
+              })
             this.$toasted.show(`Cambios guardados`, {
               theme: 'toasted-primary',
               position: 'top-right',
@@ -385,18 +409,9 @@ export default {
                 position: 'top-right',
                 duration: 10000,
               })
-            } else if (
-              JSON.stringify(e.response.data.error['Errors List']) ===
-              '{"locationAddress error":"locationAddress in use"}'
-            ) {
-              this.$toasted.show(`ERROR: Email en uso`, {
-                theme: 'toasted-primary',
-                position: 'top-right',
-                duration: 10000,
-              })
             } else {
               this.$toasted.show(
-                `Error al crear local: ${JSON.stringify(
+                `Error al crear mesa: ${JSON.stringify(
                   e.response.data.error['Errors List']
                 )}`,
                 {
@@ -414,18 +429,51 @@ export default {
       this.loadingMode = true
       const tableID = tableC.id
       const localID = tableC.local
+      const qr = tableC.newQr
       const body = { ...tableC, localID }
       this.$axios
         .$put(`/api/updateTable/${tableID}`, body)
-        .then((res) => {
+        .then(async (res) => {
           this.$toasted.show(`Cambios guardados`, {
             theme: 'toasted-primary',
             position: 'top-right',
             duration: 5000,
           })
-          const indexT = this.currentTables.findIndex((t) => t.id === tableC.id)
-          this.currentTables[indexT].name = tableC.name
-          this.currentTables[indexT].qr = tableC.qr
+
+          if (qr !== '') {
+            const bodyQR = {
+              code: qr,
+              tableID,
+              url: qr,
+            }
+            await this.$axios
+              .$put(`/api/updateQR/${tableC.qr}`, bodyQR)
+              .then((resQr) => {
+                this.$toasted.show(`Codigo QR sincronizado`, {
+                  theme: 'toasted-primary',
+                  position: 'top-right',
+                  duration: 5000,
+                })
+                const indexT = this.currentTables.findIndex(
+                  (t) => t.id === tableC.id
+                )
+                this.currentTables[indexT].name = tableC.name
+                this.currentTables[indexT].qr = resQr.qr.id
+              })
+              .catch((e) => {
+                this.$toasted.show(`Error al sincronizar codigo QR: ${e}`, {
+                  theme: 'toasted-primary',
+                  position: 'top-right',
+                  duration: 5000,
+                })
+              })
+          } else {
+            const indexT = this.currentTables.findIndex(
+              (t) => t.id === tableC.id
+            )
+            this.currentTables[indexT].name = tableC.name
+            this.currentTables[indexT].qr = tableC.qr
+          }
           this.tableFilter = this.currentTables
           this.loadingMode = false
         })
@@ -450,7 +498,7 @@ export default {
             })
           } else {
             this.$toasted.show(
-              `Error al actualizar local: ${JSON.stringify(
+              `Error al actualizar mesa: ${JSON.stringify(
                 e.response.data.error['Errors List']
               )}`,
               {
@@ -484,6 +532,28 @@ export default {
         .catch((e) => {
           this.$toasted.show(
             `Error al borrar mesa: ${JSON.stringify(
+              e.response.data.error['Errors List']
+            )}`,
+            {
+              theme: 'toasted-primary',
+              position: 'top-right',
+              duration: 5000,
+            }
+          )
+
+          this.loadingMode = false
+        })
+        
+      this.loadingMode = true
+      const id = this.tableSelected.qr
+      this.$axios
+        .$delete(`/api/deleteQR/${id}`)
+        .then((res) => {
+          this.loadingMode = false
+        })
+        .catch((e) => {
+          this.$toasted.show(
+            `Error al borrar QR: ${JSON.stringify(
               e.response.data.error['Errors List']
             )}`,
             {
@@ -537,7 +607,7 @@ export default {
     padding: 0.5rem;
   }
   .newTable {
-   max-height: 30rem;
+    max-height: 30rem;
   }
   .titleCard {
     display: grid;

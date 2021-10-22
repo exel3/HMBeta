@@ -54,6 +54,7 @@ export default {
     this.newtable.name = this.table.name
     this.newtable.local = this.table.local
     this.newtable.client = this.table.client
+    this.newtable.newQr = ''
    
   },
   methods: {

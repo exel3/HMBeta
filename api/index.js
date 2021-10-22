@@ -481,6 +481,72 @@ app.delete('/deleteTable/:tableID', (req, res) => {
       })
     })
 })
+app.post('/createNewQR', (req, res) => {
+  const body = req.body
+  const token = getToken(req, res)
+  const headers = {
+    headers:
+      { authorization: token }
+  }
+  const data = body
+
+  axios.post('https://happymatch.herokuapp.com/api/qr/create', data, headers)
+    .then(
+      response => {
+        res.json(response.data)
+      }
+    )
+    .catch(e => {
+      res.statusCode = e.response.status
+      res.json({
+        error: e.response.data
+      })
+    })
+})
+app.put('/updateQR/:qrID', (req, res) => {
+  const { qrID } = req.params
+  const body = req.body
+  const token = getToken(req, res)
+  const headers = {
+    headers:
+      { authorization: token }
+  }
+  const data = body
+
+  axios.put(`https://happymatch.herokuapp.com/api/qr/update/${qrID}`, data, headers)
+    .then(
+      response => {
+        res.json(response.data)
+      }
+    )
+    .catch(e => {
+      res.statusCode = e.response.status
+      res.json({
+        error: e.response.data
+      })
+    })
+})
+app.delete('/deleteQR/:id', (req, res) => {
+  console.log('enntro api delete qr')
+  const { id } = req.params
+  const token = getToken(req, res)
+  const headers = {
+    headers:
+      { authorization: token }
+  }
+  axios.delete(`https://happymatch.herokuapp.com/api/qr/delete/${id}`, headers)
+    .then(
+      response => {
+        res.json(response.data)
+      }
+    )
+    .catch(e => {
+      res.statusCode = e.response.status
+      res.json({
+        error: e.response.data
+      })
+    })
+})
 app.get('/getGroupTables/:localId', (req, res) => {
   const { localId } = req.params
   const token = getToken(req, res)

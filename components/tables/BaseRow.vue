@@ -4,7 +4,7 @@
       <p>{{ table.name }}</p>
     </td>
     <td>
-      <p>{{ table.qr }}</p>
+      <p>{{ table.qr.code }}</p>
     </td>
     <td class="tdOptions">
       <BaseButtonTable

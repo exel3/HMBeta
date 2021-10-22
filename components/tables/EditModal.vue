@@ -2,13 +2,31 @@
   <div class="editModaltableContainer">
     <div class="editModaltable">
       <label>Nombre de table:</label>
-      <BaseInput :valueinput="table.name" @input="newtable.name = $event" />
+      <BaseInput :valueinput="tableEdited.name" @input="tableEdited.name = $event" />
       <label>QR:</label>
-      <BaseInput
-        :valueinput="table.qr"
-        @input="newtable.qr = $event"
-      />
-        
+      <BaseInput v-if="tableEdited.newQr === ''" :valueinput="tableEdited.qr.code" :disabled="true" />
+       <BaseInput v-else :valueinput="tableEdited.newQr" :disabled="true" />
+      <div v-if="tableEdited.qr !== ''" class="qrContainerEdit">
+        <vueQr
+          v-if="tableEdited.newQr === ''"
+          :logoSrc="getLogoQr()"
+          :logoScale="4"
+          :text="tableEdited.qr.code"
+          :size="200"
+        />
+           <vueQr
+          v-else
+          :logoSrc="getLogoQr()"
+          :logoScale="4"
+          :text="tableEdited.newQr"
+          :size="200"
+        />
+      </div>
+      <div class="containerAddNewQrBtn">
+        <button @click.prevent="generateNewQR">
+          Generar nuevo QR
+        </button>
+      </div>
 
       <div class="tdOptionstable">
         <BaseButtonEdit
@@ -33,47 +51,65 @@
 <script>
 import BaseInput from '@/components/tables/BaseInput.vue'
 import BaseButtonEdit from '@/components/tables/BaseButtonEdit.vue'
+import vueQr from 'vue-qr/src/packages/vue-qr.vue'
+import { v4 as uuidv4 } from 'uuid'
 export default {
   name: 'EditModalTable',
   components: {
     BaseInput,
     BaseButtonEdit,
+    vueQr,
   },
   props: {
     table: {
       type: Object,
       required: true,
-    }
+    },
   },
   data: () => ({
-    newtable: {},
+    tableEdited: {
+      qr: '',
+      id: '',
+      name: '',
+      newQr: '',
+      local: '',
+    },
   }),
-  mounted() {
-    this.newtable.qr = this.table.qr
-    this.newtable.id = this.table.id
-    this.newtable.name = this.table.name
-    this.newtable.local = this.table.local
-    this.newtable.client = this.table.client
-    this.newtable.newQr = ''
-   
+  created() {
+    this.tableEdited.qr = this.table.qr
+    this.tableEdited.id = this.table.id
+    this.tableEdited.name = this.table.name
+    this.tableEdited.local = this.table.local
+    this.tableEdited.newQr = ''
   },
   methods: {
     clickCancel() {
       this.$emit('cancel:click')
     },
-      setOwnerSelected(ownerName) {
-      this.newtable.clientID = this.owners.find(o => ownerName === o.username).id
+    getLogoQr() {
+      return require('@/assets/images/logoBgWhite.jpg')
+    },
+    setOwnerSelected(ownerName) {
+      this.tableEdited.clientID = this.owners.find(
+        (o) => ownerName === o.username
+      ).id
     },
     updateEdittable() {
-      if (this.newtable.name.length < 1) {
+      if (this.tableEdited.name.length < 1) {
         this.$toasted.show(`El nombre no puede estar vacio`, {
           theme: 'toasted-primary',
           position: 'top-right',
           duration: 5000,
         })
       } else {
-        this.$emit('update:table', this.newtable)
+        this.$emit('update:table', this.tableEdited)
       }
+    },
+    generateNewQR() {
+      console.log('antiguoQr ', this.tableEdited.newQr)
+      this.tableEdited.newQr = ''
+      this.tableEdited.newQr = uuidv4()
+console.log('nuevoQr ', this.tableEdited.newQr)
     },
   },
 }
@@ -88,7 +124,7 @@ export default {
   backdrop-filter: blur(2px);
   box-sizing: border-box;
   overflow: hidden;
-  top:65px;
+  top: 65px;
   left: 0;
 }
 .editModaltable {
@@ -130,19 +166,38 @@ export default {
   bottom: 5rem;
   width: calc(100% - 2rem);
 }
-.selectOwner {
-   width: 100%;
-  height: 2.5rem;
-  padding:0 0.75rem;
-  font-weight: 400;
-  line-height: 1.5;
-  color: #656a6f;
-  background-color: #fff;
-  background-clip: padding-box;
-  border: 1px solid #dee2e6;
-  border-radius: 0.25rem;
-  box-shadow: 0 3px 2px rgb(233 236 239 / 5%);
+
+.qrContainerEdit {
+  display: grid;
+  align-items: center;
+  justify-content: center;
+}
+
+.containerAddNewQrBtn {
+  max-height: 4rem;
+  display: grid;
+  justify-items: end;
+  padding-bottom: 1.25rem;
+  padding-right: 1.5rem;
   box-sizing: border-box;
-  margin-top:0.5rem;
+  grid-auto-flow: column;
+  justify-content: end;
+  gap: 0 1rem;
+}
+
+.containerAddNewQrBtn button {
+  width: 8rem;
+  height: 2rem;
+  border: none;
+  text-transform: none;
+  transition: all 0.15s ease;
+  letter-spacing: 0.025em;
+  font-size: 0.875rem;
+  will-change: transform;
+  color: #fff;
+  background-color: #5e72e4;
+  border-color: #5e72e4;
+  box-shadow: 0 4px 6px rgb(50 50 93 / 11%), 0 1px 3px rgb(0 0 0 / 8%);
+  cursor: pointer;
 }
 </style>

@@ -396,16 +396,15 @@ app.post('/admin/login', (req, res) => {
       })
     })
 })
-app.get('/getAllTablesByClientAndLocal/:clientID/:localID', (req, res) => {
+app.post('/getAllTablesByClientAndLocal/:clientID/:localID', (req, res) => {
   const page = 0
   const { clientID, localID } = req.params
   const token = getToken(req, res)
   const get = { headers: { Authorization: token } }
-  console.log('clientID: ', clientID, ' localID: ', localID)
-  axios.get(`https://happymatch.herokuapp.com/api/table/getAllTables/client/${clientID}/local/${localID}/page/${page}`, get)
+  const bodyGet = req.body
+  axios.post(`https://happymatch.herokuapp.com/api/table/getAllTables/filter/client/${clientID}/local/${localID}/page/${page}`,bodyGet,get)
     .then(
       response => {
-        console.log(response.data)
         res.json(response.data)
       }
     )
@@ -527,7 +526,6 @@ app.put('/updateQR/:qrID', (req, res) => {
     })
 })
 app.delete('/deleteQR/:id', (req, res) => {
-  console.log('enntro api delete qr')
   const { id } = req.params
   const token = getToken(req, res)
   const headers = {

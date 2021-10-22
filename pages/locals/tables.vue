@@ -117,7 +117,7 @@ import Loading from '@/components/ui/Loading.vue'
 import vueQr from 'vue-qr/src/packages/vue-qr.vue'
 import { v4 as uuidv4 } from 'uuid'
 export default {
-  name: '',
+  name: 'Tables',
   components: {
     DeleteModal,
     EditModal,
@@ -283,9 +283,10 @@ export default {
       } else {
         clientID = this.ownerSelected.id
       }
-
+      const name = this.searchValue === ''? null : this.searchValue
+      const body = {name}
       await this.$axios
-        .$get(`/api/getAllTablesByClientAndLocal/${clientID}/${localID}`)
+        .$post(`/api/getAllTablesByClientAndLocal/${clientID}/${localID}`, body)
         .then((res) => {
           console.log(res)
           this.currentTables = res.tables
@@ -382,7 +383,12 @@ export default {
                   duration: 5000,
                 })
                 this.newTable.id = resTable.table.id
-                this.tableFilter.push(this.newTable)
+                const newItem = { ...this.newTable }
+                this.tableFilter.push(newItem)
+                this.newTable = {
+                  qr: '',
+                  id: '',
+                }
                 this.loadingMode = false
               })
               .catch((e) => {
@@ -402,7 +408,7 @@ export default {
           .catch((e) => {
             if (
               JSON.stringify(e.response.data.error['Errors List']) ===
-              '{"name error":"name in use"}'
+              '[{"invalid name":"Name is already in use"}]'
             ) {
               this.$toasted.show(`ERROR: Nombre de mesa en uso`, {
                 theme: 'toasted-primary',
@@ -447,7 +453,7 @@ export default {
               url: qr,
             }
             await this.$axios
-              .$put(`/api/updateQR/${tableC.qr}`, bodyQR)
+              .$put(`/api/updateQR/${tableC.qr.id}`, bodyQR)
               .then((resQr) => {
                 this.$toasted.show(`Codigo QR sincronizado`, {
                   theme: 'toasted-primary',
@@ -458,7 +464,7 @@ export default {
                   (t) => t.id === tableC.id
                 )
                 this.currentTables[indexT].name = tableC.name
-                this.currentTables[indexT].qr = resQr.qr.id
+                this.currentTables[indexT].qr = resQr.qr
               })
               .catch((e) => {
                 this.$toasted.show(`Error al sincronizar codigo QR: ${e}`, {
@@ -516,7 +522,31 @@ export default {
       const tableID = this.tableSelected.id
       this.$axios
         .$delete(`/api/deleteTable/${tableID}`)
-        .then((res) => {
+        .then(async (res) => {
+          const id = this.tableSelected.qr
+          await this.$axios
+            .$delete(`/api/deleteQR/${id}`)
+            .then((res) => {
+                this.$toasted.show(`QR desincronizado`, {
+            theme: 'toasted-primary',
+            position: 'top-right',
+            duration: 2000,
+          })
+            })
+            .catch((e) => {
+              this.$toasted.show(
+                `Error al borrar QR: ${JSON.stringify(
+                  e.response.data.error['Errors List']
+                )}`,
+                {
+                  theme: 'toasted-primary',
+                  position: 'top-right',
+                  duration: 5000,
+                }
+              )
+
+              this.loadingMode = false
+            })
           this.$toasted.show(`Cambios guardados`, {
             theme: 'toasted-primary',
             position: 'top-right',
@@ -532,28 +562,6 @@ export default {
         .catch((e) => {
           this.$toasted.show(
             `Error al borrar mesa: ${JSON.stringify(
-              e.response.data.error['Errors List']
-            )}`,
-            {
-              theme: 'toasted-primary',
-              position: 'top-right',
-              duration: 5000,
-            }
-          )
-
-          this.loadingMode = false
-        })
-        
-      this.loadingMode = true
-      const id = this.tableSelected.qr
-      this.$axios
-        .$delete(`/api/deleteQR/${id}`)
-        .then((res) => {
-          this.loadingMode = false
-        })
-        .catch((e) => {
-          this.$toasted.show(
-            `Error al borrar QR: ${JSON.stringify(
               e.response.data.error['Errors List']
             )}`,
             {

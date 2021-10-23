@@ -566,7 +566,7 @@ app.get('/getUser', (req, res) => {
   const user = getUser(req, res)
   res.json(user)
 })
-app.get('/getQuestions/:localId', (req, res) => {
+app.get('/getQuestionsByLocalId/:localId', (req, res) => {
   const { localId } = req.params
   const token = getToken(req, res)
   const get = { headers: { Authorization: token } }

@@ -1,47 +1,90 @@
 <template>
   <section>
-      <article class="newQuestionArticle">
-        <div class="titleCard"><p>Nueva pregunta</p></div>
-        <div class="newQuestionContainer">
-          <form>
-            <div class="newQuestionForm">
-              <label for="newQuestion">Pregunta</label>
-              <input
-                id="newQuestion"
-                v-model="newQuestion"
-                type="text"
-                autocomplete="off"
-              />
-            </div>
-            <div v-if="showNewAnswersInput" class="newAnswerForm">
-              <input
-                v-model="newAnswers[0]"
-                type="text"
-                autocomplete="off"
-                placeholder="Respuesta"
-              />
-            </div>
-            <div v-if="showNewAnswersInput" class="newAnswerForm">
-              <input
-                v-model="newAnswers[1]"
-                type="text"
-                autocomplete="off"
-                placeholder="Respuesta"
-              />
-            </div>
-          </form>
-        </div>
-        <div class="containerAddBtn">
-          <button @click.prevent="addNewQuestion()">
-            {{ buttonAddTitle }}
-          </button>
-        </div>
-      </article>
+    <article class="newTable">
+      <div class="titleCard"><p>Seleccionar</p></div>
+      <div class="contentCard">
+        <form>
+          <div v-if="user.type === 'admin'" class="selectContainer">
+            <label for="owner">Dueño</label>
+            <select
+              id="owner"
+              class="selectlocal"
+              name="owner"
+              @change="setOwnerSelected($event.target.value)"
+            >
+              <option disabled selected value></option>
+              <option
+                v-for="owner in owners"
+                :key="'dropBox' + owner.id"
+                :value="owner.username"
+              >
+                {{ owner.username }}
+              </option>
+            </select>
+          </div>
+          <div class="selectContainer">
+            <label for="local">Local</label>
+            <select
+              id="local"
+              class="selectlocal"
+              name="local"
+              @change="setLocalSelected($event.target.value)"
+            >
+              <option disabled selected value></option>
+              <option
+                v-for="local in localsFilter"
+                :key="'dropBox' + local.id"
+                :value="local.name"
+              >
+                {{ local.name }}
+              </option>
+            </select>
+          </div>
+        </form>
+      </div>
+    </article>
+    <article class="newQuestionArticle">
+      <div class="titleCard"><p>Nueva pregunta</p></div>
+      <div class="newQuestionContainer">
+        <form>
+          <div class="newQuestionForm">
+            <label for="newQuestion">Pregunta</label>
+            <input
+              id="newQuestion"
+              v-model="newQuestion"
+              type="text"
+              autocomplete="off"
+            />
+          </div>
+          <div v-if="showNewAnswersInput" class="newAnswerForm">
+            <input
+              v-model="newAnswers[0]"
+              type="text"
+              autocomplete="off"
+              placeholder="Respuesta"
+            />
+          </div>
+          <div v-if="showNewAnswersInput" class="newAnswerForm">
+            <input
+              v-model="newAnswers[1]"
+              type="text"
+              autocomplete="off"
+              placeholder="Respuesta"
+            />
+          </div>
+        </form>
+      </div>
+      <div class="containerAddBtn">
+        <button @click.prevent="addNewQuestion()">
+          {{ buttonAddTitle }}
+        </button>
+      </div>
+    </article>
     <article class="userList">
       <div class="titleCard"><p>Lista de preguntas</p></div>
     </article>
     <article
-      v-for="(question, indexQuestion) in questionsSelected"
+      v-for="(question, indexQuestion) in currentQuestions"
       :key="question.id"
       class="answerList"
     >
@@ -50,9 +93,12 @@
           <tr>
             <th>
               <input
-                v-model="questionsSelected[indexQuestion].question"
+                v-model="currentQuestions[indexQuestion].question"
                 class="questionInput"
-                @blur="showToast();confirmChangeQuestion()"
+                @blur="
+                  showToast()
+                  confirmChangeQuestion()
+                "
               />
             </th>
             <th>
@@ -105,10 +151,15 @@ export default {
     DeleteModal,
   },
   data: () => ({
+    loadingMode: false,
     showDeleteModal: '',
+    localsFilter: [],
+    owners: [],
+    ownersWithLocals: [],
     showNewAnswersInput: false,
     localSelected: [],
-    questionsSelected: [],
+    currentQuestions: [],
+    tableFilter: [],
     locals: [],
     localAnswers: [],
     newQuestion: '',
@@ -117,59 +168,110 @@ export default {
     currentUser: {
       id: '',
       type: '',
-      username: ''
-    }
+      username: '',
+    },
   }),
   async fetch() {
     await this.$axios
       .$get('/api/getUser')
-      .then((response) => {
-        this.currentUser = response
+      .then(async (response) => {
+        this.user = response
+        this.user.type === 'admin'
+          ? await this.$axios
+              .$get('/api/getAllClients')
+              .then(async (response) => {
+                this.owners = response.clients
+                await this.$axios
+                  .$get('/api/getAllLocals')
+                  .then((response) => {
+                    this.locals = response.locals
+                    this.localsFilter = response.locals
+                    this.ownersWithLocals = this.owners.map((o) => {
+                      const localsArray = this.locals.filter((l) =>
+                        o.locals.includes(l.id)
+                      )
+                      const resp = { ...o, localsArray }
+                      return resp
+                    })
+                  })
+                  .catch((e) => {
+                    this.$toasted.show(`Error al recuperar dueños: ${e}`, {
+                      theme: 'toasted-primary',
+                      position: 'top-right',
+                      duration: 5000,
+                    })
+                  })
+              })
+              .catch((e) => {
+                this.$toasted.show(`Error al recuperar locales: ${e}`, {
+                  theme: 'toasted-primary',
+                  position: 'top-right',
+                  duration: 5000,
+                })
+              })
+          : await this.$axios
+              .$get(`/api/getLocalsByClient/${this.user.id}`)
+              .then(async (response) => {
+                this.locals = response.locals
+                this.localsFilter = response.locals
+                await this.getQuestionsByLocal()
+              })
+              .catch((e) => {
+                this.$toasted.show(`Error al recuperar locales: ${e}`, {
+                  theme: 'toasted-primary',
+                  position: 'top-right',
+                  duration: 5000,
+                })
+              })
       })
       .catch((e) => {
-            this.$toasted.show(`Error recuperando los datos de usuario: ${e}`, {
+        this.$toasted.show(`Error al recuperar el tipo de usuario: ${e}`, {
           theme: 'toasted-primary',
           position: 'top-right',
-          duration: 10000,
+          duration: 5000,
         })
       })
-    this.locals.length > 0 &&
-      (await this.$axios
-        .$get(`/api/getQuestions/${this.locals[0].id}`)
-        .then((res) => {
-          this.locals[0].questions = res.questions
-        })
-        .catch((e) =>  this.$toasted.show(`Error recuperando los datos de preguntas: ${e}`, {
-          theme: 'toasted-primary',
-          position: 'top-right',
-          duration: 10000,
-        })))
-    await this.setLocalSelected(this.locals[0])
-  },
-  mounted() {
-    this.getLocals()
   },
   methods: {
     setLocalSelected(local) {
       this.localSelected = this.locals.find((l) => l.id === local.id)
-      this.questionsSelected = this.localSelected.questions
+      this.currentQuestions = this.localSelected.questions
     },
-    getLocals() {
-
+    getQuestionsByLocal() {
+      this.loadingMode = true
+      const localID = this.localSelected.id
+      this.$axios
+        .$get(`/api/getQuestionsByLocalId/${localID}`)
+        .then((res) => {
+          this.currentQuestions = res.tables
+          this.tableFilter = res.tables
+          this.loadingMode = false
+        })
+        .catch((e) => {
+          this.loadingMode = false
+          this.$toasted.show(
+            `Error al recuperar preguntas: ${JSON.stringify(
+              e.response.data.error['Errors List']
+            )}`,
+            {
+              theme: 'toasted-primary',
+              position: 'top-right',
+              duration: 5000,
+            }
+          )
+        })
     },
     addNewQuestion() {
       if ((this.newQuestion !== '') & (this.buttonAddTitle === 'Agregar')) {
         this.changeShowNewAnswersInput()
         this.buttonAddTitle = 'Confirmar'
       } else {
-       
-
         this.$toasted.show('Creando pregunta..', {
           theme: 'toasted-primary',
           position: 'top-right',
           duration: 2000,
         })
-         this.confirmAddNewQuestion()
+        this.confirmAddNewQuestion()
       }
     },
     changeShowNewAnswersInput() {
@@ -185,7 +287,7 @@ export default {
           question: this.newQuestion,
           answers: this.newAnswers,
         }
-        await this.questionsSelected.push(temporalQuestion)
+        await this.currentQuestions.push(temporalQuestion)
         this.confirmChangeQuestion()
         this.newQuestion = ''
         this.newAnswers = []
@@ -196,40 +298,40 @@ export default {
 
     confirmChangeQuestion() {
       const localId = this.localSelected.id
-      const questions = this.questionsSelected
+      const questions = this.currentQuestions
       const body = { localId, questions }
 
       this.$axios
         .$post('/api/updateQuestions', body)
-        .then((res) => this.$toasted.show('Cambios guardados', {
-          theme: 'toasted-primary',
-          position: 'top-right',
-          duration: 2000,
-        }))
+        .then((res) =>
+          this.$toasted.show('Cambios guardados', {
+            theme: 'toasted-primary',
+            position: 'top-right',
+            duration: 2000,
+          })
+        )
         .catch((e) => {
-         this.$toasted.show(`Error al guardar los cambios: ${e}`, {
-          theme: 'toasted-primary',
-          position: 'top-right',
-          duration: 10000,
-        })
+          this.$toasted.show(`Error al guardar los cambios: ${e}`, {
+            theme: 'toasted-primary',
+            position: 'top-right',
+            duration: 10000,
+          })
         })
     },
 
     deleteQuestion(question) {
-      this.questionsSelected = this.questionsSelected.filter(
+      this.currentQuestions = this.currentQuestions.filter(
         (q) => question.question !== q.question
       )
       try {
-     
-          this.$toasted.show('Borrando pregunta..', {
+        this.$toasted.show('Borrando pregunta..', {
           theme: 'toasted-primary',
           position: 'top-right',
           duration: 2000,
         })
-         this.confirmChangeQuestion()
-      }
-      catch (e){
-            this.$toasted.show(`Error al borrar pregunta: ${e}`, {
+        this.confirmChangeQuestion()
+      } catch (e) {
+        this.$toasted.show(`Error al borrar pregunta: ${e}`, {
           theme: 'toasted-primary',
           position: 'top-right',
           duration: 5000,
@@ -237,19 +339,18 @@ export default {
       }
     },
     deleteAnswer(questionIndex, answer) {
-      this.questionsSelected[questionIndex].answers = this.questionsSelected[
+      this.currentQuestions[questionIndex].answers = this.currentQuestions[
         questionIndex
       ].answers.filter((a) => answer !== a)
-         try {
-      this.confirmChangeQuestion()
-          this.$toasted.show('Borrando respuesta..', {
+      try {
+        this.confirmChangeQuestion()
+        this.$toasted.show('Borrando respuesta..', {
           theme: 'toasted-primary',
           position: 'top-right',
           duration: 2000,
         })
-      }
-      catch (e){
-            this.$toasted.show(`Error al borrar respuesta: ${e}`, {
+      } catch (e) {
+        this.$toasted.show(`Error al borrar respuesta: ${e}`, {
           theme: 'toasted-primary',
           position: 'top-right',
           duration: 5000,
@@ -257,15 +358,15 @@ export default {
       }
     },
     addNewAnswer(questionIndex) {
-      this.questionsSelected[questionIndex].answers.push('')
+      this.currentQuestions[questionIndex].answers.push('')
     },
-    showToast(){
-        this.$toasted.show('Guardando cambios..', {
-          theme: 'toasted-primary',
-          position: 'top-right',
-          duration: 2000,
-        })
-    }
+    showToast() {
+      this.$toasted.show('Guardando cambios..', {
+        theme: 'toasted-primary',
+        position: 'top-right',
+        duration: 2000,
+      })
+    },
   },
 }
 </script>

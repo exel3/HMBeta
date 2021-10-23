@@ -1,42 +1,57 @@
 <template>
   <div class="containerModal">
     <div class="modalBox">
-      <div class="imgContainer"><img src="@/assets/icons/warning.svg"></div>
-     <div class="modalText"><h1>ADVERTENCIA</h1><p>Eliminar usuario borrará toda su informacion de la base de datos, ¿Desea continuar?</p></div>
-     <div class="modalButtons">
-       <button @click.prevent="$emit('delete:local')">Eliminar</button><button @click.prevent="$emit('cancel:delete')">Cancelar</button>
-     </div>
+      <div class="imgContainer"><img src="@/assets/icons/warning.svg" /></div>
+      <div class="modalText">
+        <h1>ADVERTENCIA</h1>
+        <p>
+          Eliminar usuario borrará toda su informacion de la base de datos,
+          ¿Desea continuar?
+        </p>
       </div>
+      <div class="modalButtons">
+        <button @click.prevent="$emit('delete:user')">Eliminar</button
+        ><button @click.prevent="$emit('cancel:delete')">Cancelar</button>
+      </div>
+    </div>
   </div>
 </template>
 <script>
 export default {
-  name: 'DeleteModalTables',
+  name: 'DeleteModal',
 }
 </script>
 <style scoped>
 @media (max-width: 1000px) {
   .modalBox {
-      width: 15rem;
-  height: 20rem;
+    width: 15rem;
+    height: 20rem;
+  }
+  .containerModal {
+    left: 0;
+    width: 100%;
   }
 }
 @media (min-width: 1000px) {
   .modalBox {
-      width: 30rem;
-  height: 20rem;
+    width: 30rem;
+    height: 20rem;
+  }
+  .containerModal {
+    left: 15rem;
+    width: calc(100% - 15rem);
   }
 }
 .containerModal {
-  position: absolute;
-  width: 100%;
+  position: fixed;
+  top: 65px;
   height: 100%;
   z-index: 2;
   background: rgba(0, 0, 0, 0.4);
- backdrop-filter: blur(2px);
- display: grid;
- align-items: center;
- justify-content: center;
+  backdrop-filter: blur(2px);
+  display: grid;
+  align-items: center;
+  justify-content: center;
 }
 
 .modalBox {
@@ -49,7 +64,7 @@ export default {
 }
 
 .modalText {
-      color: #595959;
+  color: #595959;
 }
 
 .modalText h1 {
@@ -59,28 +74,28 @@ export default {
 .modalButtons {
   width: 100%;
   display: grid;
-   align-items: center;
- justify-content: center;
- grid-auto-flow: column;
- position: absolute;
- bottom:1rem;
- left:0;
- gap: 0 1rem;
+  align-items: center;
+  justify-content: center;
+  grid-auto-flow: column;
+  position: absolute;
+  bottom: 1rem;
+  left: 0;
+  gap: 0 1rem;
 }
 
 .modalButtons button {
   color: #fff;
-    background-color: #fb6340;
-    border-color: #fb6340;
-    box-shadow: 0 4px 6px rgb(50 50 93 / 11%), 0 1px 3px rgb(0 0 0 / 8%);
-    font-weight: 600;
-        user-select: none;
-        border: 1px solid transparent;
-        padding: .625rem 1.25rem;
-    line-height: 1.5;
-    border-radius: .25rem;
-    text-transform: uppercase;
-    cursor: pointer;
+  background-color: #fb6340;
+  border-color: #fb6340;
+  box-shadow: 0 4px 6px rgb(50 50 93 / 11%), 0 1px 3px rgb(0 0 0 / 8%);
+  font-weight: 600;
+  user-select: none;
+  border: 1px solid transparent;
+  padding: 0.625rem 1.25rem;
+  line-height: 1.5;
+  border-radius: 0.25rem;
+  text-transform: uppercase;
+  cursor: pointer;
 }
 
 .imgContainer {
@@ -88,7 +103,7 @@ export default {
   width: 100%;
 }
 
-.imgContainer img{
+.imgContainer img {
   width: 100%;
   height: 100%;
 }

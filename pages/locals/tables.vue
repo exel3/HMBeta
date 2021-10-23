@@ -158,7 +158,7 @@ export default {
                 this.owners = response.clients // owners.locals = [id,id]
                 await this.$axios
                   .$get('/api/getAllLocals')
-                  .then(async (response) => {
+                  .then( (response) => {
                     this.locals = response.locals
                     this.localsFilter = response.locals
                     this.ownersWithLocals = this.owners.map((o) => {
@@ -168,13 +168,13 @@ export default {
                       const resp = { ...o, localsArray }
                       return resp
                     })
-                    if (response.locals.length > 0) {
-                      this.ownerSelected = this.ownersWithLocals[0]
-                      this.currentTables = response.locals[0].tables
-                      this.tableFilter = response.locals[0].tables
-                      this.localSelected = response.locals[0]
-                      await this.getAllTablesByClientAndLocal()
-                    }
+                    // if (response.locals.length > 0) {
+                    //   this.ownerSelected = this.ownersWithLocals[0]
+                    //   this.currentTables = response.locals[0].tables
+                    //   this.tableFilter = response.locals[0].tables
+                    //   this.localSelected = response.locals[0]
+                    //   await this.getAllTablesByClientAndLocal()
+                    // }
                   })
                   .catch((e) => {
                     this.$toasted.show(`Error al recuperar dueños: ${e}`, {
@@ -217,46 +217,6 @@ export default {
       })
   },
   methods: {
-    async getlocals() {
-      this.loadingMode = true
-      this.$fetchState.pending = true
-      this.currentTables = []
-      this.tableFilter = []
-      this.user.type === 'admin'
-        ? await this.$axios
-            .$get('/api/getAllLocals')
-            .then((response) => {
-              this.currentTables = response.locals
-              this.tableFilter = response.locals
-              this.loadingMode = false
-              this.$fetchState.pending = false
-            })
-            .catch((e) => {
-              this.loadingMode = false
-              this.$toasted.show(`Error al recuperar locales: ${e}`, {
-                theme: 'toasted-primary',
-                position: 'top-right',
-                duration: 5000,
-              })
-            })
-        : this.$axios
-            .$get(`/api/getLocalsByClient/${this.user.id}`)
-            .then((response) => {
-              this.currentTables = response.locals
-              this.localsFilter = this.locals
-              this.tableFilter = this.currentTables
-              this.loadingMode = false
-              this.$fetchState.pending = false
-            })
-            .catch((e) => {
-              this.loadingMode = false
-              this.$toasted.show(`Error al recuperar locales: ${e}`, {
-                theme: 'toasted-primary',
-                position: 'top-right',
-                duration: 5000,
-              })
-            })
-    },
     generateQr() {
       if (this.newTable.name.length < 1) {
         this.$toasted.show(
@@ -288,7 +248,6 @@ export default {
       await this.$axios
         .$post(`/api/getAllTablesByClientAndLocal/${clientID}/${localID}`, body)
         .then((res) => {
-          console.log(res)
           this.currentTables = res.tables
           this.tableFilter = res.tables
           this.loadingMode = false
@@ -321,7 +280,7 @@ export default {
       )
       await this.getAllTablesByClientAndLocal()
     },
-    async setOwnerSelected(ownerName) {
+     setOwnerSelected(ownerName) {
       this.ownerSelected = this.ownersWithLocals.find(
         (o) => ownerName === o.username
       )
@@ -330,9 +289,9 @@ export default {
       )
       this.localSelected = {}
       this.tableSelected = {}
-      this.localsFilter.length > 0 &&
-        this.setLocalSelected(this.localsFilter[0].name)
-      await this.getAllTablesByClientAndLocal()
+      // this.localsFilter.length > 0 &&
+      //   this.setLocalSelected(this.localsFilter[0].name)
+      // await this.getAllTablesByClientAndLocal()
     },
     addNewTable() {
       this.user.type === 'client' &&
@@ -346,6 +305,13 @@ export default {
         this.loadingMode = false
       } else if (this.newTable.qr.length < 1) {
         this.$toasted.show(`QR no puede estar vacio`, {
+          theme: 'toasted-primary',
+          position: 'top-right',
+          duration: 10000,
+        })
+        this.loadingMode = false
+      } else if (Object.keys(this.localSelected).length === 0) {
+        this.$toasted.show(`Seleccione un local`, {
           theme: 'toasted-primary',
           position: 'top-right',
           duration: 10000,
@@ -382,13 +348,9 @@ export default {
                   position: 'top-right',
                   duration: 5000,
                 })
-                this.newTable.id = resTable.table.id
-                const newItem = { ...this.newTable }
-                this.tableFilter.push(newItem)
-                this.newTable = {
-                  qr: '',
-                  id: '',
-                }
+                resTable.table.qr = resQr.qr
+                this.tableFilter.push(resTable.table)
+                this.newTable.qr = ''
                 this.loadingMode = false
               })
               .catch((e) => {

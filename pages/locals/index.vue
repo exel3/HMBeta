@@ -135,8 +135,7 @@ export default {
         this.user.type === 'admin'
           ? await this.$axios
               .$get('/api/getAllLocals')
-              .then(
-                async (response) => {
+              .then(async (response) => {
                 await this.$axios
                   .$get('/api/getAllClients')
                   .then((response) => {
@@ -149,7 +148,7 @@ export default {
                       duration: 5000,
                     })
                   })
-                      this.currentLocals = response.locals
+                this.currentLocals = response.locals
                 this.tableFilter = response.locals
               })
               .catch((e) => {
@@ -184,9 +183,9 @@ export default {
   methods: {
     async getlocals() {
       this.loadingMode = true
-      this.$fetchState.pending= true
-       this.currentLocals = []
-              this.tableFilter = []
+      this.$fetchState.pending = true
+      this.currentLocals = []
+      this.tableFilter = []
       this.user.type === 'admin'
         ? await this.$axios
             .$get('/api/getAllLocals')
@@ -194,7 +193,7 @@ export default {
               this.currentLocals = response.locals
               this.tableFilter = response.locals
               this.loadingMode = false
-               this.$fetchState.pending= false
+              this.$fetchState.pending = false
             })
             .catch((e) => {
               this.loadingMode = false
@@ -210,7 +209,7 @@ export default {
               this.currentLocals = response.locals
               this.tableFilter = this.currentLocals
               this.loadingMode = false
-              this.$fetchState.pending= false
+              this.$fetchState.pending = false
             })
             .catch((e) => {
               this.loadingMode = false
@@ -224,7 +223,17 @@ export default {
     searchFilter() {
       this.tableFilter = this.currentLocals.filter(
         (u) =>
-          u.name.toLowerCase().includes(this.searchValue.toLowerCase()) || u.location_address.toLowerCase().includes(this.searchValue.toLowerCase()) || u.client.toLowerCase().includes(this.searchValue.toLowerCase())  ||  u.location_city_name.toLowerCase().includes(this.searchValue.toLowerCase()) ||  u.location_country_name.toLowerCase().includes(this.searchValue.toLowerCase()) 
+          u.name.toLowerCase().includes(this.searchValue.toLowerCase()) ||
+          u.location_address
+            .toLowerCase()
+            .includes(this.searchValue.toLowerCase()) ||
+          u.client.toLowerCase().includes(this.searchValue.toLowerCase()) ||
+          u.location_city_name
+            .toLowerCase()
+            .includes(this.searchValue.toLowerCase()) ||
+          u.location_country_name
+            .toLowerCase()
+            .includes(this.searchValue.toLowerCase())
       )
     },
     setOwnerSelected(ownerName) {
@@ -273,9 +282,8 @@ export default {
         })
         this.$axios
           .$post('/api/createNewLocal', body)
-          .then(async (res) => {
-            // this.newlocal.id = res.id
-          await this.getlocals()
+          .then((res) => {
+            this.tableFilter.push(res.local)
             this.$toasted.show(`Cambios guardados`, {
               theme: 'toasted-primary',
               position: 'top-right',
@@ -286,7 +294,7 @@ export default {
           .catch((e) => {
             if (
               JSON.stringify(e.response.data.error['Errors List']) ===
-              '{"name error":"name in use"}'
+              '[{"invalid name":"Name is already in use"}]'
             ) {
               this.$toasted.show(`ERROR: Nombre de local en uso`, {
                 theme: 'toasted-primary',
@@ -319,25 +327,28 @@ export default {
       }
     },
     updateLocal(localC) {
-       this.$fetchState.pending= true
       this.loadingMode = true
       const localID = localC.id
       const body = localC
       this.$axios
         .$put(`/api/updateLocal/${localID}`, body)
-        .then(async (res) => {
+        .then((res) => {
           this.$toasted.show(`Cambios guardados`, {
             theme: 'toasted-primary',
             position: 'top-right',
             duration: 5000,
           })
-          await this.getlocals()
+           const indexT = this.currentLocals.findIndex(
+              (t) => t.id === res.local.id
+            )
+            this.tableFilter[indexT]= res.local
+          this.currentLocals = this.tableFilter
           this.loadingMode = false
         })
         .catch((e) => {
           if (
             JSON.stringify(e.response.data.error['Errors List']) ===
-            '{"name error":"name in use"}'
+            '[{"invalid name":"Name is already in use"}]'
           ) {
             this.$toasted.show(`ERROR: Nombre de usuario en uso`, {
               theme: 'toasted-primary',
@@ -509,7 +520,7 @@ article {
 }
 
 .selectOwner {
-   width: 100%;
+  width: 100%;
   height: 2rem;
   padding: 0 0.75rem;
   font-weight: 400;

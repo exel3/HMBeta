@@ -106,10 +106,8 @@ export default {
       }
     },
     generateNewQR() {
-      console.log('antiguoQr ', this.tableEdited.newQr)
       this.tableEdited.newQr = ''
       this.tableEdited.newQr = uuidv4()
-console.log('nuevoQr ', this.tableEdited.newQr)
     },
   },
 }

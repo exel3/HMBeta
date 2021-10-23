@@ -110,18 +110,21 @@ export default {
     localSelected: [],
     questionsSelected: [],
     locals: [],
-    clientId: '1234',
     localAnswers: [],
     newQuestion: '',
     newAnswers: [],
     buttonAddTitle: 'Agregar',
+    currentUser: {
+      id: '',
+      type: '',
+      username: ''
+    }
   }),
   async fetch() {
     await this.$axios
       .$get('/api/getUser')
       .then((response) => {
-        this.locals = response.locals
-        this.clientId = response.id
+        this.currentUser = response
       })
       .catch((e) => {
             this.$toasted.show(`Error recuperando los datos de usuario: ${e}`, {
@@ -152,25 +155,7 @@ export default {
       this.questionsSelected = this.localSelected.questions
     },
     getLocals() {
-      this.$axios
-        .$get('/api/getUser')
-        .then((response) => {
-          this.locals = response.locals
-          this.clientId = response.id
-          this.locals.map(async (l) => {
-            ;(l.tables = await this.getGroupTables(l.id))(
-              (l.questions = await this.getQuestions(l.id))
-            )
-          })
-        })
-        .catch((e) => {
-          this.$toasted.show(`Error recuperando los datos de usuario: ${e}`, {
-          theme: 'toasted-primary',
-          position: 'top-right',
-          duration: 10000,
-        })
-        })
-      this.localSelected = this.locals.find((l) => l)
+
     },
     addNewQuestion() {
       if ((this.newQuestion !== '') & (this.buttonAddTitle === 'Agregar')) {

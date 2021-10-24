@@ -402,7 +402,7 @@ app.post('/getAllTablesByClientAndLocal/:clientID/:localID', (req, res) => {
   const token = getToken(req, res)
   const get = { headers: { Authorization: token } }
   const bodyGet = req.body
-  axios.post(`https://happymatch.herokuapp.com/api/table/getAllTables/filter/client/${clientID}/local/${localID}/page/${page}`,bodyGet,get)
+  axios.post(`https://happymatch.herokuapp.com/api/table/getAllTables/filter/client/${clientID}/local/${localID}/page/${page}`, bodyGet, get)
     .then(
       response => {
         res.json(response.data)
@@ -583,55 +583,59 @@ app.get('/getQuestionsByLocalId/:localId', (req, res) => {
       })
     })
 })
-app.post('/createQuestions', (req, res) => {
+app.post('/createQuestions/:localId', (req, res) => {
   const body = req.body
   const token = getToken(req, res)
+  const { localId } = req.params
+
+  const data = {
+    localId,
+    arrayQuestions: body
+  }
   const headers = {
     headers:
-      { Authorization: token }
+      { authorization: token }
   }
-  const data = {
-    data: {
-      localId: body.localId,
-      arrayQuestions: body.questions
-    }
-  }
-  axios.post('https://happymatch.herokuapp.com/api/questions/create', headers, data)
+  console.log(data)
+
+  axios.post(`https://happymatch.herokuapp.com/api/questions/create`, data, headers)
     .then(
       response => {
+        console.log(response.data)
         res.json(response.data)
       }
     )
     .catch(e => {
+      console.log(e)
       res.statusCode = e.response.status
       res.json({
         error: e.message
       })
     })
 })
-app.post('/updateQuestions', (req, res) => {
+app.put('/updateQuestions/:localId', (req, res) => {
   const body = req.body
   const token = getToken(req, res)
-  const localId = body.localId
+  const { localId } = req.params
 
   const data = {
-    arrayQuestions: body.questions
+    arrayQuestions: body
   }
+  const headers = {
+    headers:
+      { authorization: token }
+  }
+  console.log(data)
 
-  axios.put(`https://happymatch.herokuapp.com/api/questions/update/${localId}`, data, {
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `${token}`
-    }
-  })
+  axios.put(`https://happymatch.herokuapp.com/api/questions/update/${localId}`, data, headers)
     .then(
       response => {
         res.json(response.data)
       }
     )
     .catch(e => {
+      console.log(e)
       res.statusCode = e.response.status
-      console.log('error servidor', e)
       res.json({
         error: e.message
       })

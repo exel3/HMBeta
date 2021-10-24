@@ -274,7 +274,8 @@ export default {
       )
     },
     async setLocalSelected(localName) {
-      this.localSelected = this.locals.find((o) => localName === o.name)
+       const ownerLocals = this.locals.filter(l => l.client === this.ownerSelected.id)
+      this.localSelected = ownerLocals.find((o) => localName === o.name)
       this.tableFilter = this.currentTables.filter((t) =>
         this.localSelected.tables.includes(t.id)
       )
@@ -289,8 +290,8 @@ export default {
       )
       this.localSelected = {}
       this.tableSelected = {}
-      // this.localsFilter.length > 0 &&
-      //   this.setLocalSelected(this.localsFilter[0].name)
+      this.localsFilter.length === 1 &&
+        this.setLocalSelected(this.localsFilter[0].name)
       // await this.getAllTablesByClientAndLocal()
     },
     addNewTable() {

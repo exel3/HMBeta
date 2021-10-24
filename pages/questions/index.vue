@@ -31,11 +31,7 @@
               @change="setLocalSelected($event.target.value)"
             >
               <option disabled selected value></option>
-              <option
-                v-for="local in localsFilter"
-                :key="'dropBox' + local.id"
-                :value="local.name"
-              >
+              <option v-for="local in localsFilter" :key="'dropBox' + local.id">
                 {{ local.name }}
               </option>
             </select>
@@ -103,6 +99,7 @@
             </th>
             <th>
               <img
+              v-if="currentQuestions.length > 3"
                 src="@/assets/icons/deleteGray.svg"
                 @click="deleteQuestion(question)"
               /><img
@@ -157,15 +154,17 @@ export default {
     owners: [],
     ownersWithLocals: [],
     showNewAnswersInput: false,
+    ownerSelected: {},
     localSelected: [],
     currentQuestions: [],
+    questionLength: 0,
     tableFilter: [],
     locals: [],
     localAnswers: [],
     newQuestion: '',
     newAnswers: [],
     buttonAddTitle: 'Agregar',
-    currentUser: {
+    user: {
       id: '',
       type: '',
       username: '',
@@ -233,9 +232,25 @@ export default {
       })
   },
   methods: {
-    setLocalSelected(local) {
-      this.localSelected = this.locals.find((l) => l.id === local.id)
-      this.currentQuestions = this.localSelected.questions
+    setLocalSelected(localName) {
+      console.log(localName, ' local seleccionado')
+      const ownerLocals = this.locals.filter(
+        (l) => l.client === this.ownerSelected.id
+      )
+      this.localSelected = ownerLocals.find((l) => l.name === localName)
+      this.getQuestionsByLocal()
+    },
+    setOwnerSelected(ownerName) {
+      this.ownerSelected = this.ownersWithLocals.find(
+        (o) => ownerName === o.username
+      )
+      this.localsFilter = this.locals.filter(
+        (l) => l.client === this.ownerSelected.id
+      )
+      this.localSelected = {}
+      this.localsFilter.length === 1 &&
+        this.setLocalSelected(this.localsFilter[0].name)
+      // await this.getAllTablesByClientAndLocal()
     },
     getQuestionsByLocal() {
       this.loadingMode = true
@@ -243,8 +258,13 @@ export default {
       this.$axios
         .$get(`/api/getQuestionsByLocalId/${localID}`)
         .then((res) => {
-          this.currentQuestions = res.tables
-          this.tableFilter = res.tables
+          if(res){
+          console.log(res, 'questions')
+          this.questionLength = res.questions.length
+          console.log(this.questionLength)
+          this.currentQuestions = res.questions
+          this.tableFilter = res.questions
+          }
           this.loadingMode = false
         })
         .catch((e) => {
@@ -265,6 +285,12 @@ export default {
       if ((this.newQuestion !== '') & (this.buttonAddTitle === 'Agregar')) {
         this.changeShowNewAnswersInput()
         this.buttonAddTitle = 'Confirmar'
+      } else if (this.localSelected.id === undefined) {
+        this.$toasted.show(`Debe seleccionar un local`, {
+          theme: 'toasted-primary',
+          position: 'top-right',
+          duration: 5000,
+        })
       } else {
         this.$toasted.show('Creando pregunta..', {
           theme: 'toasted-primary',
@@ -287,8 +313,51 @@ export default {
           question: this.newQuestion,
           answers: this.newAnswers,
         }
-        await this.currentQuestions.push(temporalQuestion)
-        this.confirmChangeQuestion()
+        if (this.currentQuestions === undefined) {
+          this.currentQuestions = []
+        }
+        this.currentQuestions.push(temporalQuestion)
+        const localId = this.localSelected.id
+        const body = this.currentQuestions
+        if (this.currentQuestions.length < 3) {
+          this.$toasted.show(`Se deben crear por lo menos 3 preguntas`, {
+            theme: 'toasted-primary',
+            position: 'top-right',
+            duration: 5000,
+          })
+        } else if (localId === undefined) {
+          this.$toasted.show(`Seleccione un local`, {
+            theme: 'toasted-primary',
+            position: 'top-right',
+            duration: 5000,
+          })
+        }  else if (this.questionLength > 0){
+          this.confirmChangeQuestion()
+        }
+         else {
+          await this.$axios
+            .$post(`/api/createQuestions/${localId}`, body)
+            .then((res) =>
+              this.$toasted.show('Cambios guardados', {
+                theme: 'toasted-primary',
+                position: 'top-right',
+                duration: 2000,
+              })
+            )
+            .catch((e) => {
+              this.$toasted.show(
+                `Error al guardar cambios:${JSON.stringify(
+                  e.response.data.error['Errors List']
+                )}`,
+                {
+                  theme: 'toasted-primary',
+                  position: 'top-right',
+                  duration: 10000,
+                }
+              )
+              this.loadingMode = false
+            })
+        }
         this.newQuestion = ''
         this.newAnswers = []
         this.showNewAnswersInput = false
@@ -298,25 +367,43 @@ export default {
 
     confirmChangeQuestion() {
       const localId = this.localSelected.id
-      const questions = this.currentQuestions
-      const body = { localId, questions }
-
-      this.$axios
-        .$post('/api/updateQuestions', body)
-        .then((res) =>
-          this.$toasted.show('Cambios guardados', {
-            theme: 'toasted-primary',
-            position: 'top-right',
-            duration: 2000,
-          })
-        )
-        .catch((e) => {
-          this.$toasted.show(`Error al guardar los cambios: ${e}`, {
-            theme: 'toasted-primary',
-            position: 'top-right',
-            duration: 10000,
-          })
+      const body = this.currentQuestions
+      if (this.currentQuestions.length < 3) {
+        this.$toasted.show(`Se deben crear por lo menos 3 preguntas`, {
+          theme: 'toasted-primary',
+          position: 'top-right',
+          duration: 5000,
         })
+      } else if (localId === undefined) {
+        this.$toasted.show(`Seleccione un local`, {
+          theme: 'toasted-primary',
+          position: 'top-right',
+          duration: 5000,
+        })
+      } else {
+        this.$axios
+          .$put(`/api/updateQuestions/${localId}`, body)
+          .then((res) =>
+            this.$toasted.show('Cambios guardados', {
+              theme: 'toasted-primary',
+              position: 'top-right',
+              duration: 2000,
+            })
+          )
+          .catch((e) => {
+            this.$toasted.show(
+              `Error al guardar cambios:${JSON.stringify(
+                e.response.data.error['Errors List']
+              )}`,
+              {
+                theme: 'toasted-primary',
+                position: 'top-right',
+                duration: 10000,
+              }
+            )
+            this.loadingMode = false
+          })
+      }
     },
 
     deleteQuestion(question) {
@@ -371,6 +458,56 @@ export default {
 }
 </script>
 <style scoped>
+@media (max-width: 1000px) {
+  section {
+    padding: 0 0.1rem;
+  }
+  td {
+    padding: 0.1rem 0.1rem;
+  }
+  th {
+    padding: 0.5rem 0.1rem;
+  }
+  .newTable {
+    max-height: 30rem;
+  }
+  .titleCard {
+    display: grid;
+    grid-auto-flow: row;
+    justify-content: center;
+    gap: 1rem 0;
+  }
+  .contentCard form {
+    display: grid;
+    grid-auto-flow: row;
+    align-items: center;
+    gap: 1rem 0;
+  }
+}
+@media (min-width: 1000px) {
+  section {
+    padding: 0 5rem;
+  }
+  td {
+    padding: 0.5rem;
+  }
+  th {
+    padding: 0.5rem;
+  }
+  .newTable {
+    max-height: 30rem;
+  }
+  .titleCard {
+    display: grid;
+    grid-auto-flow: column;
+    justify-content: space-between;
+  }
+  .contentCard form {
+    display: grid;
+    grid-auto-flow: column;
+    gap: 0 1rem;
+  }
+}
 section {
   position: relative;
   background: var(--background-color);
@@ -379,7 +516,6 @@ section {
   gap: 2rem 0;
   margin-top: 4rem;
   box-sizing: border-box;
-  padding: 0 5rem;
 }
 
 article {
@@ -414,6 +550,21 @@ article {
   color: #32325d;
 }
 
+.selectlocal {
+  width: 100%;
+  height: 2rem;
+  padding: 0 0.75rem;
+  font-weight: 400;
+  line-height: 1.5;
+  color: #656a6f;
+  background-color: #fff;
+  background-clip: padding-box;
+  border: 1px solid #dee2e6;
+  border-radius: 0.25rem;
+  box-shadow: 0 3px 2px rgb(233 236 239 / 5%);
+  box-sizing: border-box;
+}
+
 label {
   color: #525f7f;
   font-size: 0.875rem;
@@ -426,7 +577,7 @@ input {
   padding: 0.625rem 0.75rem;
   font-weight: 400;
   line-height: 1.5;
-  color: #8898aa;
+  color: #656a6f;
   background-color: #fff;
   background-clip: padding-box;
   border: 1px solid #dee2e6;
@@ -435,11 +586,14 @@ input {
   box-sizing: border-box;
 }
 
-.contentCard form {
-  display: grid;
-  grid-auto-flow: column;
+.contentCard {
+  position: relative;
   box-sizing: border-box;
-  gap: 0 1rem;
+  padding: 1rem;
+}
+
+.contentCard form {
+  box-sizing: border-box;
 }
 
 .contentCard form div {
@@ -478,7 +632,6 @@ table {
 }
 
 th {
-  padding: 1rem;
   background: #f6f9fc;
   border-top: 1px solid #ebeef5;
   border-bottom: 1px solid #ebeef5;
@@ -489,7 +642,6 @@ th {
   text-align: start;
 }
 td {
-  padding: 1rem;
   border-bottom: 1px solid #ebeef5;
   line-height: 1;
   text-align: start;
@@ -536,5 +688,51 @@ table img {
 .invisibleImg {
   opacity: 0;
   cursor: default;
+}
+.newTable {
+  overflow: hidden;
+}
+.searchContainer {
+  height: 100%;
+  width: 20rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.searchContainer form {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+.searchContainer input {
+  box-sizing: border-box;
+  height: 2.5rem;
+  padding: 0 3rem;
+  outline: none;
+  border: 1px solid #dcdfe6;
+  border-radius: 4px;
+}
+
+.searchIcon {
+  position: absolute;
+  top: 0.55rem;
+  left: 1rem;
+  z-index: 1;
+}
+.clearIcon {
+  position: absolute;
+  top: 0.55rem;
+  left: calc(100% - 3rem);
+  z-index: 1;
+  cursor: pointer;
+}
+
+.inputContainer {
+  width: 80%;
+  position: relative;
+  border: none;
+  box-sizing: border-box;
 }
 </style>

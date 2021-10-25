@@ -9,7 +9,5 @@ export default function(req, res, next) {
   if (redirect) {
     res.writeHead(301, { Location: redirect.to })
     res.end()
-  } else {
-    next()
   }
 }

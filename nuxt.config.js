@@ -57,7 +57,11 @@ export default {
     }
   },
 
-  serverMiddleware: ['~/api/index.js','~/middleware/redirects.js'],
+  router: {
+    middleware: 'redirects'
+  },
+
+  serverMiddleware: ['~/api/index.js'],
   // Build Configuration: https://go.nuxtjs.dev/config-build
   build: {
   }

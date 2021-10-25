@@ -10,7 +10,7 @@
         </p>
       </div>
       <div class="modalButtons">
-        <button @click.prevent="$emit('delete:user')">Eliminar</button
+        <button @click.prevent="$emit('delete:local')">Eliminar</button
         ><button @click.prevent="$emit('cancel:delete')">Cancelar</button>
       </div>
     </div>

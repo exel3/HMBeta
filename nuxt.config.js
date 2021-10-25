@@ -46,7 +46,6 @@ export default {
     '@nuxtjs/firebase',
     // Doc: https://http.nuxtjs.org
     '@nuxt/http',
-    // https://www.npmjs.com/package/@nuxtjs/toast
     '@nuxtjs/toast'
   ],
 

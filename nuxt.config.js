@@ -43,7 +43,9 @@ export default {
     // https://go.nuxtjs.dev/pwa
     '@nuxtjs/pwa',
     // Doc: https://http.nuxtjs.org
-    '@nuxt/http'
+    '@nuxt/http',
+    // https://www.npmjs.com/package/@nuxtjs/toast
+    '@nuxtjs/toast',
   ],
 
   // Axios module configuration: https://go.nuxtjs.dev/config-axios
@@ -56,6 +58,19 @@ export default {
       lang: 'en'
     }
   },
+
+  toast: {
+    position: 'top-right',
+    register: [ // Register custom toasts
+      {
+        name: 'my-error',
+        message: 'Oops...Something went wrong',
+        options: {
+          type: 'error'
+        }
+      }
+    ]
+},
 
   router: {
     middleware: 'redirects'

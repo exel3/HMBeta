@@ -78,6 +78,40 @@ app.post('/client/login', (req, res) => {
       })
     })
 })
+app.get('/getClient/:id', (req, res) => {
+  const { id } = req.params
+  const token = getToken(req, res)
+  const get = { headers: { Authorization: token } }
+  axios.get(`https://happymatch.herokuapp.com/api/client/getClientById/${id}`, get)
+    .then(
+      response => {
+        res.json(response.data)
+      }
+    )
+    .catch(e => {
+      res.statusCode = e.response.status
+      res.json({
+        error: e.message
+      })
+    })
+})
+app.get('/getAdmin/:id', (req, res) => {
+  const { id } = req.params
+  const token = getToken(req, res)
+  const get = { headers: { Authorization: token } }
+  axios.get(`https://happymatch.herokuapp.com/api/admin/getAdminById/${id}`, get)
+    .then(
+      response => {
+        res.json(response.data)
+      }
+    )
+    .catch(e => {
+      res.statusCode = e.response.status
+      res.json({
+        error: e.message
+      })
+    })
+})
 app.get('/getAllClients', (req, res) => {
   const page = 0
   const token = getToken(req, res)

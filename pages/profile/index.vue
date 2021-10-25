@@ -1,25 +1,25 @@
 <template lang="">
   <section>
-    <article class="newUser">
+    <article class="currentUser">
       <div class="titleCard"><p>Tus datos</p></div>
       <div class="contentCard">
         <form>
           <div>
-          <label for="email">Email</label>
-          <input id="email" v-model="newUser.email" type="email" autocomplete="off">
+          <label for="emailAddress">Email</label>
+          <input id="emailAddress" v-model="currentUser.emailAddress" type="email" autocomplete="off" :disabled="loadingMode">
           </div>
           <div>
           <label for="contraseña">Contraseña</label>
-          <input id="contraseña" v-model="newUser.password" type="text"  autocomplete="off">
+          <input id="contraseña" v-model="currentUser.password"  placeholder="No visible" type="text"  autocomplete="off" :disabled="loadingMode">
           </div>
            <div>
           <label for="usuario">Usuario</label>
-          <input id="usuario"  v-model="newUser.userName" type="text" name="newUser" autocomplete="off">
+          <input id="usuario"  v-model="currentUser.username" type="text" name="currentUser" autocomplete="off" :disabled="loadingMode">
           </div>
         </form>
       </div>
       <div class="containerAddBtn">
-        <button @click.prevent="updateProfile()">Editar</button>
+        <button :disabled="loadingMode" @click.prevent="updateProfile()">Editar</button>
       </div>
     </article>
     <DeleteModal v-if="showDeleteModal" @delete-user="deleteUser" @cancel-delete="showDeleteModal = false"/>
@@ -30,64 +30,166 @@ import DeleteModal from '@/components/users/DeleteModal.vue'
 export default {
   name: 'Profile',
   components: {
-    DeleteModal
+    DeleteModal,
   },
   data: () => ({
-    currentUsers: [],
-    userSelected: {},
-    newUser: { userName: '', email: '', password: '', id: null },
+    loadingMode: false,
+    user: {},
+    currentUser: { username: '', emailAddress: '', password: '', id: null },
     showDeleteModal: false,
   }),
-  mounted() {
-    this.getUsers()
-  },
-  methods: {
-    getUsers() {
-    
-         this.$axios
-        .$get('/api/getUser')
-        .then((response) => {
-          this.client = response
-             console.log(this.client)
-             this.newUser.userName = this.client.username
-             this.client.email? this.newUser.email = this.client.email : this.newUser.email = 'Email no registrado'
-        })
-        .catch((e) => {
-          this.$toasted.show(`Error recuperando los datos de usuario: ${e}`, {
+  fetch() {
+    this.$axios
+      .$get('/api/getUser')
+      .then((response) => {
+        this.user = response
+        if (this.user.type === 'admin') {
+          this.getAdmin()
+        } else {
+          this.getClient()
+        }
+      })
+      .catch((e) => {
+        this.$toasted.show(`Error recuperando los datos de usuario: ${e}`, {
           theme: 'toasted-primary',
           position: 'top-right',
           duration: 10000,
         })
+      })
+  },
+
+  methods: {
+    getAdmin() {
+      this.$axios
+        .$get(`/api/getAdmin/${this.user.id}`)
+        .then((res) => {
+          this.currentUser = res.admin
         })
-     
-    },
-    updateProfile() {
-        const reEmail =
-        /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
-      if (this.newUser.userName.length < 8) {
-        this.$toasted.show(
-          `El nombre de usuario debe contener 8 o mas caracteres`,
-          {
+        .catch((e) => {
+          this.$toasted.show(`Error al recuperar usuario: ${e}`, {
             theme: 'toasted-primary',
             position: 'top-right',
             duration: 5000,
-          }
-        )
-      } else if (this.newUser.password.length < 8) {
-        this.$toasted.show(`La contraseña debe contener 8 o mas caracteres`, {
-          theme: 'toasted-primary',
-          position: 'top-right',
-          duration: 5000,
+          })
         })
-      } else if (!reEmail.test(this.newUser.email)) {
-        this.$toasted.show(`Formato de email incorrecto`, {
-          theme: 'toasted-primary',
-          position: 'top-right',
-          duration: 5000,
+    },
+    getClient() {
+      this.$axios
+        .$get(`/api/getClient/${this.user.id}`)
+        .then((res) => {
+          this.currentUser = res.admin
         })
+        .catch((e) => {
+          this.$toasted.show(`Error al recuperar usuario: ${e}`, {
+            theme: 'toasted-primary',
+            position: 'top-right',
+            duration: 5000,
+          })
+        })
+    },
+    updateProfile() {
+      if (this.user.type === 'admin') {
+        this.loadingMode = true
+        const AdminID = this.currentUser.id
+        const body = {
+          username: this.currentUser.username,
+          emailAddress: this.currentUser.emailAddress,
+          password: this.currentUser.password,
+        }
+        this.$axios
+          .$put(`/api/updateAdmin/${AdminID}`, body)
+          .then((res) => {
+            this.$toasted.show(`Cambios guardados`, {
+              theme: 'toasted-primary',
+              position: 'top-right',
+              duration: 5000,
+            })
+            this.loadingMode = false
+          })
+          .catch((e) => {
+            if (
+              JSON.stringify(e.response.data.error['Errors List']) ===
+              '{"username error":"Username in use"}'
+            ) {
+              this.$toasted.show(`ERROR: Nombre de usuario en uso`, {
+                theme: 'toasted-primary',
+                position: 'top-right',
+                duration: 10000,
+              })
+            } else if (
+              JSON.stringify(e.response.data.error['Errors List']) ===
+              '{"emailAddress error":"EmailAddress in use"}'
+            ) {
+              this.$toasted.show(`ERROR: Email en uso`, {
+                theme: 'toasted-primary',
+                position: 'top-right',
+                duration: 10000,
+              })
+            } else {
+              this.$toasted.show(
+                `Error al actualizar Admin: ${JSON.stringify(
+                  e.response.data.error['Errors List']
+                )}`,
+                {
+                  theme: 'toasted-primary',
+                  position: 'top-right',
+                  duration: 5000,
+                }
+              )
+            }
+            this.loadingMode = false
+          })
       } else {
-        this.newUser.id = Date.now()
-        this.currentUsers.push(this.newUser)
+        this.loadingMode = true
+        const clientID = this.currentUser.id
+        const body = {
+          username: this.currentUser.username,
+          emailAddress: this.currentUser.emailAddress,
+          password: this.currentUser.password,
+        }
+        this.$axios
+          .$put(`/api/updateClient/${clientID}`, body)
+          .then((res) => {
+            this.$toasted.show(`Cambios guardados`, {
+              theme: 'toasted-primary',
+              position: 'top-right',
+              duration: 5000,
+            })
+            this.loadingMode = false
+          })
+          .catch((e) => {
+            if (
+              JSON.stringify(e.response.data.error['Errors List']) ===
+              '{"username error":"Username in use"}'
+            ) {
+              this.$toasted.show(`ERROR: Nombre de usuario en uso`, {
+                theme: 'toasted-primary',
+                position: 'top-right',
+                duration: 10000,
+              })
+            } else if (
+              JSON.stringify(e.response.data.error['Errors List']) ===
+              '{"emailAddress error":"EmailAddress in use"}'
+            ) {
+              this.$toasted.show(`ERROR: Email en uso`, {
+                theme: 'toasted-primary',
+                position: 'top-right',
+                duration: 10000,
+              })
+            } else {
+              this.$toasted.show(
+                `Error al actualizar cliente: ${JSON.stringify(
+                  e.response.data.error['Errors List']
+                )}`,
+                {
+                  theme: 'toasted-primary',
+                  position: 'top-right',
+                  duration: 5000,
+                }
+              )
+            }
+            this.loadingMode = false
+          })
       }
     },
   },
@@ -99,28 +201,28 @@ export default {
     padding: 0 0.1rem;
   }
   .contentCard form {
-  display: grid;
-  grid-auto-flow: row;
-  box-sizing: border-box;
-  gap: 0 1rem;
-}
-.newUser {
-  max-height: 20rem;
-}
+    display: grid;
+    grid-auto-flow: row;
+    box-sizing: border-box;
+    gap: 0 1rem;
+  }
+  .currentUser {
+    max-height: 20rem;
+  }
 }
 @media (min-width: 1000px) {
   section {
     padding: 0 5rem;
   }
   .contentCard form {
-  display: grid;
-  grid-auto-flow: column;
-  box-sizing: border-box;
-  gap: 0 1rem;
-}
-.newUser {
-  max-height: 15rem;
-}
+    display: grid;
+    grid-auto-flow: column;
+    box-sizing: border-box;
+    gap: 0 1rem;
+  }
+  .currentUser {
+    max-height: 15rem;
+  }
 }
 
 section {
@@ -141,10 +243,8 @@ article {
   box-shadow: 0 0 2rem 0 rgb(136 152 170 / 15%);
   border-radius: 0.375rem;
   z-index: 2;
-    overflow: hidden;
+  overflow: hidden;
 }
-
-
 
 .userList {
   min-height: 40rem;
@@ -191,8 +291,6 @@ input {
   box-sizing: border-box;
   padding: 1rem;
 }
-
-
 
 .contentCard form div {
   display: grid;

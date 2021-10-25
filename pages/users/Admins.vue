@@ -267,7 +267,7 @@ export default {
             })
           } else {
             this.$toasted.show(
-              `Error al actualizar Admine: ${JSON.stringify(
+              `Error al actualizar Admin: ${JSON.stringify(
                 e.response.data.error['Errors List']
               )}`,
               {

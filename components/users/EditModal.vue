@@ -56,8 +56,8 @@ export default {
         newUser: {}
   }),  
   mounted() {
-   const {username, password, emailAddress, id, locals} =  this.user
-   this.newUser = {username,password,emailAddress,id, locals}
+   const {username, emailAddress, id, locals} =  this.user
+   this.newUser = {username,password: '',emailAddress,id, locals}
   }, 
     methods: {
     clickCancel() {
@@ -79,7 +79,7 @@ export default {
             duration: 5000,
           }
         )
-      } else if (!regPassword.test(this.newUser.password)) {
+      } else if (this.newUser.password !== ''? !regPassword.test(this.newUser.password) : false) {
         this.$toasted.show(
           `La contraseña debe contener mínimo 8 y máximo 16 caracteres, al menos una letra mayúscula, una letra minúscula, un número, un carácter especial y no contener espacios`,
           {
@@ -95,6 +95,9 @@ export default {
           duration: 5000,
         })
       } else {
+        if(this.newUser.password === '') {
+          this.newUser.password = this.user.password
+        }
         this.$emit('update:user', this.newUser)
       }
     },

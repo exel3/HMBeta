@@ -108,7 +108,7 @@
   </div>
     </article>
     <EditModal v-if="showEditModal" :table="tableSelected" @click:cancel="showEditModal=false" @update:table="updateTable($event); showEditModal=false" @cancel:click="showEditModal=false"  />
-    <DeleteModal v-if="showDeleteModal" @delete:local="deleteTable" @cancel:delete="showDeleteModal = false"/>
+    <DeleteModal v-if="showDeleteModal" @delete:table="deleteTable" @cancel:delete="showDeleteModal = false"/>
     <Print v-if="showPrint" :qrs="qrsToPrint" @cancel:click="showPrint=false"/>
   </section>
 </template>

@@ -69,6 +69,7 @@ export default {
   height: 2rem;
   padding: 0.675rem 1.5rem;
   gap: 0 1rem;
+  margin-bottom:0.3rem;
 }
 
 .liItem {
@@ -81,7 +82,7 @@ export default {
   padding: 0 1rem;
   padding-top: 0.45rem;
   padding-bottom: 0.45rem;
-  padding-left: 3.5rem;
+  padding-left: 5rem;
   text-decoration: none;
 }
 </style>

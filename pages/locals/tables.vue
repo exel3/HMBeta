@@ -75,7 +75,7 @@
             <form @submit.prevent>
               <input
                 v-model="searchValue"
-                placeholder="Buscar.."
+                placeholder="Buscar por nombre.."
                 @keyup.prevent="searchFilter()"
               />
             </form>
@@ -162,12 +162,11 @@ export default {
           ? await this.$axios
               .$get('/api/getAllClients')
               .then(async (response) => {
-                this.owners = response.clients // owners.locals = [id,id]
+                this.owners = response.clients 
                 await this.$axios
                   .$get('/api/getAllLocals')
                   .then((response) => {
                     this.locals = response.locals
-                    // this.localsFilter = response.locals
                     this.ownersWithLocals = this.owners.map((o) => {
                       const localsArray = this.locals.filter((l) =>
                         o.locals.includes(l.id)
@@ -175,13 +174,6 @@ export default {
                       const resp = { ...o, localsArray }
                       return resp
                     })
-                    // if (response.locals.length > 0) {
-                    //   this.ownerSelected = this.ownersWithLocals[0]
-                    //   this.currentTables = response.locals[0].tables
-                    //   this.tableFilter = response.locals[0].tables
-                    //   this.localSelected = response.locals[0]
-                    //   await this.getAllTablesByClientAndLocal()
-                    // }
                   })
                   .catch((e) => {
                     this.$toasted.show(`Error al recuperar dueños: ${e}`, {
@@ -286,8 +278,7 @@ export default {
     searchFilter() {
       this.tableFilter = this.currentTables.filter(
         (u) =>
-          u.name.toLowerCase().includes(this.searchValue.toLowerCase()) ||
-          u.qr.toLowerCase().includes(this.searchValue.toLowerCase())
+          u.name.toLowerCase().includes(this.searchValue.toLowerCase())
       )
     },
     async setLocalSelected(localName) {

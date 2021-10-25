@@ -7,7 +7,7 @@
       <BaseInput v-if="tableEdited.newQr === ''" :valueinput="tableEdited.qr.code" :disabled="true" />
        <BaseInput v-else :valueinput="tableEdited.newQr" :disabled="true" />
       <div v-if="tableEdited.qr !== ''" class="qrContainerEdit">
-        <vueQr
+        <!-- <vueQr
           v-if="tableEdited.newQr === ''"
           :logoSrc="getLogoQr()"
           :logoScale="4"
@@ -20,7 +20,7 @@
           :logoScale="4"
           :text="tableEdited.newQr"
           :size="200"
-        />
+        /> -->
       </div>
       <div class="containerAddNewQrBtn">
         <button @click.prevent="generateNewQR">
@@ -51,14 +51,14 @@
 <script>
 import BaseInput from '@/components/tables/BaseInput.vue'
 import BaseButtonEdit from '@/components/tables/BaseButtonEdit.vue'
-import vueQr from 'vue-qr/src/packages/vue-qr.vue'
+// import vueQr from 'vue-qr/src/packages/vue-qr.vue'
 import { v4 as uuidv4 } from 'uuid'
 export default {
   name: 'EditModalTable',
   components: {
     BaseInput,
     BaseButtonEdit,
-    vueQr,
+    // vueQr,
   },
   props: {
     table: {

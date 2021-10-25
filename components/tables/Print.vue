@@ -5,8 +5,8 @@
       <div id="printMe" class="qrContainerEdit">
         <QrcodeVue
           :value="qrs[0].code"
-          :size="200"
-          level="Hs"
+          :size="180"
+          level="H"
         />
      
       <div class="containerAddNewQrBtn">

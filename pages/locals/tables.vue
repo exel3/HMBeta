@@ -54,7 +54,7 @@
         <button :disabled="loadingMode" @click.prevent="addNewTable">Agregar</button>
       </div>
       <div class="qrContainer">
-         <QrcodeVue v-if="newTable.qr !== ''" level="H" :value="newTable.qr" :size="200" />
+         <QrcodeVue v-if="newTable.qr !== ''" level="H" :value="newTable.qr" :size="180" />
         </div>
     </article>
     <article class="localList">
@@ -225,8 +225,11 @@ export default {
   },
   methods: {
     printQr() {
-        console.log(this.tableSelected, 'objeto tableSelected')
-      const printObject = {code:this.tableSelected.qr.code, name: this.tableSelected.name}
+      console.log(this.tableSelected, 'objeto tableSelected')
+      const printObject = {
+        code: this.tableSelected.qr.code,
+        name: this.tableSelected.name,
+      }
       this.qrsToPrint = [printObject]
       console.log(this.qrsToPrint, 'objeto qrsToPrint')
       this.showPrint = true
@@ -630,6 +633,7 @@ article {
   display: grid;
   align-items: center;
   justify-content: center;
+  padding-bottom: 1rem;
 }
 
 .bodyTableContainer {

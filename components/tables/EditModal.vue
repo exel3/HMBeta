@@ -10,13 +10,13 @@
         <QrcodeVue
           v-if="tableEdited.newQr === ''"
           :value="tableEdited.qr.code"
-          :size="200"
+          :size="180"
           level="H"
         />
            <QrcodeVue
           v-else
           :value="tableEdited.newQr"
-          :size="200"
+          :size="180"
           level="H"
         />
       </div>

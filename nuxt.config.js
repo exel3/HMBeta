@@ -1,6 +1,6 @@
 export default {
 
-  target: 'static',
+  target: 'server',
   // Global page headers: https://go.nuxtjs.dev/config-head
   head: {
     titleTemplate: '%s - HappyMatchPanel',
@@ -22,8 +22,8 @@ export default {
   ],
 
   // Plugins to run before rendering page: https://go.nuxtjs.dev/config-plugins
-  plugins: [
-  ],
+  // plugins: [
+  // ],
 
   // Auto import components: https://go.nuxtjs.dev/config-components
   components: true,
@@ -44,8 +44,8 @@ export default {
     '@nuxtjs/pwa',
     // https://www.npmjs.com/package/@nuxtjs/svg
     '@nuxtjs/svg',
-       // Doc: https://http.nuxtjs.org
-       '@nuxt/http'
+    // Doc: https://http.nuxtjs.org
+    '@nuxt/http'
   ],
 
   // Axios module configuration: https://go.nuxtjs.dev/config-axios

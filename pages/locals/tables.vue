@@ -54,7 +54,7 @@
         <button :disabled="loadingMode" @click.prevent="addNewTable">Agregar</button>
       </div>
       <div class="qrContainer">
-         <vueQr v-if="newTable.qr !== ''" :logoSrc="getLogoQr()" :logoScale="4" :text="newTable.qr" :size="200" />
+         <QrcodeVue v-if="newTable.qr !== ''" level="H" :value="newTable.qr" :size="200" />
         </div>
     </article>
     <article class="localList">
@@ -118,7 +118,7 @@ import EditModal from '@/components/tables/EditModal.vue'
 import BaseRow from '@/components/tables/BaseRow.vue'
 import Loading from '@/components/ui/Loading.vue'
 import Print from '@/components/tables/Print.vue'
-import vueQr from 'vue-qr/src/packages/vue-qr.vue'
+import QrcodeVue from 'qrcode.vue'
 import { v4 as uuidv4 } from 'uuid'
 export default {
   name: 'Tables',
@@ -128,7 +128,7 @@ export default {
     BaseRow,
     Loading,
     Print,
-    vueQr,
+    QrcodeVue,
   },
   data: () => ({
     user: {},

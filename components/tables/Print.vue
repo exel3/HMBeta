@@ -3,11 +3,10 @@
     <div class="editModaltable">
       <p class="titleModal">QR a imprimir</p>
       <div id="printMe" class="qrContainerEdit">
-        <vueQr
-          :logoSrc="getLogoQr()"
-          :logoScale="4"
-          :text="qrs[0].code"
+        <QrcodeVue
+          :value="qrs[0].code"
           :size="200"
+          level="Hs"
         />
      
       <div class="containerAddNewQrBtn">
@@ -37,13 +36,13 @@
   </div>
 </template>
 <script>
-import vueQr from 'vue-qr/src/packages/vue-qr.vue'
+import QrcodeVue from 'qrcode.vue'
 import BaseButtonEdit from '@/components/tables/BaseButtonEdit.vue'
 import print from 'vue-print-nb'
 export default {
   name: 'EditModalTable',
   components: {
-    vueQr,
+    QrcodeVue,
     BaseButtonEdit
   },
   directives: {

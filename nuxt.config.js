@@ -42,11 +42,12 @@ export default {
     '@nuxtjs/axios',
     // https://go.nuxtjs.dev/pwa
     '@nuxtjs/pwa',
+    // https://www.npmjs.com/package/@nuxtjs/svg
+    '@nuxtjs/svg',
     // https://firebase.nuxtjs.org/
     '@nuxtjs/firebase',
-    // Doc: https://http.nuxtjs.org
-    '@nuxt/http',
-    '@nuxtjs/toast'
+       // Doc: https://http.nuxtjs.org
+       '@nuxt/http'
   ],
 
   // Axios module configuration: https://go.nuxtjs.dev/config-axios
@@ -60,19 +61,41 @@ export default {
     }
   },
 
-  toast: {
-    position: 'top-right',
-    register: [ // Register custom toasts
-      {
-        name: 'my-error',
-        message: 'Oops...Something went wrong',
-        options: {
-          type: 'error'
-        }
-      }
-    ]
-},
+
+  firebase: {
+    config: {
+      apiKey: process.env.VUE_APP_FIREBASE_API_KEY,
+      authDomain: process.env.VUE_APP_FIREBASE_AUTH_DOMAIN,
+      projectId: process.env.VUE_APP_FIREBASE_PROJECT_ID,
+      storageBucket: process.env.VUE_APP_FIREBASE_STORAGE_BUCKET,
+      messagingSenderId: process.env.VUE_APP_FIREBASE_MESSAGING_SENDER_ID,
+      appId: process.env.VUE_APP_FIREBASE_APP_ID,
+      measurementId: process.env.VUE_APP_FIREBASE_MEASUREMENT_ID
+    },
+    services: {
+      auth: true,
+      performance: true,
+      analytics: true,
+    }
+  },
+
+  env: {
+    VUE_APP_FIREBASE_API_KEY: process.env.VUE_APP_FIREBASE_API_KEY
+  },
+
+  auth: {
+    persistence: 'local', // default
+    initialize: {
+      onAuthStateChangedMutation: 'ON_AUTH_STATE_CHANGED_MUTATION',
+      onAuthStateChangedAction: 'onAuthStateChangedAction',
+      subscribeManually: false
+    },
+    emulatorPort: 9099,
+    emulatorHost: 'http://localhost',
+
+  },
   serverMiddleware: ['~/api/index.js'],
   // Build Configuration: https://go.nuxtjs.dev/config-build
-
+  build: {
+  }
 }

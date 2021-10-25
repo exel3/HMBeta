@@ -66,13 +66,13 @@ export default {
     updateUser() {
       const regEmailAddress =
         /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
-    const regUser = /^(?=[a-zA-Z0-9._]{5,20}$)(?!.*[_.]{2})[^_.].*[^_.]$/       
+    const regUser = /^(?=[a-zA-Z0-9._\u00F1\u00D1]{5,20}$)(?!.*[_.]{2})[^_.].*[^_.]$/   
       const regPassword =
         /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,16}/
 
       if (!regUser.test(this.newUser.username)) {
         this.$toasted.show(
-      `El nombre de usuario debe contener entre 5 y 10 caracteres, y no contener espacios`,
+      `El nombre de usuario debe contener entre 5 y 20 caracteres, y no contener espacios`,
           {
             theme: 'toasted-primary',
             position: 'top-right',

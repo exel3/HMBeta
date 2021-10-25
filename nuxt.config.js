@@ -111,8 +111,5 @@ export default {
   // Build Configuration: https://go.nuxtjs.dev/config-build
   build: {
     extend(config, ctx) {} 
-},
-server: {
-    host: "192.168.100.2" // TODO: 0.0.0.0 on prod   "192.168.1.71" "192.168.100.2"
 }
 }

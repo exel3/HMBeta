@@ -22,8 +22,8 @@ export default {
   ],
 
   // Plugins to run before rendering page: https://go.nuxtjs.dev/config-plugins
-  // plugins: [
-  // ],
+  plugins: [
+  ],
 
   // Auto import components: https://go.nuxtjs.dev/config-components
   components: true,
@@ -34,6 +34,8 @@ export default {
     '@nuxtjs/eslint-module',
     // https://go.nuxtjs.dev/stylelint
     '@nuxtjs/stylelint-module',
+    // https://color-mode.nuxtjs.org/
+    '@nuxtjs/color-mode'
   ],
 
   // Modules: https://go.nuxtjs.dev/config-modules
@@ -44,13 +46,16 @@ export default {
     '@nuxtjs/pwa',
     // https://www.npmjs.com/package/@nuxtjs/svg
     '@nuxtjs/svg',
-    // Doc: https://http.nuxtjs.org
-    '@nuxt/http'
+    // https://firebase.nuxtjs.org/
+    '@nuxtjs/firebase',
+       // Doc: https://http.nuxtjs.org
+       '@nuxt/http'
   ],
 
   // Axios module configuration: https://go.nuxtjs.dev/config-axios
-  // axios: {
-  //   baseURL: 'https://happy-match-panel.vercel.app', },
+  axios: {
+    baseURL: 'https://happy-match-panel.vercel.app', // https://happy-match-panel.vercel.app
+  },
 
   // PWA module configuration: https://go.nuxtjs.dev/pwa
   pwa: {
@@ -59,6 +64,57 @@ export default {
     }
   },
 
+  colorMode: {
+    preference: 'system', // default value of $colorMode.preference
+    fallback: 'light', // fallback value if not system preference found
+    hid: 'nuxt-color-mode-script',
+    globalName: '__NUXT_COLOR_MODE__',
+    componentName: 'ColorScheme',
+    classPrefix: '',
+    classSuffix: '-mode',
+    storageKey: 'nuxt-color-mode'
+  },
+
+  firebase: {
+    config: {
+      apiKey: process.env.VUE_APP_FIREBASE_API_KEY,
+      authDomain: process.env.VUE_APP_FIREBASE_AUTH_DOMAIN,
+      projectId: process.env.VUE_APP_FIREBASE_PROJECT_ID,
+      storageBucket: process.env.VUE_APP_FIREBASE_STORAGE_BUCKET,
+      messagingSenderId: process.env.VUE_APP_FIREBASE_MESSAGING_SENDER_ID,
+      appId: process.env.VUE_APP_FIREBASE_APP_ID,
+      measurementId: process.env.VUE_APP_FIREBASE_MEASUREMENT_ID
+    },
+    services: {
+      auth: true,
+      performance: true,
+      analytics: true,
+    }
+  },
+
+  env: {
+    VUE_APP_FIREBASE_API_KEY: process.env.VUE_APP_FIREBASE_API_KEY
+  },
+
+  auth: {
+    persistence: 'local', // default
+    initialize: {
+      onAuthStateChangedMutation: 'ON_AUTH_STATE_CHANGED_MUTATION',
+      onAuthStateChangedAction: 'onAuthStateChangedAction',
+      subscribeManually: false
+    },
+    emulatorPort: 9099,
+    emulatorHost: 'http://localhost',
+
+    // ssr: {
+    //   ignorePaths: [
+    //     '/questions', // path is ignored if url.pathname.startsWith('/admin')
+    //     /^api/ // path is ignored if url.pathname without the leading slash (/) matches the RegExp
+    //   ]
+    // }
+  },
   serverMiddleware: ['~/api/index.js'],
   // Build Configuration: https://go.nuxtjs.dev/config-build
+  build: {
+  }
 }

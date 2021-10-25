@@ -28,15 +28,15 @@
           <button
             class="buttonSubmit"
             type="submit"
-              :disabled="loadingMode"
-              @click.prevent="loginWithUserNameAndEmail()"
+            :disabled="loadingMode"
+            @click.prevent="loginWithUserNameAndEmail()"
           >
             Acceder
           </button>
         </div>
       </form>
       <div v-if="loadingMode"><p>Cargando...</p></div>
-      <span class="poweredSpan"> Powered by <a>Pollux</a> </span>
+      <span class="poweredSpan"><a href="https://polluxcoop.com ">Powered by <b>Pollux</b></a></span>
     </div>
   </div>
 </template>
@@ -50,7 +50,7 @@ export default {
     isRegisterMode: false,
     userPassword: '',
     userName: '',
-    loadingMode: false
+    loadingMode: false,
   }),
 
   methods: {
@@ -59,7 +59,7 @@ export default {
       setClient: 'data/setClient',
     }),
     loginWithUserNameAndEmail() {
-   this.loginWithUserName()
+      this.loginWithUserName()
     },
 
     loginWithUserName() {
@@ -68,36 +68,41 @@ export default {
         username: this.userName,
         password: this.userPassword,
       }
-     
-        const authPromises = [this.$axios.$post(`/api/client/login`, post), this.$axios.$post(`/api/admin/login`, post)]
-        Promise.any(authPromises).then((result) => {
+
+      const authPromises = [
+        this.$axios.$post(`/api/client/login`, post),
+        this.$axios.$post(`/api/admin/login`, post),
+      ]
+      Promise.any(authPromises)
+        .then((result) => {
           const { type } = result.data
-          this.setUser({...post,type })
-            this.loadingMode = false
+          this.setUser({ ...post, type })
+          this.loadingMode = false
           this.$router.push('locals')
         })
-       .catch (error => {
+        .catch((error) => {
           this.loadingMode = false
-          error.statusCode === 401?
-         this.$toasted.show(`Login error: ${error}`, {
-          theme: 'toasted-primary',
-          position: 'top-right',
-          duration: 10000,
+          error.statusCode === 401
+            ? this.$toasted.show(`Login error: ${error}`, {
+                theme: 'toasted-primary',
+                position: 'top-right',
+                duration: 10000,
+              })
+            : this.$toasted.show(
+                `Login error: Usuario o contraseña incorrectos`,
+                {
+                  theme: 'toasted-primary',
+                  position: 'top-right',
+                  duration: 10000,
+                }
+              )
         })
-        :
-              this.$toasted.show(`Login error: Usuario o contraseña incorrectos`, {
-          theme: 'toasted-primary',
-          position: 'top-right',
-          duration: 10000,
-        })
-        } )
     },
-    validateUser(){
+    validateUser() {
       const re = /^[a-zA-Z0-9]*$/
       const isUserValid = re.test(this.newUserName)
-      isUserValid&&console.log('cadena valida')
-
-    }
+      isUserValid && console.log('cadena valida')
+    },
   },
 }
 </script>
@@ -195,9 +200,14 @@ h1 {
   margin: 0.5rem 0 1.5rem 0;
 }
 
-a {
+.poweredSpan p {
   font-weight: bold;
   color: inherit;
+  text-decoration: none;
+}
+
+a {
+   color: inherit;
   text-decoration: none;
 }
 
@@ -226,13 +236,11 @@ a {
 }
 
 .backButton {
- position: absolute;
- top: 1rem;
- left: 1rem;
- width: 1rem;
- height: 1rem;
- cursor: pointer;
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+  width: 1rem;
+  height: 1rem;
+  cursor: pointer;
 }
-
-
 </style>

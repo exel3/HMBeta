@@ -13,7 +13,7 @@
       :options="[{ title: 'Editar perfil', url: '/profile' }]"
     />
     <ItemAsideMenu v-if="user.type==='admin'"
-      title="Usuarios"
+      title="Cuentas"
       imgsrc="group.svg"
       mainurl="/users/owners/"
       :options="[
@@ -30,12 +30,21 @@
         { title: 'Mesas', url: '/locals/tables' },
       ]"
     />
-    <ItemAsideMenu
-      title="Gestion match"
+    <ItemAsideMenu v-if="user.type==='admin'"
+      title="Gestion preguntas"
       imgsrc="match.svg"
       mainurl="/questions/"
       :options="[
-        { title: 'Preguntas y respuestas', url: '/questions/' },
+        { title: 'Preguntas globales', url: '/questions/global' },
+        { title: 'Preguntas locales', url: '/questions/' },
+      
+      ]"
+    />
+        <ItemAsideMenu
+      title="Usuarios y baneos"
+      imgsrc="bans.svg"
+      mainurl="/questions/"
+      :options="[
         { title: 'Grupos', url: '/clients/' },
       ]"
     />

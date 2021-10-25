@@ -641,6 +641,72 @@ app.put('/updateQuestions/:localId', (req, res) => {
       })
     })
 })
+app.get('/getGlobalQuestions', (req, res) => {
+  const token = getToken(req, res)
+  const get = { headers: { Authorization: token } }
+  axios.get(`https://happymatch.herokuapp.com/api/globalquestions/getGlobalQuestions`, get)
+    .then(
+      response => {
+        res.json(response.data)
+      }
+    )
+    .catch(e => {
+      res.statusCode = e.response.status
+      res.json({
+        error: e.message
+      })
+    })
+})
+app.post('/createGlobalQuestions', (req, res) => {
+  const body = req.body
+  const token = getToken(req, res)
+
+  const data = {
+    arrayQuestions: body
+  }
+  const headers = {
+    headers:
+      { authorization: token }
+  }
+
+  axios.post(`https://happymatch.herokuapp.com/api/globalquestions/create`, data, headers)
+    .then(
+      response => {
+        res.json(response.data)
+      }
+    )
+    .catch(e => {
+      res.statusCode = e.response.status
+      res.json({
+        error: e.message
+      })
+    })
+})
+app.put('/updateGlobalQuestions', (req, res) => {
+  const body = req.body
+  const token = getToken(req, res)
+
+  const data = {
+    arrayQuestions: body
+  }
+  const headers = {
+    headers:
+      { authorization: token }
+  }
+
+  axios.put(`https://happymatch.herokuapp.com/api/globalquestions/update`, data, headers)
+    .then(
+      response => {
+        res.json(response.data)
+      }
+    )
+    .catch(e => {
+      res.statusCode = e.response.status
+      res.json({
+        error: e.message
+      })
+    })
+})
 app.post('/banGroupTable/:idGroup', (req, res) => {
   const { idGroup } = req.params
   const body = req.body

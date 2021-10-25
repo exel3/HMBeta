@@ -87,7 +87,8 @@
 	<thead>
 	<tr>
 		<th>Nombre</th>
-		<th>qr</th>
+		<th>QR</th>
+     <th>Imprimir</th>
     <th>Opciones</th>
 	</tr>
 	</thead>
@@ -99,6 +100,7 @@
 @click="showDeleteModal = true; tableSelected = table"  
 @click:delete="showDeleteModal=true; tableSelected=table"
 @click:edit="showEditModal=true; tableSelected={...table, localName:$event}"
+@click:print="tableSelected={...table, localName:$event}; printQr() "
 />
 	</tbody>
 
@@ -107,6 +109,7 @@
     </article>
     <EditModal v-if="showEditModal" :table="tableSelected" @click:cancel="showEditModal=false" @update:table="updateTable($event); showEditModal=false" @cancel:click="showEditModal=false"  />
     <DeleteModal v-if="showDeleteModal" @delete:local="deleteTable" @cancel:delete="showDeleteModal = false"/>
+    <Print v-if="showPrint" :qrs="qrsToPrint" @cancel:click="showPrint=false"/>
   </section>
 </template>
 <script>
@@ -114,6 +117,7 @@ import DeleteModal from '@/components/tables/DeleteModal.vue'
 import EditModal from '@/components/tables/EditModal.vue'
 import BaseRow from '@/components/tables/BaseRow.vue'
 import Loading from '@/components/ui/Loading.vue'
+import Print from '@/components/tables/Print.vue'
 import vueQr from 'vue-qr/src/packages/vue-qr.vue'
 import { v4 as uuidv4 } from 'uuid'
 export default {
@@ -123,6 +127,7 @@ export default {
     EditModal,
     BaseRow,
     Loading,
+    Print,
     vueQr,
   },
   data: () => ({
@@ -135,6 +140,8 @@ export default {
     currentTables: [],
     localSelected: {},
     ownerSelected: {},
+    showPrint: false,
+    qrsToPrint: [],
     newTable: {
       name: '',
       qr: '',
@@ -158,7 +165,7 @@ export default {
                 this.owners = response.clients // owners.locals = [id,id]
                 await this.$axios
                   .$get('/api/getAllLocals')
-                  .then( (response) => {
+                  .then((response) => {
                     this.locals = response.locals
                     this.localsFilter = response.locals
                     this.ownersWithLocals = this.owners.map((o) => {
@@ -217,6 +224,13 @@ export default {
       })
   },
   methods: {
+    printQr() {
+        console.log(this.tableSelected, 'objeto tableSelected')
+      const printObject = {code:this.tableSelected.qr.code, name: this.tableSelected.name}
+      this.qrsToPrint = [printObject]
+      console.log(this.qrsToPrint, 'objeto qrsToPrint')
+      this.showPrint = true
+    },
     generateQr() {
       if (this.newTable.name.length < 1) {
         this.$toasted.show(
@@ -243,8 +257,8 @@ export default {
       } else {
         clientID = this.ownerSelected.id
       }
-      const name = this.searchValue === ''? null : this.searchValue
-      const body = {name}
+      const name = this.searchValue === '' ? null : this.searchValue
+      const body = { name }
       await this.$axios
         .$post(`/api/getAllTablesByClientAndLocal/${clientID}/${localID}`, body)
         .then((res) => {
@@ -274,14 +288,16 @@ export default {
       )
     },
     async setLocalSelected(localName) {
-       const ownerLocals = this.locals.filter(l => l.client === this.ownerSelected.id)
+      const ownerLocals = this.locals.filter(
+        (l) => l.client === this.ownerSelected.id
+      )
       this.localSelected = ownerLocals.find((o) => localName === o.name)
       this.tableFilter = this.currentTables.filter((t) =>
         this.localSelected.tables.includes(t.id)
       )
       await this.getAllTablesByClientAndLocal()
     },
-     setOwnerSelected(ownerName) {
+    setOwnerSelected(ownerName) {
       this.ownerSelected = this.ownersWithLocals.find(
         (o) => ownerName === o.username
       )
@@ -490,11 +506,11 @@ export default {
           await this.$axios
             .$delete(`/api/deleteQR/${id}`)
             .then((res) => {
-                this.$toasted.show(`QR desincronizado`, {
-            theme: 'toasted-primary',
-            position: 'top-right',
-            duration: 2000,
-          })
+              this.$toasted.show(`QR desincronizado`, {
+                theme: 'toasted-primary',
+                position: 'top-right',
+                duration: 2000,
+              })
             })
             .catch((e) => {
               this.$toasted.show(

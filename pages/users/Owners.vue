@@ -142,7 +142,7 @@ export default {
 
       if (!regUser.test(this.newUser.username)) {
         this.$toasted.show(
-          `El nombre de usuario debe contener entre 5 y 10 caracteres`,
+          `El nombre de usuario debe contener entre 5 y 10 caracteres, y no contener espacios`,
           {
             theme: 'toasted-primary',
             position: 'top-right',
@@ -152,7 +152,7 @@ export default {
          this.loadingMode = false
       } else if (!regPassword.test(this.newUser.password)) {
         this.$toasted.show(
-          `La contraseña debe contener mínimo 8 y máximo 16 caracteres, al menos una letra mayúscula, una letra minúscula, un número y un carácter especial`,
+         `La contraseña debe contener mínimo 8 y máximo 16 caracteres, al menos una letra mayúscula, una letra minúscula, un número, un carácter especial y no contener espacios`,
           {
             theme: 'toasted-primary',
             position: 'top-right',

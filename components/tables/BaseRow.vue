@@ -6,6 +6,14 @@
     <td>
       <p>{{ table.qr.code }}</p>
     </td>
+       <td class="tdOptions">
+      <BaseButtonTable
+        backcolor="transparent"
+        bordercolor="#f7fafc"
+        imgsrc="print.svg"
+        @click="$emit('click:print', localName)"
+      />
+    </td>
     <td class="tdOptions">
       <BaseButtonTable
         backcolor="#f7fafc"

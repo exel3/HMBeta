@@ -1,47 +1,8 @@
 <template>
 <Loading v-if="$fetchState.pending" class="fetchState" />
   <section v-else>
-    <article class="newTable">
-      <div class="titleCard"><p>Seleccionar</p></div>
-      <div class="contentCard">
-        <form>
-          <div v-if="user.type === 'admin'" class="selectContainer">
-            <label for="owner">Dueño</label>
-            <select
-              id="owner"
-              class="selectlocal"
-              name="owner"
-              @change="setOwnerSelected($event.target.value)"
-            >
-              <option disabled selected value></option>
-              <option
-                v-for="owner in owners"
-                :key="'dropBox' + owner.id"
-                :value="owner.username"
-              >
-                {{ owner.username }}
-              </option>
-            </select>
-          </div>
-          <div class="selectContainer">
-            <label for="local">Local</label>
-            <select
-              id="local"
-              class="selectlocal"
-              name="local"
-              @change="setLocalSelected($event.target.value)"
-            >
-              <option disabled selected value></option>
-              <option v-for="local in localsFilter" :key="'dropBox' + local.id">
-                {{ local.name }}
-              </option>
-            </select>
-          </div>
-        </form>
-      </div>
-    </article>
     <article class="newQuestionArticle">
-      <div class="titleCard"><p>Nueva pregunta</p></div>
+      <div class="titleCard"><p>Nueva pregunta global</p></div>
       <div class="newQuestionContainer">
         <form>
           <div class="newQuestionForm">
@@ -78,7 +39,7 @@
       </div>
     </article>
     <article class="userList">
-      <div class="titleCard"><p>Lista de preguntas</p></div>
+      <div class="titleCard"><p>Lista de preguntas globales</p></div>
     </article>
     <article
       v-for="(question, indexQuestion) in tableFilter"
@@ -146,7 +107,7 @@
 import DeleteModal from '@/components/users/DeleteModal.vue'
 import Loading from '@/components/ui/Loading.vue'
 export default {
-  name: 'QuestionsIndex',
+  name: 'GlobalQuestions',
   components: {
     DeleteModal,
      Loading,
@@ -154,16 +115,10 @@ export default {
   data: () => ({
     loadingMode: false,
     showDeleteModal: '',
-    localsFilter: [],
-    owners: [],
-    ownersWithLocals: [],
     showNewAnswersInput: false,
-    ownerSelected: {},
-    localSelected: [],
     currentQuestions: [],
     questionLength: 0,
     tableFilter: [],
-    locals: [],
     localAnswers: [],
     newQuestion: '',
     newAnswers: [],
@@ -175,97 +130,48 @@ export default {
     },
   }),
   async fetch() {
-    await this.$axios
-      .$get('/api/getUser')
-      .then(async (response) => {
-        this.user = response
-        this.user.type === 'admin'
-          ? await this.$axios
-              .$get('/api/getAllClients')
-              .then(async (response) => {
-                this.owners = response.clients
-                await this.$axios
-                  .$get('/api/getAllLocals')
-                  .then((response) => {
-                    this.locals = response.locals
-                    this.localsFilter = response.locals
-                    this.ownersWithLocals = this.owners.map((o) => {
-                      const localsArray = this.locals.filter((l) =>
-                        o.locals.includes(l.id)
-                      )
-                      const resp = { ...o, localsArray }
-                      return resp
-                    })
-                  })
-                  .catch((e) => {
-                    this.$toasted.show(`Error al recuperar dueños: ${e}`, {
-                      theme: 'toasted-primary',
-                      position: 'top-right',
-                      duration: 5000,
-                    })
-                  })
-              })
-              .catch((e) => {
-                this.$toasted.show(`Error al recuperar locales: ${e}`, {
-                  theme: 'toasted-primary',
-                  position: 'top-right',
-                  duration: 5000,
-                })
-              })
-          : await this.$axios
-              .$get(`/api/getLocalsByClient/${this.user.id}`)
-              .then(async (response) => {
-                this.locals = response.locals
-                this.localsFilter = response.locals
-                await this.getQuestionsByLocal()
-              })
-              .catch((e) => {
-                this.$toasted.show(`Error al recuperar locales: ${e}`, {
-                  theme: 'toasted-primary',
-                  position: 'top-right',
-                  duration: 5000,
-                })
-              })
-      })
-      .catch((e) => {
-        this.$toasted.show(`Error al recuperar el tipo de usuario: ${e}`, {
-          theme: 'toasted-primary',
-          position: 'top-right',
-          duration: 5000,
-        })
-      })
+    await this.$axios.$get('/api/getUser').then(async (response) => {
+      this.user = response
+      if (this.user.type === 'admin') {
+        this.loadingMode = true
+        await this.$axios
+          .$get(`/api/getGlobalQuestions`)
+          .then((res) => {
+            if (res) {
+              this.questionLength = res.questions.questions.length
+              this.currentQuestions = res.questions.questions
+              this.tableFilter = res.questions.questions
+            }
+            else {
+                 this.currentQuestions = []
+              this.tableFilter = []
+            }
+            this.loadingMode = false
+          })
+          .catch((e) => {
+            this.loadingMode = false
+            this.$toasted.show(
+              `Error al recuperar preguntas: ${JSON.stringify(
+                e.response.data.error['Errors List']
+              )}`,
+              {
+                theme: 'toasted-primary',
+                position: 'top-right',
+                duration: 5000,
+              }
+            )
+          })
+      }
+    })
   },
   methods: {
-    setLocalSelected(localName) {
-      console.log(localName, ' local seleccionado')
-      const ownerLocals = this.locals.filter(
-        (l) => l.client === this.ownerSelected.id
-      )
-      this.localSelected = ownerLocals.find((l) => l.name === localName)
-      this.getQuestionsByLocal()
-    },
-    setOwnerSelected(ownerName) {
-      this.ownerSelected = this.ownersWithLocals.find(
-        (o) => ownerName === o.username
-      )
-      this.localsFilter = this.locals.filter(
-        (l) => l.client === this.ownerSelected.id
-      )
-      this.localSelected = {}
-      this.localsFilter.length === 1 &&
-        this.setLocalSelected(this.localsFilter[0].name)
-      // await this.getAllTablesByClientAndLocal()
-    },
-    getQuestionsByLocal() {
+    getGlobalQuestions() {
       this.loadingMode = true
-      const localID = this.localSelected.id
       this.$axios
-        .$get(`/api/getQuestionsByLocalId/${localID}`)
+        .$get(`/api/getGlobalQuestions`)
         .then((res) => {
           if (res) {
-            console.log(res, 'questions')
             this.questionLength = res.questions.length
-            console.log(this.questionLength)
             this.currentQuestions = res.questions
             this.tableFilter = res.questions
           }
@@ -289,12 +195,6 @@ export default {
       if ((this.newQuestion !== '') & (this.buttonAddTitle === 'Agregar')) {
         this.changeShowNewAnswersInput()
         this.buttonAddTitle = 'Confirmar'
-      } else if (this.localSelected.id === undefined) {
-        this.$toasted.show(`Debe seleccionar un local`, {
-          theme: 'toasted-primary',
-          position: 'top-right',
-          duration: 5000,
-        })
       } else {
         this.$toasted.show('Creando pregunta..', {
           theme: 'toasted-primary',
@@ -321,16 +221,9 @@ export default {
           this.currentQuestions = []
         }
         this.currentQuestions.push(temporalQuestion)
-        const localId = this.localSelected.id
         const body = this.currentQuestions
         if (this.currentQuestions.length < 3) {
           this.$toasted.show(`Se deben crear por lo menos 3 preguntas`, {
-            theme: 'toasted-primary',
-            position: 'top-right',
-            duration: 5000,
-          })
-        } else if (localId === undefined) {
-          this.$toasted.show(`Seleccione un local`, {
             theme: 'toasted-primary',
             position: 'top-right',
             duration: 5000,
@@ -339,7 +232,7 @@ export default {
           this.confirmChangeQuestion()
         } else {
           await this.$axios
-            .$post(`/api/createQuestions/${localId}`, body)
+            .$post(`/api/createQuestions`, body)
             .then((res) =>
               this.$toasted.show('Cambios guardados', {
                 theme: 'toasted-primary',
@@ -369,7 +262,6 @@ export default {
     },
 
     confirmChangeQuestion() {
-      const localId = this.localSelected.id
       const body = this.currentQuestions
       if (this.currentQuestions.length < 3) {
         this.$toasted.show(`Se deben crear por lo menos 3 preguntas`, {
@@ -377,15 +269,9 @@ export default {
           position: 'top-right',
           duration: 5000,
         })
-      } else if (localId === undefined) {
-        this.$toasted.show(`Seleccione un local`, {
-          theme: 'toasted-primary',
-          position: 'top-right',
-          duration: 5000,
-        })
       } else {
         this.$axios
-          .$put(`/api/updateQuestions/${localId}`, body)
+          .$put(`/api/updateGlobalQuestions`, body)
           .then((res) =>
             this.$toasted.show('Cambios guardados', {
               theme: 'toasted-primary',
@@ -409,11 +295,11 @@ export default {
       }
     },
 
-    deleteQuestion(question) {
+    deleteQuestion(questionC) {
       this.currentQuestions = this.currentQuestions.filter(
-        (q) => question.question !== q.question
+        (q) => questionC.question !== q.question
       )
-        this.tableFilter = [...this.currentQuestions]
+      this.tableFilter = [...this.currentQuestions]
       try {
         this.$toasted.show('Borrando pregunta..', {
           theme: 'toasted-primary',

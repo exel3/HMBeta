@@ -9,7 +9,7 @@
            <div v-if="user.type === 'admin'" class="selectContainer">
           <label for="owner">Dueño</label>
         <select id="owner" class="selectlocal" name="owner"  @change="setOwnerSelected($event.target.value)" >
-           <option disabled selected value></option>
+           <option selected value="Default">Seleccione dueño...</option>
           <option
             v-for="owner in owners"
             :key="'dropBox' + owner.id"
@@ -21,8 +21,8 @@
           </div>
           <div class="selectContainer">
           <label for="local">Local</label>
-        <select id="local" class="selectlocal" name="local"  @change="setLocalSelected($event.target.value)" >
-           <option disabled selected value></option>
+        <select v-if="localsFilter" id="local" class="selectlocal" name="local"  @change="setLocalSelected($event.target.value)" >
+           <option selected value="Default">Seleccione local...</option>
           <option
             v-for="local in localsFilter"
             :key="'dropBox' + local.id"
@@ -167,7 +167,7 @@ export default {
                   .$get('/api/getAllLocals')
                   .then((response) => {
                     this.locals = response.locals
-                    this.localsFilter = response.locals
+                    // this.localsFilter = response.locals
                     this.ownersWithLocals = this.owners.map((o) => {
                       const localsArray = this.locals.filter((l) =>
                         o.locals.includes(l.id)
@@ -291,6 +291,7 @@ export default {
       )
     },
     async setLocalSelected(localName) {
+      if(localName !== "Default"){
       const ownerLocals = this.locals.filter(
         (l) => l.client === this.ownerSelected.id
       )
@@ -299,8 +300,12 @@ export default {
         this.localSelected.tables.includes(t.id)
       )
       await this.getAllTablesByClientAndLocal()
+      } else {
+         this.tableFilter= []
+      }
     },
     setOwnerSelected(ownerName) {
+       if(ownerName !== "Default"){
       this.ownerSelected = this.ownersWithLocals.find(
         (o) => ownerName === o.username
       )
@@ -309,9 +314,14 @@ export default {
       )
       this.localSelected = {}
       this.tableSelected = {}
-      this.localsFilter.length === 1 &&
-        this.setLocalSelected(this.localsFilter[0].name)
+      
+      // this.localsFilter.length === 1 &&
+      //   this.setLocalSelected(this.localsFilter[0].name)
       // await this.getAllTablesByClientAndLocal()
+       } else {
+         this.localsFilter = []
+       }
+      this.tableFilter= []
     },
     addNewTable() {
       this.user.type === 'client' &&

@@ -13,7 +13,7 @@
               name="owner"
               @change="setOwnerSelected($event.target.value)"
             >
-              <option disabled selected value></option>
+              <option selected value="Default">Seleccione dueño...</option>
               <option
                 v-for="owner in owners"
                 :key="'dropBox' + owner.id"
@@ -31,7 +31,7 @@
               name="local"
               @change="setLocalSelected($event.target.value)"
             >
-              <option disabled selected value></option>
+              <option selected value="Default">Seleccione local...</option>
               <option v-for="local in localsFilter" :key="'dropBox' + local.id">
                 {{ local.name }}
               </option>
@@ -237,14 +237,18 @@ export default {
   },
   methods: {
     setLocalSelected(localName) {
-      console.log(localName, ' local seleccionado')
+      if(localName !== "Default"){
       const ownerLocals = this.locals.filter(
         (l) => l.client === this.ownerSelected.id
       )
       this.localSelected = ownerLocals.find((l) => l.name === localName)
       this.getQuestionsByLocal()
+      } else {
+        this.tableFilter = []
+      }
     },
     setOwnerSelected(ownerName) {
+    if(ownerName !== "Default"){
       this.ownerSelected = this.ownersWithLocals.find(
         (o) => ownerName === o.username
       )
@@ -252,9 +256,13 @@ export default {
         (l) => l.client === this.ownerSelected.id
       )
       this.localSelected = {}
-      this.localsFilter.length === 1 &&
-        this.setLocalSelected(this.localsFilter[0].name)
+      // this.localsFilter.length === 1 &&
+      //   this.setLocalSelected(this.localsFilter[0].name)
       // await this.getAllTablesByClientAndLocal()
+    } else {
+       this.localsFilter = []
+    }
+      this.tableFilter = []
     },
     getQuestionsByLocal() {
       this.loadingMode = true

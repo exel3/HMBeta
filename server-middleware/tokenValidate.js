@@ -23,7 +23,7 @@ export default async function (req, res, next) {
         "password": req.body.password
       }
     
-     await this.$axios.$post('https://happymatch-backend.herokuapp.com/api/clients/loginClient', post)
+     await this.$axios.$post('https://happymatch.herokuapp.com/api/clients/loginClient', post)
         .then(response => {
           const { token, id, username, locals } = response.data.data
           const cookies = new Cookies(req, res)

@@ -1,8 +1,8 @@
 <template>
-<Loading v-if="$fetchState.pending" class="fetchState" />
+  <Loading v-if="$fetchState.pending" class="fetchState" />
   <section v-else>
     <article class="userList">
-      <div class="titleCard"><p>Lista de usuarios</p></div>
+      <div class="titleCard"><p>Lista de usuarios baneados</p></div>
       <div class="selectuserCard">
         <div class="searchContainer">
           <div class="inputContainer">
@@ -29,10 +29,10 @@
       <table>
         <thead>
           <tr>
-            <th>Imagen</th>
-            <th>Usuario</th>
-            <th>Email</th>
-            <th>Banear</th>
+            <th>ID baneo</th>
+            <th>ID usuario</th>
+            <th>Razon</th>
+            <th>Desbanear</th>
           </tr>
         </thead>
         <tbody>
@@ -50,14 +50,14 @@
     </article>
     <BanModal
       v-if="showBanModal"
-      @ban:user="banUser"
+      @ban:user="unBanUser"
       @cancel:ban="showBanModal = false"
     />
   </section>
 </template>
 <script>
-import BaseRow from '@/components/bans/users/BaseRow.vue'
-import BanModal from '~/components/bans/users/BanModal.vue'
+import BaseRow from '@/components/bans/banusers/BaseRow.vue'
+import BanModal from '~/components/bans/banusers/BanModal.vue'
 import Loading from '~/components/ui/Loading.vue'
 export default {
   name: 'UsersList',
@@ -75,7 +75,6 @@ export default {
     searchValue: '',
   }),
   async fetch() {
-    const page = 1
     await this.$axios
       .$get('/api/getUser')
       .then((response) => {})
@@ -86,30 +85,11 @@ export default {
           duration: 10000,
         })
       })
-    const body = {
-      namesAndSurname: null,
-      emailAddress: null,
-    }
     await this.$axios
-      .$post(`/api/getAllUsers/${page}`, body)
-      .then((res) => {
-        this.usersCurrent = res.users
-        this.tableFilter = res.users
-      })
-      .catch((e) =>
-        this.$toasted.show(`Error recuperando los usuarios: ${e}`, {
-          theme: 'toasted-primary',
-          position: 'top-right',
-          duration: 10000,
-        })
-      )
-       await this.$axios
       .$get(`/api/getAllBans`)
       .then((res) => {
-        const banUsers = res.bans
-        const banUsersId = banUsers.map(u => u.userID)
-        this.tableFilter = this.usersCurrent.filter(u => !banUsersId.includes(u.id))
-        this.usersCurrent = [...this.tableFilter]
+        this.usersCurrent = res.bans
+        this.tableFilter = res.bans
       })
       .catch((e) =>
         this.$toasted.show(`Error recuperando los usuarios baneados: ${e}`, {
@@ -123,50 +103,33 @@ export default {
     setuserSelected(user) {
       this.userSelected = this.users.find((l) => l.id === user.id)
     },
-    async searchFilter() {
-      const page = 0
-      const body = {
-        namesAndSurname: this.searchValue.toLowerCase(),
-        emailAddress: this.searchValue.toLowerCase(),
-      }
-      await this.$axios
-        .$post(`/api/getAllUsers/${page}`, body)
-        .then((res) => {
-          this.usersCurrent = res.users
-          this.tableFilter = res.users
-        })
-        .catch((e) =>
-          this.$toasted.show(`Error recuperando los usuarios: ${e}`, {
-            theme: 'toasted-primary',
-            position: 'top-right',
-            duration: 10000,
-          })
-        )
+    searchFilter() {
+      this.tableFilter = this.usersCurrent.filter((u) =>
+        u.userID.toLowerCase().includes(this.searchValue.toLowerCase())
+      )
     },
-    async banUser() {
-      const idUser = this.userSelected.id
-      const body = {
-        reason: this.reason,
-      }
+    async unBanUser() {
+      const idUser = this.userSelected.userID
       await this.$axios
-        .$post(`/api/banUser/${idUser}`, body)
+        .$delete(`/api/unBanUser/${idUser}`)
         .then((res) => {
-          this.tableFilter = this.usersCurrent.filter(u => u.id !== idUser)
-            this.usersCurrent = [...this.tableFilter]
-          this.$toasted.show(`Usuario baneado`, {
+          this.tableFilter = this.usersCurrent.filter(
+            (u) => u.userID !== idUser
+          )
+          this.$toasted.show(`Usuario desbaneado`, {
             theme: 'toasted-primary',
             position: 'top-right',
             duration: 10000,
           })
         })
         .catch((e) =>
-          this.$toasted.show(`Error al banear usuario: ${e}`, {
+          this.$toasted.show(`Error al desbanear usuario: ${e}`, {
             theme: 'toasted-primary',
             position: 'top-right',
             duration: 10000,
           })
         )
-        this.showBanModal = false
+      this.showBanModal = false
     },
   },
 }
@@ -232,12 +195,6 @@ section {
   margin-top: 4rem;
   box-sizing: border-box;
 }
-.fetchState {
-  position: absolute;
-  z-index: 50;
-  color: white;
-}
-
 
 article {
   background: white;
@@ -248,6 +205,12 @@ article {
   z-index: 2;
   overflow: hidden;
 }
+.fetchState {
+  position: absolute;
+  z-index: 50;
+  color: white;
+}
+
 
 table {
   width: 100%;

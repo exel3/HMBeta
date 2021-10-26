@@ -172,7 +172,6 @@ export default {
         const emailAddress = this.newUser.emailAddress
         const password = this.newUser.password
         const body = { username, emailAddress, password }
-        console.log(body)
         this.$toasted.show(`Guardando cambios..`, {
           theme: 'toasted-primary',
           position: 'top-right',

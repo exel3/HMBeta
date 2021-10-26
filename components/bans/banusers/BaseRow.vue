@@ -1,19 +1,19 @@
 <template>
   <tr>
     <td>
-      <img class="userImg" :src=" user.picture">
+        <p>{{ user.id}}</p>
     </td>
     <td>
-      <p>{{ user.namesAndSurname}}</p>
+      <p>{{ user.userID}}</p>
     </td>
         <td>
-      <p>{{ user.email}}</p>
+      <p>{{ user.reason}}</p>
     </td>
     <td class="tdOptions">
       <BaseButtonTable
-        backcolor="black"
-        bordercolor="black"
-        imgsrc="block.svg"
+        backcolor="green"
+        bordercolor="green"
+        imgsrc="done.svg"
         @click="$emit('click', user)"
       />
     </td>

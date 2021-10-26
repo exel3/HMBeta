@@ -1,12 +1,12 @@
 <template>
   <div>
-    <BaseHeader />
-    <AsideMenu />
+    <BaseHeader @click:responsive="showAsideMenu=!showAsideMenu" />
+    <AsideMenu :show="showAsideMenu" @click:responsive="showAsideMenu=!showAsideMenu"/>
     <v-main>
       <v-container>
         <section class="containerDefault">
           <div class="backgroundGreen"></div>
-        <Nuxt />
+          <Nuxt />
         </section>
       </v-container>
     </v-main>
@@ -18,41 +18,42 @@ import BaseHeader from '@/components/ui/BaseHeader.vue'
 import AsideMenu from '@/components/ui/AsideMenu.vue'
 
 export default {
+  name: 'DefaultLayout',
   components: {
     AsideMenu,
     BaseHeader,
   },
   middleware: 'auth',
+  data: () => ({
+    showAsideMenu: false,
+  }),
 }
 </script>
 
 <style>
-
 @media (max-width: 1000px) {
   .containerDefault {
-     padding-left: 0;
+    padding-left: 0;
   }
-
 }
 @media (min-width: 1000px) {
   .containerDefault {
-     padding-left: 15rem;
+    padding-left: 15rem;
   }
-
 }
 
 .containerDefault {
   padding-top: 5rem;
-      background: var(--background-color);
+  background: var(--background-color);
 }
 
 .backgroundGreen {
-  left:0;
+  left: 0;
   position: absolute;
   top: 4rem;
   width: 100%;
   height: 15rem;
-  background:#2dce89;
+  background: #2dce89;
   z-index: 1;
 }
 </style>

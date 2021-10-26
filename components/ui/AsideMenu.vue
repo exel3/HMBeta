@@ -1,6 +1,8 @@
 <template>
-  <aside>
+  <aside :class="show ? 'asideResponsive' : 'asideDefault'">
     <div class="containerAside">
+      <div v-if="show" class="closeMenu" @click="$emit('click:responsive')"><img src="@/assets/icons/closeMenu.svg"></div>
+      <div v-if="show" class="backgroundResponsive" @click="$emit('click:responsive')"></div>
       <div class="header">
         <img />
         <p>HappyMatch</p>
@@ -12,7 +14,8 @@
       mainurl="/profile"
       :options="[{ title: 'Editar perfil', url: '/profile' }]"
     />
-    <ItemAsideMenu v-if="user.type==='admin'"
+    <ItemAsideMenu
+      v-if="user.type === 'admin'"
       title="Cuentas"
       imgsrc="group.svg"
       mainurl="/users/owners/"
@@ -30,30 +33,31 @@
         { title: 'Mesas', url: '/locals/tables' },
       ]"
     />
-    <ItemAsideMenu v-if="user.type==='admin'"
+    <ItemAsideMenu
+      v-if="user.type === 'admin'"
       title="Gestion preguntas"
       imgsrc="match.svg"
       mainurl="/questions/"
       :options="[
         { title: 'Preguntas globales', url: '/questions/global' },
         { title: 'Preguntas locales', url: '/questions/' },
-      
       ]"
     />
-        <ItemAsideMenu  v-if="user.type==='client'"
+    <ItemAsideMenu
+      v-if="user.type === 'client'"
       title="Usuarios y baneos"
       imgsrc="bans.svg"
       mainurl="/bans/groups"
-      :options="[
-        { title: 'Grupos', url: '/bans/groups' },
-      ]"
+      :options="[{ title: 'Grupos', url: '/bans/groups' }]"
     />
-     <ItemAsideMenu  v-if="user.type==='admin'"
+    <ItemAsideMenu
+      v-if="user.type === 'admin'"
       title="Usuarios y baneos"
       imgsrc="bans.svg"
       mainurl="/bans/users/"
       :options="[
         { title: 'Usuarios', url: '/bans/users' },
+        { title: 'Cuentas baneadas', url: '/bans/banusers' },
       ]"
     />
     <ItemAsideMenu
@@ -71,8 +75,14 @@ import ItemAsideMenu from './ItemAsideMenu.vue'
 export default {
   name: 'AsideMenu',
   components: { ItemAsideMenu },
+  props: {
+    show: {
+      type: Boolean,
+      required: true,
+    },
+  },
   data: () => ({
-    user: {}
+    user: {},
   }),
   async fetch() {
     await this.$axios
@@ -82,14 +92,11 @@ export default {
         console.log(response)
       })
       .catch((e) => {
-          this.$toasted.show(
-          `Error al recuperar el tipo de usuario: ${e}`,
-          {
-            theme: 'toasted-primary',
-            position: 'top-right',
-            duration: 5000,
-          }
-        )
+        this.$toasted.show(`Error al recuperar el tipo de usuario: ${e}`, {
+          theme: 'toasted-primary',
+          position: 'top-right',
+          duration: 5000,
+        })
       })
   },
   methods: {
@@ -105,7 +112,7 @@ export default {
 
 <style scoped>
 @media (max-width: 1000px) {
-  aside {
+  .asideDefault {
     width: 0;
   }
   .header {
@@ -113,13 +120,39 @@ export default {
   }
 }
 @media (min-width: 1000px) {
-  aside {
+  .asideDefault {
     width: 15rem;
   }
 
   .header {
     opacity: 1;
   }
+}
+.asideDefault {
+   overflow: hidden;
+}
+
+.closeMenu {
+  position: absolute;
+  right: 1rem;
+  cursor: pointer;
+  user-select: none;
+  z-index: 50;
+}
+
+.backgroundResponsive {
+  position: absolute;
+  right: calc(15rem - 100vw);
+  width: calc(100vw - 15rem);
+  top:0;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.6);
+  z-index: 100;
+}
+
+.asideResponsive {
+  width: 15rem;
+  z-index: 101
 }
 
 aside {
@@ -132,7 +165,6 @@ aside {
   border-width: 0 1px 0 0;
   color: rgba(0, 0, 0, 0.6);
   border-color: rgba(0, 0, 0, 0.05);
-  overflow: hidden;
 }
 
 .containerAside {

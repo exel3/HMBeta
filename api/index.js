@@ -770,6 +770,66 @@ app.post('/getAllUsers/:page', (req, res) => {
       })
     })
 })
+app.post('/banUser/:idUser', (req, res) => {
+  const { idUser } = req.params
+  const token = getToken(req, res)
+  const data = req.body
+  const headers = {
+    headers:
+      { authorization: token }
+  }
+
+  axios.post(`https://happymatch.herokuapp.com/api/ban/${idUser}`, data, headers)
+    .then(
+      response => {
+        res.json(response.data)
+      }
+    )
+    .catch(e => {
+      res.statusCode = e.response.status
+      res.json({
+        error: e.message
+      })
+    })
+})
+app.delete('/unBanUser/:idUser', (req, res) => {
+  const { idUser } = req.params
+  const token = getToken(req, res)
+  const headers = {
+    headers:
+      { authorization: token }
+  }
+
+  axios.delete(`https://happymatch.herokuapp.com/api/ban/unban/${idUser}`, headers)
+    .then(
+      response => {
+        res.json(response.data)
+      }
+    )
+    .catch(e => {
+      res.statusCode = e.response.status
+      res.json({
+        error: e.message
+      })
+    })
+})
+app.get('/getAllBans', (req, res) => {
+  const page = 1
+  const token = getToken(req, res)
+  const get = { headers: { Authorization: token } }
+  axios.get(`https://happymatch.herokuapp.com/api/ban/getAllBans/page/${page}`, get)
+    .then(
+      response => {
+        res.json(response.data)
+      }
+    )
+    .catch(e => {
+      res.statusCode = e.response.status
+      res.json({
+        error: e.message
+      })
+    })
+})
 app.post('/banGroupTable/:idGroup', (req, res) => {
   const { idGroup } = req.params
   const body = req.body

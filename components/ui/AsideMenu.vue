@@ -40,12 +40,20 @@
       
       ]"
     />
-        <ItemAsideMenu
+        <ItemAsideMenu  v-if="user.type==='client'"
       title="Usuarios y baneos"
       imgsrc="bans.svg"
-      mainurl="/questions/"
+      mainurl="/bans/groups"
       :options="[
-        { title: 'Grupos', url: '/clients/' },
+        { title: 'Grupos', url: '/bans/groups' },
+      ]"
+    />
+     <ItemAsideMenu  v-if="user.type==='admin'"
+      title="Usuarios y baneos"
+      imgsrc="bans.svg"
+      mainurl="/bans/users/"
+      :options="[
+        { title: 'Usuarios', url: '/bans/users' },
       ]"
     />
     <ItemAsideMenu

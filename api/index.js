@@ -741,6 +741,35 @@ app.put('/updateGlobalQuestions', (req, res) => {
       })
     })
 })
+app.post('/getAllUsers/:page', (req, res) => {
+  const { page } = req.params
+  console.log(page)
+  const {namesAndSurname,emailAddress } = req.body
+  const token = getToken(req, res)
+
+
+  const data = {
+    namesAndSurname,
+    emailAddress
+  }
+  const headers = {
+    headers:
+      { authorization: token }
+  }
+
+  axios.post(`https://happymatch.herokuapp.com/api/user/getAllUsers/filter/page/${page}`, data, headers)
+    .then(
+      response => {
+        res.json(response.data)
+      }
+    )
+    .catch(e => {
+      res.statusCode = e.response.status
+      res.json({
+        error: e.message
+      })
+    })
+})
 app.post('/banGroupTable/:idGroup', (req, res) => {
   const { idGroup } = req.params
   const body = req.body

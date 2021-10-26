@@ -77,7 +77,7 @@ export default {
       this.$axios
         .$get(`/api/getClient/${this.user.id}`)
         .then((res) => {
-          this.currentUser = res.admin
+          this.currentUser = res.client
         })
         .catch((e) => {
           this.$toasted.show(`Error al recuperar usuario: ${e}`, {

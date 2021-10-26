@@ -82,6 +82,7 @@
 :key="local.id" 
 :local="local"
 :owners="owners"
+:user="user"
 @click="showDeleteModal = true; localSelected = local"  
 @click:delete="showDeleteModal=true; localSelected=local"
 @click:edit="showEditModal=true; localSelected={...local, clientName:$event}"

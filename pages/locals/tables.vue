@@ -192,12 +192,9 @@ export default {
               })
           : await this.$axios
               .$get(`/api/getLocalsByClient/${this.user.id}`)
-              .then(async (response) => {
+              .then((response) => {
                 this.locals = response.locals
                 this.localsFilter = response.locals
-                this.currentTables = response.locals[0].tables
-                this.tableFilter = response.locals[0].tables
-                await this.getAllTablesByClientAndLocal()
               })
               .catch((e) => {
                 this.$toasted.show(`Error al recuperar locales: ${e}`, {
@@ -282,6 +279,7 @@ export default {
       )
     },
     async setLocalSelected(localName) {
+      if(this.user.type === 'admin'){
       if(localName !== "Default"){
       const ownerLocals = this.locals.filter(
         (l) => l.client === this.ownerSelected.id
@@ -294,6 +292,11 @@ export default {
       } else {
          this.tableFilter= []
       }
+      }
+      else {
+         this.localSelected = this.locals.find((o) => localName === o.name)
+         await this.getAllTablesByClientAndLocal()
+      }
     },
     setOwnerSelected(ownerName) {
        if(ownerName !== "Default"){
@@ -305,10 +308,6 @@ export default {
       )
       this.localSelected = {}
       this.tableSelected = {}
-      
-      // this.localsFilter.length === 1 &&
-      //   this.setLocalSelected(this.localsFilter[0].name)
-      // await this.getAllTablesByClientAndLocal()
        } else {
          this.localsFilter = []
        }

@@ -44,6 +44,10 @@ export default {
       type: Array,
       required: true,
     },
+    user: {
+      type: Object,
+      required: true
+    }
   },
   data:() => ({
     clientName: ''
@@ -53,7 +57,12 @@ export default {
   },
   methods: {
     setClientName() {
+      if(this.user.type === "admin"){
       this.clientName = this.owners.find((o) => o.id === this.local.client).username
+    }
+    else {
+      this.clientName = this.user.username
+    }
     }
   }
 

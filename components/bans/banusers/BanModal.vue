@@ -5,12 +5,12 @@
       <div class="modalText">
         <h1>ADVERTENCIA</h1>
         <p>
-          Banear al usuario le bloqueara acceso a cualquier local de HappyMatch,
+          Desbanear al usuario le permitirá el acceso a cualquier local de HappyMatch,
           ¿Desea continuar?
         </p>
       </div>
       <div class="modalButtons">
-        <button @click.prevent="$emit('ban:user')">Banear</button
+        <button @click.prevent="$emit('ban:user')">Desbanear</button
         ><button @click.prevent="$emit('cancel:ban')">Cancelar</button>
       </div>
     </div>

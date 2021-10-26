@@ -29,8 +29,8 @@
       <table>
         <thead>
           <tr>
-            <th>ID baneo</th>
-            <th>ID usuario</th>
+            <th>Usuario</th>
+            <th>Email</th>
             <th>Razon</th>
             <th>Desbanear</th>
           </tr>

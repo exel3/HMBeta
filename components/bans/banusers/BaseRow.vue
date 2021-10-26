@@ -1,10 +1,10 @@
 <template>
   <tr>
     <td>
-        <p>{{ user.id}}</p>
+        <p>{{ user.userID.userName}}</p>
     </td>
     <td>
-      <p>{{ user.userID}}</p>
+      <p>{{ user.userID.email}}</p>
     </td>
         <td>
       <p>{{ user.reason}}</p>

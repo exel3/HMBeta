@@ -579,23 +579,6 @@ app.delete('/deleteQR/:id', (req, res) => {
       })
     })
 })
-app.get('/getGroupTables/:localId', (req, res) => {
-  const { localId } = req.params
-  const token = getToken(req, res)
-  const get = { headers: { Authorization: token } }
-  axios.get(`https://happymatch.herokuapp.com/api/groupTables/getAllGroupTablesByLocalId/${localId}`, get)
-    .then(
-      response => {
-        res.json(response.data)
-      }
-    )
-    .catch(e => {
-      res.statusCode = e.response.status
-      res.json({
-        error: e.message
-      })
-    })
-})
 app.get('/getUser', (req, res) => {
   const user = getUser(req, res)
   res.json(user)
@@ -818,6 +801,45 @@ app.get('/getAllBans', (req, res) => {
   const token = getToken(req, res)
   const get = { headers: { Authorization: token } }
   axios.get(`https://happymatch.herokuapp.com/api/ban/getAllBans/page/${page}`, get)
+    .then(
+      response => {
+        res.json(response.data)
+      }
+    )
+    .catch(e => {
+      res.statusCode = e.response.status
+      res.json({
+        error: e.message
+      })
+    })
+})
+app.post('/banGroup/:idGroup', (req, res) => {
+  const { idGroup } = req.params
+  const token = getToken(req, res)
+  const data = req.body
+  const headers = {
+    headers:
+      { authorization: token }
+  }
+
+  axios.post(`https://happymatch.herokuapp.com/api/groupban/${idGroup}`, data, headers)
+    .then(
+      response => {
+        res.json(response.data)
+      }
+    )
+    .catch(e => {
+      res.statusCode = e.response.status
+      res.json({
+        error: e.message
+      })
+    })
+})
+app.get('/getGroupTables/:localID', (req, res) => {
+  const {localID} = req.params
+  const token = getToken(req, res)
+  const get = { headers: { Authorization: token } }
+  axios.get(`https://happymatch.herokuapp.com/api/grouptable/getAllGroupTablesByLocalId/${localID}`, get)
     .then(
       response => {
         res.json(response.data)

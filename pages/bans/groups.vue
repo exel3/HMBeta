@@ -1,20 +1,22 @@
 <template>
-  <section>
+  <Loading v-if="$fetchState.pending" class="fetchState" />
+  <section v-else>
     <article class="userList">
       <div class="titleCard"><p>Lista de grupos</p></div>
-      <div class="selectLocalCard">
-        <div class="selectContainer">
-        <label for="locals">Local</label>
-        <select id="locals" name="locals">
+      <div class="selectuserCard">
+           <div class="selectContainer">
+          <label for="local">Local</label>
+        <select v-if="localsFilter" id="local" class="selectlocal" name="local"  @change="setLocalSelected($event.target.value)" >
+           <option selected value="Default">Seleccione local...</option>
           <option
-            v-for="local in locals"
+            v-for="local in localsFilter"
             :key="'dropBox' + local.id"
-            :value="local"
+            :value="local.name"
           >
-            {{ local.name }}
+            {{local.name}}
           </option>
         </select>
-        </div>
+          </div>
         <div class="searchContainer">
           <div class="inputContainer">
             <img class="searchIcon" src="@/assets/icons/search.svg" />
@@ -30,7 +32,7 @@
             <form @submit.prevent>
               <input
                 v-model="searchValue"
-                placeholder="Buscar.."
+                placeholder="Buscar por mesa..."
                 @keyup.prevent="searchFilter()"
               />
             </form>
@@ -40,105 +42,174 @@
       <table>
         <thead>
           <tr>
-            <th>Nombre mesa</th>
-            <th>Usuario principal</th>
-            <th>Reportes</th>
-            <th>Acciones</th>
+            <th>Imagen</th>
+            <th>Mesa</th>
+            <th>Personas</th>
+            <th>Banear</th>
           </tr>
         </thead>
         <tbody>
-          <tr v-for="group in tableFilter" :key="group.id">
-            <td>{{ group.name }}</td>
-            <td>{{ group.userMainId }}</td>
-            <td>{{ group.reports ? group.reports : '0' }}</td>
-            <td class="tdOptions">
-              <div
-                class="buttonOption"
-                @click="
-                  showDeleteModal = true
-                  userSelected = user
-                "
-              >
-                <img src="@/assets/icons/block.svg" />
-              </div>
-            </td>
-          </tr>
+          <BaseRow
+            v-for="group in tableFilter"
+            :key="group.id"
+            :user="group"
+            @click="
+              showBanModal = true
+              userSelected = group
+            "
+          />
         </tbody>
       </table>
     </article>
+    <BanModal
+      v-if="showBanModal"
+      @ban:user="banUser"
+      @cancel:ban="showBanModal = false"
+    />
   </section>
 </template>
 <script>
+import BaseRow from '@/components/bans/groups/BaseRow.vue'
+import BanModal from '~/components/bans/groups/BanModal.vue'
+import Loading from '~/components/ui/Loading.vue'
 export default {
-  name: 'IndexGroupTables',
+  name: 'UsersList',
+  components: {
+    BaseRow,
+    BanModal,
+    Loading,
+  },
   data: () => ({
-    locals: [],
+    showBanModal: false,
+    users: [],
     clientId: '',
-    localSelected: {},
+    currentGroups: [],
     tableFilter: [],
-    searchValue: ''
+    searchValue: '',
+    locals: [],
+    localsFilter: [],
+    user: {},
   }),
   async fetch() {
     await this.$axios
       .$get('/api/getUser')
       .then((response) => {
-        this.locals = response.locals
-        this.clientId = response.id
+        this.user = response
       })
       .catch((e) => {
-         this.$toasted.show(`Error recuperando los datos de usuario: ${e}`, {
+        this.$toasted.show(`Error recuperando los datos de usuario: ${e}`, {
           theme: 'toasted-primary',
           position: 'top-right',
           duration: 10000,
         })
       })
-
-    this.locals.length > 0 &&
-      (await this.$axios
-        .$get(`/api/getGroupTables/${this.locals[0].id}`)
-        .then((res) => {
-          this.locals[0].tables = res.groupTables
-          this.localSelected.tables = res.groupTables
-          this.tableFilter = res.groupTables
-        })
-        .catch((e) =>  this.$toasted.show(`Error recuperando las groupTables: ${e}`, {
+    await this.$axios
+      .$get(`/api/getLocalsByClient/${this.user.id}`)
+      .then((response) => {
+        this.locals = response.locals
+        this.localsFilter = response.locals
+      })
+      .catch((e) => {
+        this.$toasted.show(`Error al recuperar locales: ${e}`, {
           theme: 'toasted-primary',
           position: 'top-right',
-          duration: 10000,
-        })))
-
-    await this.setLocalSelected(this.locals[0])
+          duration: 5000,
+        })
+      })
   },
   methods: {
-    setLocalSelected(local) {
-      this.localSelected = this.locals.find((l) => l.id === local.id)
+    setuserSelected(user) {
+      this.userSelected = this.users.find((l) => l.id === user.id)
+    },
+    async getBanGroups() {
+      await this.$axios
+        .$get(`/api/getAllBans`)
+        .then((res) => {
+          const banUsers = res.bans
+          const banUsersId = banUsers.map((u) => u.userID)
+          this.tableFilter = this.currentGroups.filter(
+            (u) => !banUsersId.includes(u.id)
+          )
+          this.currentGroups = [...this.tableFilter]
+        })
+        .catch((e) =>
+          this.$toasted.show(`Error recuperando los usuarios baneados: ${e}`, {
+            theme: 'toasted-primary',
+            position: 'top-right',
+            duration: 10000,
+          })
+        )
+    },
+    async setLocalSelected(localName) {
+        this.localSelected = this.locals.find((o) => localName === o.name)
+        const localID = this.localSelected.id
+      await this.$axios
+        .$get(`/api/getGroupTables/${localID}`)
+        .then((res) => {
+          this.currentGroups = res.groupTables
+          this.tableFilter = res.groupTables
+        })
+        .catch((e) =>
+          this.$toasted.show(`Error recuperando grupos: ${e}`, {
+            theme: 'toasted-primary',
+            position: 'top-right',
+            duration: 10000,
+          })
+        )
     },
     searchFilter() {
-      this.tableFilter = this.localSelected.tables.filter((t) =>
-        t.name.toLowerCase().includes(this.searchValue.toLowerCase())
+       this.tableFilter = this.currentGroups.filter(
+        (u) =>
+          u.name.toLowerCase().includes(this.searchValue.toLowerCase())
       )
+    },
+    async banUser() {
+      const idUser = this.userSelected.id
+      const body = {
+        reason: this.reason,
+      }
+      await this.$axios
+        .$post(`/api/banGroup/${idUser}`, body)
+        .then((res) => {
+          this.tableFilter = this.currentGroups.filter((u) => u.id !== idUser)
+          this.currentGroups = [...this.tableFilter]
+          this.$toasted.show(`Grupo baneado`, {
+            theme: 'toasted-primary',
+            position: 'top-right',
+            duration: 10000,
+          })
+        })
+        .catch((e) =>
+          this.$toasted.show(`Error al banear grupo: ${e}`, {
+            theme: 'toasted-primary',
+            position: 'top-right',
+            duration: 10000,
+          })
+        )
+      this.showBanModal = false
     },
   },
 }
 </script>
 <style scoped>
 @media (max-width: 1000px) {
-    section {
+  section {
     padding: 0 0.1rem;
   }
   td {
     padding: 0.5rem 0.1rem;
+    height: 5rem;
   }
   th {
     padding: 0.5rem 0.1rem;
   }
-  .selectLocalCard {
+  .selectuserCard {
     display: grid;
-  grid-auto-flow: row;
-  justify-content: center;
-  gap: 1rem 0;
-  width: 100%;
-  padding: 1rem 0;
+    grid-auto-flow: row;
+    justify-content: center;
+    gap: 1rem 0;
+    width: 100%;
+    padding: 1rem 0;
   }
   .selectContainer {
     width: 100%;
@@ -150,12 +221,12 @@ export default {
   th:nth-child(2) {
     display: none;
   }
-    td:nth-child(2) {
+  td:nth-child(2) {
     display: none;
   }
 }
 @media (min-width: 1000px) {
-   section {
+  section {
     padding: 0 5rem;
   }
   td {
@@ -165,11 +236,11 @@ export default {
   th {
     padding: 1rem;
   }
-  .selectLocalCard{
+  .selectuserCard {
     display: grid;
-  grid-auto-flow: column;
-  justify-content: space-between;
-  padding: 1.25rem 1.5rem;
+    grid-auto-flow: column;
+    justify-content: space-between;
+    padding: 1.25rem 1.5rem;
   }
 }
 section {
@@ -180,6 +251,11 @@ section {
   gap: 2rem 0;
   margin-top: 4rem;
   box-sizing: border-box;
+}
+.fetchState {
+  position: absolute;
+  z-index: 50;
+  color: white;
 }
 
 article {
@@ -247,13 +323,13 @@ td {
   color: #32325d;
 }
 
-.selectLocalCard {
+.selectuserCard {
   position: relative;
   margin-bottom: 0;
   background-color: #fff;
   border-bottom: 1px solid rgba(0, 0, 0, 0.05);
 }
-.selectLocalCard label {
+.selectuserCard label {
   font-size: 1rem;
   font-weight: 300;
   line-height: 1.7;
@@ -262,7 +338,7 @@ td {
   margin-right: 1rem;
 }
 
-.selectLocalCard select {
+.selectuserCard select {
   font-size: 0.875rem;
   cursor: pointer;
   background-color: #fff;
@@ -307,7 +383,7 @@ td {
 .searchContainer input {
   box-sizing: border-box;
   height: 2.5rem;
-   padding: 0 5rem;
+  padding: 0 5rem;
   outline: none;
   border: 1px solid #dcdfe6;
   border-radius: 4px;
@@ -321,7 +397,7 @@ td {
 }
 .clearIcon {
   position: absolute;
-  top:0.55rem;
+  top: 0.55rem;
   left: calc(100% - 3rem);
   z-index: 1;
   cursor: pointer;

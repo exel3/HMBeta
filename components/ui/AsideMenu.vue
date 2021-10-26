@@ -45,7 +45,7 @@
     />
     <ItemAsideMenu
       v-if="user.type === 'client'"
-      title="Usuarios y baneos"
+      title="Usuarios y bans"
       imgsrc="bans.svg"
       mainurl="/bans/groups"
       :options="[{ title: 'Grupos', url: '/bans/groups' }]"

@@ -35,19 +35,18 @@ export default {
   .containerDefault {
     padding-left: 0;
   }
+
+  .backgroundGreen {
+display:none
+}
 }
 @media (min-width: 1000px) {
   .containerDefault {
+    padding-top: 5rem;
     padding-left: 15rem;
   }
-}
 
-.containerDefault {
-  padding-top: 5rem;
-  background: var(--background-color);
-}
-
-.backgroundGreen {
+  .backgroundGreen {
   left: 0;
   position: absolute;
   top: 4rem;
@@ -56,4 +55,11 @@ export default {
   background: #2dce89;
   z-index: 1;
 }
+}
+
+.containerDefault {
+  background: var(--background-color);
+}
+
+
 </style>

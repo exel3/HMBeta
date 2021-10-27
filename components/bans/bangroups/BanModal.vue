@@ -5,7 +5,7 @@
       <div class="modalText">
         <h1>ADVERTENCIA</h1>
         <p>
-          Desbanear al grupo le permitirá el acceso al local,
+          Desbanear al usuario le permitirá el acceso a cualquier local de HappyMatch,
           ¿Desea continuar?
         </p>
       </div>

@@ -878,44 +878,37 @@ app.post('/banGroupTable/:idGroup', (req, res) => {
 })
 app.delete('/unBanGroupTable/:idGroup', (req, res) => {
   const { idGroup } = req.params
-
   const token = getToken(req, res)
+  const headers = {
+    headers:
+      { authorization: token }
+  }
 
-  axios.post(`https://happymatch.herokuapp.com/api/groupBans/unban/${idGroup}`, {
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `${token}`
-    }
-  }).then(response => {
-    res.json(response.data)
-  })
+  axios.delete(`https://happymatch.herokuapp.com/api/groupban/unban/${idGroup}`, headers)
+    .then(
+      response => {
+        res.json(response.data)
+      }
+    )
     .catch(e => {
       res.statusCode = e.response.status
-      console.log('error servidor', e)
       res.json({
         error: e.message
       })
     })
 })
-app.get('/getGroupsBan', (req, res) => {
-  console.log('entro api')
+app.get('/getAllGroupBans/:clientID', (req, res) => {
+  const {clientID} = req.params
   const token = getToken(req, res)
-  const user = getUser(req, res)
-  const { id } = user
-  console.log('idUser: ', id)
-
-
-  axios.get(`https://happymatch.herokuapp.com/api/getgroupsbanbyclientid/${id}`, {
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `${token}`
-    }
-  }).then(response => {
-    res.json(response.data)
-  })
+  const get = { headers: { Authorization: token } }
+  axios.get(`https://happymatch.herokuapp.com/api/groupban/getGroupsBanByClientId/${clientID}`, get)
+    .then(
+      response => {
+        res.json(response.data)
+      }
+    )
     .catch(e => {
       res.statusCode = e.response.status
-      console.log('error servidor', e)
       res.json({
         error: e.message
       })

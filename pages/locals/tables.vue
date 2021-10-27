@@ -41,7 +41,7 @@
         <form>
           <div>
           <label for="tablename">Nombre</label>
-          <input id="tablename" v-model="newTable.name" type="name" :disabled="loadingMode" autocomplete="off">
+          <input id="tablename" v-model="newTable.name" type="name" :disabled="loadingMode" autocomplete="off" @keyup.enter.prevent="addNewTable">
           </div>
           <div>
           <label for="qr">QR</label>
@@ -214,13 +214,11 @@ export default {
   },
   methods: {
     printQr() {
-      console.log(this.tableSelected, 'objeto tableSelected')
       const printObject = {
         code: this.tableSelected.qr.code,
         name: this.tableSelected.name,
       }
       this.qrsToPrint = [printObject]
-      console.log(this.qrsToPrint, 'objeto qrsToPrint')
       this.showPrint = true
     },
     generateQr() {

@@ -48,7 +48,8 @@
       title="Usuarios y bans"
       imgsrc="bans.svg"
       mainurl="/bans/groups"
-      :options="[{ title: 'Grupos', url: '/bans/groups' }]"
+      :options="[{ title: 'Grupos', url: '/bans/groups' },
+      { title: 'Grupos baneados', url: '/bans/bangroups' }]"
     />
     <ItemAsideMenu
       v-if="user.type === 'admin'"

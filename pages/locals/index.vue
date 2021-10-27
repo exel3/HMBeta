@@ -8,23 +8,23 @@
         <form>
           <div>
           <label for="locationAddress">Nombre</label>
-          <input id="locationAddress" v-model="newlocal.name" type="locationAddress" :disabled="loadingMode" autocomplete="off">
+          <input id="locationAddress" v-model="newlocal.name" type="locationAddress" :disabled="loadingMode" autocomplete="off"  @keyup.enter.prevent="addNewlocal">
           </div>
           <div>
           <label for="contraseña">Direccion</label>
-          <input id="contraseña" v-model="newlocal.locationAddress" type="text"  :disabled="loadingMode" autocomplete="off">
+          <input id="contraseña" v-model="newlocal.locationAddress" type="text"  :disabled="loadingMode" autocomplete="off" @keyup.enter.prevent="addNewlocal">
           </div>
            <div>
           <label for="city">Ciudad</label>
-          <input id="city"  v-model="newlocal.locationCityName" type="text" name="newlocal" :disabled="loadingMode" autocomplete="off">
+          <input id="city"  v-model="newlocal.locationCityName" type="text" name="newlocal" :disabled="loadingMode" autocomplete="off" @keyup.enter.prevent="addNewlocal">
           </div>
             <div>
           <label for="country">Pais</label>
-          <input id="country"  v-model="newlocal.locationCountryName" type="text" name="newlocal" :disabled="loadingMode" autocomplete="off">
+          <input id="country"  v-model="newlocal.locationCountryName" type="text" name="newlocal" :disabled="loadingMode" autocomplete="off" @keyup.enter.prevent="addNewlocal">
           </div>
           <div v-if="user.type==='admin'" class="selectContainer">
           <label for="owner">Dueño</label>
-        <select id="owner" class="selectOwner" name="owner"  @change="setOwnerSelected($event.target.value)" >
+        <select id="owner" class="selectOwner" name="owner"  @change="setOwnerSelected($event.target.value)">
            <option disabled selected value></option>
           <option
             v-for="owner in owners"
@@ -222,23 +222,29 @@ export default {
             })
     },
     searchFilter() {
-      this.tableFilter = this.currentLocals.filter((u) =>
-       (u.name? u.name.toLowerCase().includes(this.searchValue.toLowerCase()) : false) ||
-        (u.location_address
-          ? u.location_address
-              .toLowerCase()
-              .includes(this.searchValue.toLowerCase())
-          : false) ||
-       (u.client? u.client.toLowerCase().includes(this.searchValue.toLowerCase()) : false )||
-        (u.location_city_name
-          ? u.location_city_name
-              .toLowerCase()
-              .includes(this.searchValue.toLowerCase())
-          : false) || (u.location_country_name
-          ? u.location_country_name
-              .toLowerCase()
-              .includes(this.searchValue.toLowerCase())
-          : false)
+      this.tableFilter = this.currentLocals.filter(
+        (u) =>
+          (u.name
+            ? u.name.toLowerCase().includes(this.searchValue.toLowerCase())
+            : false) ||
+          (u.location_address
+            ? u.location_address
+                .toLowerCase()
+                .includes(this.searchValue.toLowerCase())
+            : false) ||
+          (u.client
+            ? u.client.toLowerCase().includes(this.searchValue.toLowerCase())
+            : false) ||
+          (u.location_city_name
+            ? u.location_city_name
+                .toLowerCase()
+                .includes(this.searchValue.toLowerCase())
+            : false) ||
+          (u.location_country_name
+            ? u.location_country_name
+                .toLowerCase()
+                .includes(this.searchValue.toLowerCase())
+            : false)
       )
     },
     setOwnerSelected(ownerName) {

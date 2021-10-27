@@ -222,19 +222,23 @@ export default {
             })
     },
     searchFilter() {
-      this.tableFilter = this.currentLocals.filter(
-        (u) =>
-          u.name.toLowerCase().includes(this.searchValue.toLowerCase()) ||
-          u.location_address
-            .toLowerCase()
-            .includes(this.searchValue.toLowerCase()) ||
-          u.client.toLowerCase().includes(this.searchValue.toLowerCase()) ||
-          u.location_city_name
-            .toLowerCase()
-            .includes(this.searchValue.toLowerCase()) ||
-          u.location_country_name
-            .toLowerCase()
-            .includes(this.searchValue.toLowerCase())
+      this.tableFilter = this.currentLocals.filter((u) =>
+       (u.name? u.name.toLowerCase().includes(this.searchValue.toLowerCase()) : false) ||
+        (u.location_address
+          ? u.location_address
+              .toLowerCase()
+              .includes(this.searchValue.toLowerCase())
+          : false) ||
+       (u.client? u.client.toLowerCase().includes(this.searchValue.toLowerCase()) : false )||
+        (u.location_city_name
+          ? u.location_city_name
+              .toLowerCase()
+              .includes(this.searchValue.toLowerCase())
+          : false) || (u.location_country_name
+          ? u.location_country_name
+              .toLowerCase()
+              .includes(this.searchValue.toLowerCase())
+          : false)
       )
     },
     setOwnerSelected(ownerName) {
@@ -339,10 +343,10 @@ export default {
             position: 'top-right',
             duration: 5000,
           })
-           const indexT = this.currentLocals.findIndex(
-              (t) => t.id === res.local.id
-            )
-            this.tableFilter[indexT]= res.local
+          const indexT = this.currentLocals.findIndex(
+            (t) => t.id === res.local.id
+          )
+          this.tableFilter[indexT] = res.local
           this.currentLocals = this.tableFilter
           this.loadingMode = false
         })

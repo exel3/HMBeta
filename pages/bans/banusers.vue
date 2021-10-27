@@ -109,12 +109,12 @@ export default {
       )
     },
     async unBanUser() {
-      const idUser = this.userSelected.userID
+      const idUser = this.userSelected.userID.id
       await this.$axios
         .$delete(`/api/unBanUser/${idUser}`)
         .then((res) => {
           this.tableFilter = this.usersCurrent.filter(
-            (u) => u.userID !== idUser
+            (u) => u.userID.id !== idUser
           )
           this.$toasted.show(`Usuario desbaneado`, {
             theme: 'toasted-primary',

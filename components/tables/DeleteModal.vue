@@ -5,7 +5,7 @@
       <div class="modalText">
         <h1>ADVERTENCIA</h1>
         <p>
-          Eliminar usuario borrará toda su informacion de la base de datos,
+          Eliminar la mesa borrará su QR de la base de datos,
           ¿Desea continuar?
         </p>
       </div>

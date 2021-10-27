@@ -107,7 +107,11 @@ export default {
       this.tableFilter = response.admins
       })
       .catch((e) => {
-        console.log(e)
+           this.$toasted.show(`Error al recuperar los administradores: ${e}`, {
+          theme: 'toasted-primary',
+          position: 'top-right',
+          duration: 10000,
+        })
       })
   },
   methods: {
@@ -121,15 +125,19 @@ export default {
          this.loadingMode = false
       })
       .catch((e) => {
-        console.log(e)
+           this.$toasted.show(`Error al recuperar los administradores: ${e}`, {
+          theme: 'toasted-primary',
+          position: 'top-right',
+          duration: 10000,
+        })
            this.loadingMode = false
       })
     },
     searchFilter() {
       this.tableFilter = this.currentUsers.filter(
         (u) =>
-          u.username.toLowerCase().includes(this.searchValue.toLowerCase()) ||
-          u.emailAddress.toLowerCase().includes(this.searchValue.toLowerCase())
+          (u.username? u.username.toLowerCase().includes(this.searchValue.toLowerCase()) : false) ||
+          (u.emailAddress? u.emailAddress.toLowerCase().includes(this.searchValue.toLowerCase()) : false)
       )
     },
     addNewUser() {
@@ -219,7 +227,6 @@ export default {
                 }
               )
             }
-            console.log(e.response.data.error['Errors List'])
             this.loadingMode = false
           })
       }

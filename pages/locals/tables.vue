@@ -162,7 +162,7 @@ export default {
           ? await this.$axios
               .$get('/api/getAllClients')
               .then(async (response) => {
-                this.owners = response.clients 
+                this.owners = response.clients
                 await this.$axios
                   .$get('/api/getAllLocals')
                   .then((response) => {
@@ -273,45 +273,43 @@ export default {
         })
     },
     searchFilter() {
-      this.tableFilter = this.currentTables.filter(
-        (u) =>
-          u.name.toLowerCase().includes(this.searchValue.toLowerCase())
+      this.tableFilter = this.currentTables.filter((u) =>
+        u.name.toLowerCase().includes(this.searchValue.toLowerCase())
       )
     },
     async setLocalSelected(localName) {
-      if(this.user.type === 'admin'){
-      if(localName !== "Default"){
-      const ownerLocals = this.locals.filter(
-        (l) => l.client === this.ownerSelected.id
-      )
-      this.localSelected = ownerLocals.find((o) => localName === o.name)
-      this.tableFilter = this.currentTables.filter((t) =>
-        this.localSelected.tables.includes(t.id)
-      )
-      await this.getAllTablesByClientAndLocal()
+      if (this.user.type === 'admin') {
+        if (localName !== 'Default') {
+          const ownerLocals = this.locals.filter(
+            (l) => l.client === this.ownerSelected.id
+          )
+          this.localSelected = ownerLocals.find((o) => localName === o.name)
+          this.tableFilter = this.currentTables.filter((t) =>
+            this.localSelected.tables.includes(t.id)
+          )
+          await this.getAllTablesByClientAndLocal()
+        } else {
+          this.tableFilter = []
+        }
       } else {
-         this.tableFilter= []
-      }
-      }
-      else {
-         this.localSelected = this.locals.find((o) => localName === o.name)
-         await this.getAllTablesByClientAndLocal()
+        this.localSelected = this.locals.find((o) => localName === o.name)
+        await this.getAllTablesByClientAndLocal()
       }
     },
     setOwnerSelected(ownerName) {
-       if(ownerName !== "Default"){
-      this.ownerSelected = this.ownersWithLocals.find(
-        (o) => ownerName === o.username
-      )
-      this.localsFilter = this.locals.filter(
-        (l) => l.client === this.ownerSelected.id
-      )
-      this.localSelected = {}
-      this.tableSelected = {}
-       } else {
-         this.localsFilter = []
-       }
-      this.tableFilter= []
+      if (ownerName !== 'Default') {
+        this.ownerSelected = this.ownersWithLocals.find(
+          (o) => ownerName === o.username
+        )
+        this.localsFilter = this.locals.filter(
+          (l) => l.client === this.ownerSelected.id
+        )
+        this.localSelected = {}
+        this.tableSelected = {}
+      } else {
+        this.localsFilter = []
+      }
+      this.tableFilter = []
     },
     addNewTable() {
       this.user.type === 'client' &&
@@ -499,49 +497,47 @@ export default {
           this.loadingMode = false
         })
     },
-    deleteTable() {
+    async deleteTable() {
       this.loadingMode = true
       const tableID = this.tableSelected.id
-      this.$axios
-        .$delete(`/api/deleteTable/${tableID}`)
-        .then(async (res) => {
-          const id = this.tableSelected.qr
-          await this.$axios
-            .$delete(`/api/deleteQR/${id}`)
-            .then((res) => {
-              this.$toasted.show(`QR desincronizado`, {
-                theme: 'toasted-primary',
-                position: 'top-right',
-                duration: 2000,
-              })
-            })
-            .catch((e) => {
-              this.$toasted.show(
-                `Error al borrar QR: ${JSON.stringify(
-                  e.response.data.error['Errors List']
-                )}`,
-                {
-                  theme: 'toasted-primary',
-                  position: 'top-right',
-                  duration: 5000,
-                }
-              )
-
-              this.loadingMode = false
-            })
-          this.$toasted.show(`Cambios guardados`, {
+      const idQR = this.tableSelected.qr.id
+      this.tableFilter = this.currentTables.filter((t) => t.id !== tableID)
+      this.showDeleteModal = false
+      await this.$axios
+        .$delete(`/api/deleteQR/${idQR}`)
+        .then((resQr) => {
+          this.$toasted.show(`QR desincronizado`, {
             theme: 'toasted-primary',
             position: 'top-right',
             duration: 5000,
           })
-          this.currentTables = this.currentTables.filter(
-            (u) => u.id !== this.tableSelected.id
-          )
-          this.showDeleteModal = false
-          this.tableFilter = this.currentTables
           this.loadingMode = false
         })
         .catch((e) => {
+          this.tableFilter = this.currentTables
+          this.$toasted.show(
+            `Error al borrar QR: ${JSON.stringify(
+              e.response.data.error['Errors List']
+            )}`,
+            {
+              theme: 'toasted-primary',
+              position: 'top-right',
+              duration: 5000,
+            }
+          )
+          this.loadingMode = false
+        })
+      await this.$axios
+        .$delete(`/api/deleteTable/${tableID}`)
+        .then((resTable) => {
+          this.$toasted.show(`Cambios guardados`, {
+            theme: 'toasted-primary',
+            position: 'top-right',
+            duration: 2000,
+          })
+        })
+        .catch((e) => {
+          this.tableFilter = this.currentTables
           this.$toasted.show(
             `Error al borrar mesa: ${JSON.stringify(
               e.response.data.error['Errors List']
@@ -552,7 +548,6 @@ export default {
               duration: 5000,
             }
           )
-
           this.loadingMode = false
         })
     },

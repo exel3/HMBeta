@@ -49,8 +49,8 @@ app.post('/client/login', (req, res) => {
   axios.post('https://happymatch.herokuapp.com/api/client/login', post)
     .then(response => {
       const { client, token } = response.data
-      const { id, username } = client
-      const dataClient = { id, username, type: 'client' }
+      const { id, username, permissionForQuestions} = client
+      const dataClient = { id, username, type: 'client', permissionForQuestions }
       const cookies = new Cookies(req, res)
       if (token) {
 
@@ -163,12 +163,7 @@ app.put('/updateClient/:clientID', (req, res) => {
     headers:
       { authorization: token }
   }
-  const data = {
-    username: body.username,
-    emailAddress: body.emailAddress,
-    password: body.password,
-  }
-
+  const data = body
   axios.put(`https://happymatch.herokuapp.com/api/client/update/${clientID}`, data, headers)
     .then(
       response => {

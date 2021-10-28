@@ -238,7 +238,9 @@ export default {
         username: userC.username,
         emailAddress: userC.emailAddress,
         password: userC.password,
+        permissionForQuestions: userC.permissionForQuestions
       }
+      console.log(body)
       this.$axios
         .$put(`/api/updateClient/${clientID}`, body)
         .then((res) => {

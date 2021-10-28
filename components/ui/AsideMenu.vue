@@ -34,12 +34,17 @@
       ]"
     />
     <ItemAsideMenu
-      v-if="user.type === 'admin'"
+      v-if="user.type === 'admin' || (user.permissionForQuestions&& user.permissionForQuestions === true)"
       title="Gestion preguntas"
       imgsrc="match.svg"
       mainurl="/questions/"
-      :options="[
+      :options="user.type === 'admin' ?
+      [
         { title: 'Preguntas globales', url: '/questions/global' },
+        { title: 'Preguntas locales', url: '/questions/' },
+      ]
+      :
+      [
         { title: 'Preguntas locales', url: '/questions/' },
       ]"
     />

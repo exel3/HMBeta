@@ -58,6 +58,7 @@
         </div>
     </article>
     <article class="localList">
+     <BaseArrowPage v-if="totalPage > 1" :totalpage="totalPage" :currentpage="currentPage" @set:page="changePage($event)" />
        <div class="titleCard">
          <p>Lista de mesas</p>
           <div class="searchContainer">
@@ -75,6 +76,7 @@
             <form @submit.prevent>
               <input
                 v-model="searchValue"
+                  :disabled="tableFilter.length < 1"
                 placeholder="Buscar por nombre.."
                 @keyup.prevent="searchFilter()"
               />
@@ -118,6 +120,7 @@ import EditModal from '@/components/tables/EditModal.vue'
 import BaseRow from '@/components/tables/BaseRow.vue'
 import Loading from '@/components/ui/Loading.vue'
 import Print from '@/components/tables/Print.vue'
+import BaseArrowPage from '@/components/ui/BaseArrowPage.vue'
 import QrcodeVue from 'qrcode.vue'
 import { v4 as uuidv4 } from 'uuid'
 export default {
@@ -128,6 +131,7 @@ export default {
     BaseRow,
     Loading,
     Print,
+    BaseArrowPage,
     QrcodeVue,
   },
   data: () => ({
@@ -142,6 +146,9 @@ export default {
     ownerSelected: {},
     showPrint: false,
     qrsToPrint: [],
+    totalPage: 0,
+    currentPage: 1,
+    page: 1,
     newTable: {
       name: '',
       qr: '',
@@ -238,8 +245,14 @@ export default {
     getLogoQr() {
       return require('@/assets/images/logoBgWhite.jpg')
     },
+    async changePage(page) {
+      this.page = page
+      await this.getAllTablesByClientAndLocal()
+      this.currentPage = page
+    },
     async getAllTablesByClientAndLocal() {
       this.loadingMode = true
+      const page = this.page
       let clientID = ''
       const localID = this.localSelected.id
       if (this.user.type === 'client') {
@@ -250,10 +263,14 @@ export default {
       const name = this.searchValue === '' ? null : this.searchValue
       const body = { name }
       await this.$axios
-        .$post(`/api/getAllTablesByClientAndLocal/${clientID}/${localID}`, body)
+        .$post(
+          `/api/getAllTablesByClientAndLocal/${clientID}/${localID}/${page}`,
+          body
+        )
         .then((res) => {
           this.currentTables = res.tables
           this.tableFilter = res.tables
+          this.totalPage = res.totalPage
           this.loadingMode = false
         })
         .catch((e) => {
@@ -271,9 +288,12 @@ export default {
         })
     },
     searchFilter() {
-      this.tableFilter = this.currentTables.filter((u) =>
-        u.name.toLowerCase().includes(this.searchValue.toLowerCase())
-      )
+      // this.tableFilter = this.currentTables.filter((u) =>
+      //   u.name.toLowerCase().includes(this.searchValue.toLowerCase())
+      // )
+      console.log(this.tableFilter.length)
+      this.tableFilter.length > 0 &&
+        (this.searchValue === '' ? this.changePage(1) : this.changePage(0))
     },
     async setLocalSelected(localName) {
       if (this.user.type === 'admin') {
@@ -630,13 +650,13 @@ article {
 }
 
 .bodyTableContainer {
-  overflow-y: scroll;
   width: 100%;
-  height: 35rem;
 }
 .localList {
-  height: 40rem;
-  overflow: hidden;
+  position: relative;
+  min-height: 40rem;
+  box-sizing: border-box;
+  padding-bottom: 2.5rem;
 }
 
 .titleCard {

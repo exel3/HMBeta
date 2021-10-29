@@ -1,5 +1,5 @@
 <template>
-<Loading v-if="$fetchState.pending" class="fetchState" />
+  <Loading v-if="$fetchState.pending" class="fetchState" />
   <section v-else>
     <article class="newQuestionArticle">
       <div class="titleCard"><p>Nueva pregunta global</p></div>
@@ -110,7 +110,7 @@ export default {
   name: 'GlobalQuestions',
   components: {
     DeleteModal,
-     Loading,
+    Loading,
   },
   data: () => ({
     loadingMode: false,
@@ -141,9 +141,8 @@ export default {
               this.questionLength = res.questions.questions.length
               this.currentQuestions = res.questions.questions
               this.tableFilter = res.questions.questions
-            }
-            else {
-                 this.currentQuestions = []
+            } else {
+              this.currentQuestions = []
               this.tableFilter = []
             }
             this.loadingMode = false
@@ -195,6 +194,12 @@ export default {
       if ((this.newQuestion !== '') & (this.buttonAddTitle === 'Agregar')) {
         this.changeShowNewAnswersInput()
         this.buttonAddTitle = 'Confirmar'
+      } else if (this.newAnswers.includes('')) {
+        this.$toasted.show(`Debe completar dos respuestas`, {
+          theme: 'toasted-primary',
+          position: 'top-right',
+          duration: 5000,
+        })
       } else {
         this.$toasted.show('Creando pregunta..', {
           theme: 'toasted-primary',
@@ -221,6 +226,7 @@ export default {
           this.currentQuestions = []
         }
         this.currentQuestions.push(temporalQuestion)
+        this.tableFilter.push(temporalQuestion)
         const body = this.currentQuestions
         if (this.currentQuestions.length < 3) {
           this.$toasted.show(`Se deben crear por lo menos 3 preguntas`, {
@@ -263,8 +269,17 @@ export default {
 
     confirmChangeQuestion() {
       const body = this.currentQuestions
+      const emptyAswers = this.currentQuestions.filter((q) =>
+        q.answers.includes('')
+      )
       if (this.currentQuestions.length < 3) {
         this.$toasted.show(`Se deben crear por lo menos 3 preguntas`, {
+          theme: 'toasted-primary',
+          position: 'top-right',
+          duration: 5000,
+        })
+      } else if (emptyAswers.length > 0) {
+        this.$toasted.show(`No se admiten respuetas vacias`, {
           theme: 'toasted-primary',
           position: 'top-right',
           duration: 5000,

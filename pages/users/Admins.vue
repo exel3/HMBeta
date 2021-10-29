@@ -8,15 +8,15 @@
         <form>
           <div>
           <label for="emailAddress">Email</label>
-          <input id="emailAddress" v-model="newUser.emailAddress" type="emailAddress" :disabled="loadingMode" autocomplete="off">
+          <input id="emailAddress" v-model="newUser.emailAddress" type="emailAddress" :disabled="loadingMode" autocomplete="off" @keyup.enter.prevent="addNewUser">
           </div>
           <div>
           <label for="contraseña">Contraseña</label>
-          <input id="contraseña" v-model="newUser.password" type="text"  :disabled="loadingMode" autocomplete="off">
+          <input id="contraseña" v-model="newUser.password" type="text"  :disabled="loadingMode" autocomplete="off" @keyup.enter.prevent="addNewUser">
           </div>
            <div>
           <label for="usuario">Usuario</label>
-          <input id="usuario"  v-model="newUser.username" type="text" name="newUser" :disabled="loadingMode" autocomplete="off">
+          <input id="usuario"  v-model="newUser.username" type="text" name="newUser" :disabled="loadingMode" autocomplete="off" @keyup.enter.prevent="addNewUser">
           </div>
         </form>
       </div>
@@ -144,13 +144,13 @@ export default {
       this.loadingMode = true
       const regEmailAddress =
         /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
-      const regUser = /^(?=[a-zA-Z0-9._\u00F1\u00D1]{5,20}$)(?!.*[_.]{2})[^_.].*[^_.]$/
+      const regUser = /^(?=[a-zA-Z0-9._\u00F1\u00D1]{6,20}$)(?!.*[_.]{2})[^_.].*[^_.]$/
       const regPassword =
         /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,16}/
 
       if (!regUser.test(this.newUser.username)) {
         this.$toasted.show(
-          `El nombre de usuario debe contener entre 5 y 20 caracteres, y no contener espacios`,
+          `El nombre de usuario debe contener entre 6 y 20 caracteres, y no contener espacios`,
           {
             theme: 'toasted-primary',
             position: 'top-right',

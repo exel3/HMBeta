@@ -43,7 +43,7 @@
     <article class="newQuestionArticle">
       <div class="titleCard"><p>Nueva pregunta</p></div>
       <div class="newQuestionContainer">
-        <form>
+        <form @submit.prevent="">
           <div class="newQuestionForm">
             <label for="newQuestion">Pregunta</label>
             <input
@@ -51,6 +51,7 @@
               v-model="newQuestion"
               type="text"
               autocomplete="off"
+              @keyup.enter.prevent="addNewQuestion"
             />
           </div>
           <div v-if="showNewAnswersInput" class="newAnswerForm">
@@ -59,6 +60,7 @@
               type="text"
               autocomplete="off"
               placeholder="Respuesta"
+               @keyup.enter.prevent="addNewQuestion"
             />
           </div>
           <div v-if="showNewAnswersInput" class="newAnswerForm">
@@ -67,6 +69,7 @@
               type="text"
               autocomplete="off"
               placeholder="Respuesta"
+               @keyup.enter.prevent="addNewQuestion"
             />
           </div>
         </form>
@@ -159,14 +162,14 @@ export default {
     ownersWithLocals: [],
     showNewAnswersInput: false,
     ownerSelected: {},
-    localSelected: [],
+    localSelected: {},
     currentQuestions: [],
     questionLength: 0,
     tableFilter: [],
     locals: [],
     localAnswers: [],
     newQuestion: '',
-    newAnswers: [],
+    newAnswers: ['',''],
     buttonAddTitle: 'Agregar',
     user: {
       id: '',
@@ -214,10 +217,9 @@ export default {
               })
           : await this.$axios
               .$get(`/api/getLocalsByClient/${this.user.id}`)
-              .then(async (response) => {
+              .then( (response) => {
                 this.locals = response.locals
                 this.localsFilter = response.locals
-                await this.getQuestionsByLocal()
               })
               .catch((e) => {
                 this.$toasted.show(`Error al recuperar locales: ${e}`, {
@@ -237,6 +239,7 @@ export default {
   },
   methods: {
     setLocalSelected(localName) {
+      if(this.user.type === 'admin'){
       if(localName !== "Default"){
       const ownerLocals = this.locals.filter(
         (l) => l.client === this.ownerSelected.id
@@ -245,6 +248,10 @@ export default {
       this.getQuestionsByLocal()
       } else {
         this.tableFilter = []
+      }}
+      else {
+        this.localSelected = this.locals.find(l => l.name === localName)
+           this.getQuestionsByLocal()
       }
     },
     setOwnerSelected(ownerName) {
@@ -264,16 +271,16 @@ export default {
     }
       this.tableFilter = []
     },
-    getQuestionsByLocal() {
+    async getQuestionsByLocal() {
+      this.currentQuestions = []
+      this.tableFilter = []
       this.loadingMode = true
       const localID = this.localSelected.id
-      this.$axios
+      await this.$axios
         .$get(`/api/getQuestionsByLocalId/${localID}`)
         .then((res) => {
           if (res) {
-            console.log(res, 'questions')
             this.questionLength = res.questions.length
-            console.log(this.questionLength)
             this.currentQuestions = res.questions
             this.tableFilter = res.questions
           }
@@ -303,7 +310,13 @@ export default {
           position: 'top-right',
           duration: 5000,
         })
-      } else {
+      } else if (this.newAnswers.includes('')) {
+        this.$toasted.show(`Debe completar dos respuestas`, {
+          theme: 'toasted-primary',
+          position: 'top-right',
+          duration: 5000,
+        })} 
+      else {
         this.$toasted.show('Creando pregunta..', {
           theme: 'toasted-primary',
           position: 'top-right',
@@ -329,6 +342,7 @@ export default {
           this.currentQuestions = []
         }
         this.currentQuestions.push(temporalQuestion)
+        this.tableFilter.push(temporalQuestion)
         const localId = this.localSelected.id
         const body = this.currentQuestions
         if (this.currentQuestions.length < 3) {
@@ -379,6 +393,7 @@ export default {
     confirmChangeQuestion() {
       const localId = this.localSelected.id
       const body = this.currentQuestions
+      const emptyAswers = this.currentQuestions.filter(q => q.answers.includes(''))
       if (this.currentQuestions.length < 3) {
         this.$toasted.show(`Se deben crear por lo menos 3 preguntas`, {
           theme: 'toasted-primary',
@@ -387,6 +402,13 @@ export default {
         })
       } else if (localId === undefined) {
         this.$toasted.show(`Seleccione un local`, {
+          theme: 'toasted-primary',
+          position: 'top-right',
+          duration: 5000,
+        })
+      }
+      else if (emptyAswers.length > 0) {
+        this.$toasted.show(`No se admiten respuetas vacias`, {
           theme: 'toasted-primary',
           position: 'top-right',
           duration: 5000,

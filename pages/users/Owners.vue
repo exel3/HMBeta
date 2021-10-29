@@ -8,16 +8,34 @@
         <form>
           <div>
           <label for="emailAddress">Email</label>
-          <input id="emailAddress" v-model="newUser.emailAddress" type="emailAddress" :disabled="loadingMode" autocomplete="off">
+          <input id="emailAddress" v-model="newUser.emailAddress" type="emailAddress" :disabled="loadingMode" autocomplete="off" @keyup.enter.prevent="addNewUser">
           </div>
           <div>
           <label for="contraseña">Contraseña</label>
-          <input id="contraseña" v-model="newUser.password" type="text"  :disabled="loadingMode" autocomplete="off">
+          <input id="contraseña" v-model="newUser.password" type="text"  :disabled="loadingMode" autocomplete="off" @keyup.enter.prevent="addNewUser">
           </div>
            <div>
           <label for="usuario">Usuario</label>
-          <input id="usuario"  v-model="newUser.username" type="text" name="newUser" :disabled="loadingMode" autocomplete="off">
+          <input id="usuario"  v-model="newUser.username" type="text" name="newUser" :disabled="loadingMode" autocomplete="off" @keyup.enter.prevent="addNewUser">
           </div>
+             <div
+        class="selectContainer"
+      >
+        <label for="owner">Permiso para editar preguntas:</label>
+        <select
+          id="owner"
+          class="selectOwner"
+          name="owner"
+          @change="setPermission($event.target.value)"
+        >
+          <option value="true">
+            Si
+          </option>
+          <option selected value="false">
+            No
+          </option>
+        </select>
+      </div>
         </form>
       </div>
       <div class="containerAddBtn">
@@ -92,7 +110,7 @@ export default {
   data: () => ({
     currentUsers: [],
     userSelected: {},
-    newUser: { username: '', emailAddress: '', password: '', id: null },
+    newUser: { username: '', emailAddress: '', password: '', id: null, permissionForQuestion: false },
     showDeleteModal: false,
     showEditModal: false,
     searchValue: '',
@@ -104,10 +122,10 @@ export default {
       .$get('/api/getAllClients')
       .then((response) => {
         this.currentUsers = response.clients
-      this.tableFilter = response.clients
+        this.tableFilter = response.clients
       })
       .catch((e) => {
-            this.$toasted.show(`Error al recuperar los clientes: ${e}`, {
+        this.$toasted.show(`Error al recuperar los clientes: ${e}`, {
           theme: 'toasted-primary',
           position: 'top-right',
           duration: 10000,
@@ -115,71 +133,80 @@ export default {
       })
   },
   methods: {
-   async getUsers(){
-         this.loadingMode = true
+    async getUsers() {
+      this.loadingMode = true
       await this.$axios
-      .$get('/api/getAllClients')
-      .then((response) => {
-        this.currentUsers = response.clients
-      this.tableFilter = response.clients
-         this.loadingMode = false
-      })
-      .catch((e) => {
-            this.$toasted.show(`Error al recuperar los clientes: ${e}`, {
-          theme: 'toasted-primary',
-          position: 'top-right',
-          duration: 10000,
+        .$get('/api/getAllClients')
+        .then((response) => {
+          this.currentUsers = response.clients
+          this.tableFilter = response.clients
+          this.loadingMode = false
         })
-           this.loadingMode = false
-      })
+        .catch((e) => {
+          this.$toasted.show(`Error al recuperar los clientes: ${e}`, {
+            theme: 'toasted-primary',
+            position: 'top-right',
+            duration: 10000,
+          })
+          this.loadingMode = false
+        })
+    },
+        setPermission(permission) {
+      const parseEvent = permission === 'true'
+      this.newUser.permissionForQuestions = parseEvent
     },
     searchFilter() {
       this.tableFilter = this.currentUsers.filter(
         (u) =>
-          (u.username? u.username.toLowerCase().includes(this.searchValue.toLowerCase()) : false) ||
-          (u.emailAddress? u.emailAddress.toLowerCase().includes(this.searchValue.toLowerCase()) : false)
+          (u.username
+            ? u.username.toLowerCase().includes(this.searchValue.toLowerCase())
+            : false) ||
+          (u.emailAddress
+            ? u.emailAddress
+                .toLowerCase()
+                .includes(this.searchValue.toLowerCase())
+            : false)
       )
     },
     addNewUser() {
       this.loadingMode = true
       const regEmailAddress =
         /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
-      const regUser = /^(?=[a-zA-Z0-9._\u00F1\u00D1]{5,20}$)(?!.*[_.]{2})[^_.].*[^_.]$/
+      const regUser =
+     /^(?=[a-zA-Z0-9._\u00F1\u00D1]{6,20}$)(?!.*[_.]{2})[^_.].*[^_.]$/
       const regPassword =
         /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,16}/
 
       if (!regUser.test(this.newUser.username)) {
         this.$toasted.show(
-          `El nombre de usuario debe contener entre 5 y 20 caracteres, y no contener espacios`,
+          `El nombre de usuario debe contener entre 6 y 20 caracteres, y no contener espacios`,
           {
             theme: 'toasted-primary',
             position: 'top-right',
             duration: 5000,
           }
         )
-         this.loadingMode = false
+        this.loadingMode = false
       } else if (!regPassword.test(this.newUser.password)) {
         this.$toasted.show(
-         `La contraseña debe contener mínimo 8 y máximo 16 caracteres, al menos una letra mayúscula, una letra minúscula, un número, un carácter especial y no contener espacios`,
+          `La contraseña debe contener mínimo 8 y máximo 16 caracteres, al menos una letra mayúscula, una letra minúscula, un número, un carácter especial y no contener espacios`,
           {
             theme: 'toasted-primary',
             position: 'top-right',
             duration: 10000,
           }
         )
-         this.loadingMode = false
+        this.loadingMode = false
       } else if (!regEmailAddress.test(this.newUser.emailAddress)) {
         this.$toasted.show(`Formato de email incorrecto`, {
           theme: 'toasted-primary',
           position: 'top-right',
           duration: 5000,
         })
-         this.loadingMode = false
+        this.loadingMode = false
       } else {
-        const username = this.newUser.username
-        const emailAddress = this.newUser.emailAddress
-        const password = this.newUser.password
-        const body = { username, emailAddress, password }
+        const { username, emailAddress, password, permissionForQuestions} = this.newUser
+        const body = { username, emailAddress, password, permissionForQuestions }
         this.$toasted.show(`Guardando cambios..`, {
           theme: 'toasted-primary',
           position: 'top-right',
@@ -238,7 +265,7 @@ export default {
         username: userC.username,
         emailAddress: userC.emailAddress,
         password: userC.password,
-        permissionForQuestions: userC.permissionForQuestions
+        permissionForQuestions: userC.permissionForQuestions,
       }
       console.log(body)
       this.$axios
@@ -396,13 +423,13 @@ article {
 }
 
 .bodyTableContainer {
- overflow-y:scroll;
- width: 100%;
- height: 35rem;
+  overflow-y: scroll;
+  width: 100%;
+  height: 35rem;
 }
 .userList {
   height: 40rem;
-   overflow: hidden;
+  overflow: hidden;
 }
 
 .titleCard {
@@ -439,6 +466,21 @@ input {
   width: 100%;
   height: 2rem;
   padding: 0.625rem 0.75rem;
+  font-weight: 400;
+  line-height: 1.5;
+  color: #656a6f;
+  background-color: #fff;
+  background-clip: padding-box;
+  border: 1px solid #dee2e6;
+  border-radius: 0.25rem;
+  box-shadow: 0 3px 2px rgb(233 236 239 / 5%);
+  box-sizing: border-box;
+}
+
+.selectOwner {
+  width: 100%;
+  height: 2rem;
+  padding: 0 0.75rem;
   font-weight: 400;
   line-height: 1.5;
   color: #656a6f;

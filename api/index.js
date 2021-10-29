@@ -425,9 +425,8 @@ app.post('/admin/login', (req, res) => {
       })
     })
 })
-app.post('/getAllTablesByClientAndLocal/:clientID/:localID', (req, res) => {
-  const page = 0
-  const { clientID, localID } = req.params
+app.post('/getAllTablesByClientAndLocal/:clientID/:localID/:page', (req, res) => {
+  const { clientID, localID, page } = req.params
   const token = getToken(req, res)
   const get = { headers: { Authorization: token } }
   const bodyGet = req.body

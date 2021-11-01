@@ -288,10 +288,6 @@ export default {
         })
     },
     searchFilter() {
-      // this.tableFilter = this.currentTables.filter((u) =>
-      //   u.name.toLowerCase().includes(this.searchValue.toLowerCase())
-      // )
-      console.log(this.tableFilter.length)
       this.tableFilter.length > 0 &&
         (this.searchValue === '' ? this.changePage(1) : this.changePage(0))
     },

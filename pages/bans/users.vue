@@ -1,7 +1,13 @@
 <template>
-<Loading v-if="$fetchState.pending" class="fetchState" />
+  <Loading v-if="$fetchState.pending" class="fetchState" />
   <section v-else>
     <article class="userList">
+      <BaseArrowPage
+        v-if="totalPage > 1"
+        :totalpage="totalPage"
+        :currentpage="currentPage"
+        @set:page="changePage($event)"
+      />
       <div class="titleCard"><p>Lista de usuarios</p></div>
       <div class="selectuserCard">
         <div class="searchContainer">
@@ -19,7 +25,7 @@
             <form @submit.prevent>
               <input
                 v-model="searchValue"
-                placeholder="Buscar.."
+                placeholder="Buscar por email.."
                 @keyup.prevent="searchFilter()"
               />
             </form>
@@ -57,6 +63,7 @@
 </template>
 <script>
 import BaseRow from '@/components/bans/users/BaseRow.vue'
+import BaseArrowPage from '@/components/ui/BaseArrowPage.vue'
 import BanModal from '~/components/bans/users/BanModal.vue'
 import Loading from '~/components/ui/Loading.vue'
 export default {
@@ -65,6 +72,7 @@ export default {
     BaseRow,
     BanModal,
     Loading,
+    BaseArrowPage,
   },
   data: () => ({
     showBanModal: false,
@@ -73,6 +81,9 @@ export default {
     usersCurrent: [],
     tableFilter: [],
     searchValue: '',
+    page: 0,
+    totalPage: 0,
+    currentPage: 1,
   }),
   async fetch() {
     const page = 1
@@ -95,6 +106,7 @@ export default {
       .then((res) => {
         this.usersCurrent = res.users
         this.tableFilter = res.users
+        this.totalPage = res.totalPage
       })
       .catch((e) =>
         this.$toasted.show(`Error recuperando los usuarios: ${e}`, {
@@ -103,12 +115,14 @@ export default {
           duration: 10000,
         })
       )
-       await this.$axios
+    await this.$axios
       .$get(`/api/getAllBans`)
       .then((res) => {
         const banUsers = res.bans
-        const banUsersId = banUsers.map(u => u.userID)
-        this.tableFilter = this.usersCurrent.filter(u => !banUsersId.includes(u.id))
+        const banUsersId = banUsers.map((u) => u.userID)
+        this.tableFilter = this.usersCurrent.filter(
+          (u) => !banUsersId.includes(u.id)
+        )
         this.usersCurrent = [...this.tableFilter]
       })
       .catch((e) =>
@@ -120,13 +134,56 @@ export default {
       )
   },
   methods: {
+    async changePage(page) {
+      this.page = page
+      await this.getUsers()
+      this.currentPage = page
+    },
     setuserSelected(user) {
       this.userSelected = this.users.find((l) => l.id === user.id)
+    },
+    async getUsers() {
+      const page = this.page
+      const body = {
+        namesAndSurname: null,
+        emailAddress: null,
+      }
+      await this.$axios
+        .$post(`/api/getAllUsers/${page}`, body)
+        .then((res) => {
+          this.usersCurrent = res.users
+          this.tableFilter = res.users
+          this.totalPage = res.totalPage
+        })
+        .catch((e) =>
+          this.$toasted.show(`Error recuperando los usuarios: ${e}`, {
+            theme: 'toasted-primary',
+            position: 'top-right',
+            duration: 10000,
+          })
+        )
+      await this.$axios
+        .$get(`/api/getAllBans`)
+        .then((res) => {
+          const banUsers = res.bans
+          const banUsersId = banUsers.map((u) => u.userID)
+          this.tableFilter = this.usersCurrent.filter(
+            (u) => !banUsersId.includes(u.id)
+          )
+          this.usersCurrent = [...this.tableFilter]
+        })
+        .catch((e) =>
+          this.$toasted.show(`Error recuperando los usuarios baneados: ${e}`, {
+            theme: 'toasted-primary',
+            position: 'top-right',
+            duration: 10000,
+          })
+        )
     },
     async searchFilter() {
       const page = 0
       const body = {
-        namesAndSurname: this.searchValue.toLowerCase(),
+       // namesAndSurname: this.searchValue.toLowerCase(),
         emailAddress: this.searchValue.toLowerCase(),
       }
       await this.$axios
@@ -151,8 +208,8 @@ export default {
       await this.$axios
         .$post(`/api/banUser/${idUser}`, body)
         .then((res) => {
-          this.tableFilter = this.usersCurrent.filter(u => u.id !== idUser)
-            this.usersCurrent = [...this.tableFilter]
+          this.tableFilter = this.usersCurrent.filter((u) => u.id !== idUser)
+          this.usersCurrent = [...this.tableFilter]
           this.$toasted.show(`Usuario baneado`, {
             theme: 'toasted-primary',
             position: 'top-right',
@@ -166,7 +223,7 @@ export default {
             duration: 10000,
           })
         )
-        this.showBanModal = false
+      this.showBanModal = false
     },
   },
 }
@@ -238,7 +295,6 @@ section {
   color: white;
 }
 
-
 article {
   background: white;
   border: 0;
@@ -287,7 +343,10 @@ td {
 }
 
 .userList {
+  position: relative;
   min-height: 40rem;
+  box-sizing: border-box;
+  padding-bottom: 2.5rem;
 }
 .titleCard {
   padding: 1.25rem 1.5rem;

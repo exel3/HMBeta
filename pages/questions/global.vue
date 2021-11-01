@@ -4,7 +4,7 @@
     <article class="newQuestionArticle">
       <div class="titleCard"><p>Nueva pregunta global</p></div>
       <div class="newQuestionContainer">
-        <form>
+        <form @submit.prevent="">
           <div class="newQuestionForm">
             <label for="newQuestion">Pregunta</label>
             <input
@@ -12,6 +12,7 @@
               v-model="newQuestion"
               type="text"
               autocomplete="off"
+              @keyup.enter.prevent="addNewQuestion"
             />
           </div>
           <div v-if="showNewAnswersInput" class="newAnswerForm">
@@ -20,6 +21,7 @@
               type="text"
               autocomplete="off"
               placeholder="Respuesta"
+              @keyup.enter.prevent="addNewQuestion"
             />
           </div>
           <div v-if="showNewAnswersInput" class="newAnswerForm">
@@ -28,6 +30,7 @@
               type="text"
               autocomplete="off"
               placeholder="Respuesta"
+              @keyup.enter.prevent="addNewQuestion"
             />
           </div>
         </form>
@@ -121,7 +124,7 @@ export default {
     tableFilter: [],
     localAnswers: [],
     newQuestion: '',
-    newAnswers: [],
+    newAnswers: ['', ''],
     buttonAddTitle: 'Agregar',
     user: {
       id: '',

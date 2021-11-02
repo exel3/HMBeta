@@ -1,8 +1,14 @@
 <template>
   <aside :class="show ? 'asideResponsive' : 'asideDefault'">
     <div class="containerAside">
-      <div v-if="show" class="closeMenu" @click="$emit('click:responsive')"><img src="@/assets/icons/closeMenu.svg"></div>
-      <div v-if="show" class="backgroundResponsive" @click="$emit('click:responsive')"></div>
+      <div v-if="show" class="closeMenu" @click="$emit('click:responsive')">
+        <img src="@/assets/icons/closeMenu.svg" />
+      </div>
+      <div
+        v-if="show"
+        class="backgroundResponsive"
+        @click="$emit('click:responsive')"
+      ></div>
       <div class="header">
         <img />
         <p>HappyMatch</p>
@@ -34,27 +40,31 @@
       ]"
     />
     <ItemAsideMenu
-      v-if="user.type === 'admin' || (user.permissionForQuestions&& user.permissionForQuestions === true)"
+      v-if="
+        user.type === 'admin' ||
+        (user.permissionForQuestions && user.permissionForQuestions === true)
+      "
       title="Gestion preguntas"
       imgsrc="match.svg"
       mainurl="/questions/"
-      :options="user.type === 'admin' ?
-      [
-        { title: 'Preguntas globales', url: '/questions/global' },
-        { title: 'Preguntas locales', url: '/questions/' },
-      ]
-      :
-      [
-        { title: 'Preguntas locales', url: '/questions/' },
-      ]"
+      :options="
+        user.type === 'admin'
+          ? [
+              { title: 'Preguntas globales', url: '/questions/global' },
+              { title: 'Preguntas locales', url: '/questions/' },
+            ]
+          : [{ title: 'Preguntas locales', url: '/questions/' }]
+      "
     />
     <ItemAsideMenu
       v-if="user.type === 'client'"
       title="Usuarios y bans"
       imgsrc="bans.svg"
       mainurl="/bans/groups"
-      :options="[{ title: 'Grupos', url: '/bans/groups' },
-      { title: 'Grupos baneados', url: '/bans/bangroups' }]"
+      :options="[
+        { title: 'Grupos', url: '/bans/groups' },
+        { title: 'Grupos baneados', url: '/bans/bangroups' },
+      ]"
     />
     <ItemAsideMenu
       v-if="user.type === 'admin'"
@@ -95,7 +105,6 @@ export default {
       .$get('/api/getUser')
       .then((response) => {
         this.user = response
-        console.log(response)
       })
       .catch((e) => {
         this.$toasted.show(`Error al recuperar el tipo de usuario: ${e}`, {
@@ -110,7 +119,13 @@ export default {
       await this.$axios
         .$delete('/api/clearSesion')
         .then((resp) => this.$router.go('/auth'))
-        .catch((e) => console.log(e))
+        .catch((e) =>
+          this.$toasted.show(`Error al cerrar sesion: ${e}`, {
+            theme: 'toasted-primary',
+            position: 'top-right',
+            duration: 5000,
+          })
+        )
     },
   },
 }
@@ -135,7 +150,7 @@ export default {
   }
 }
 .asideDefault {
-   overflow: hidden;
+  overflow: hidden;
 }
 
 .closeMenu {
@@ -150,7 +165,7 @@ export default {
   position: absolute;
   right: calc(15rem - 100vw);
   width: calc(100vw - 15rem);
-  top:0;
+  top: 0;
   height: 100vh;
   background: rgba(0, 0, 0, 0.6);
   z-index: 100;
@@ -158,7 +173,7 @@ export default {
 
 .asideResponsive {
   width: 15rem;
-  z-index: 101
+  z-index: 101;
 }
 
 aside {

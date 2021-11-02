@@ -11,7 +11,6 @@ module.exports = { path: '/api', handler: app }
 const getToken = (req, res) => {
   const cookies = new Cookies(req, res)
   const token = cookies.get('token')
-  console.log(token)
   return token
 }
 
@@ -607,17 +606,14 @@ app.post('/createQuestions/:localId', (req, res) => {
     headers:
       { authorization: token }
   }
-  console.log(data)
 
   axios.post(`https://happymatch.herokuapp.com/api/questions/create`, data, headers)
     .then(
       response => {
-        console.log(response.data)
         res.json(response.data)
       }
     )
     .catch(e => {
-      console.log(e)
       res.statusCode = e.response.status
       res.json({
         error: e.message
@@ -636,7 +632,6 @@ app.put('/updateQuestions/:localId', (req, res) => {
     headers:
       { authorization: token }
   }
-  console.log(data)
 
   axios.put(`https://happymatch.herokuapp.com/api/questions/update/${localId}`, data, headers)
     .then(
@@ -645,7 +640,6 @@ app.put('/updateQuestions/:localId', (req, res) => {
       }
     )
     .catch(e => {
-      console.log(e)
       res.statusCode = e.response.status
       res.json({
         error: e.message
@@ -720,7 +714,6 @@ app.put('/updateGlobalQuestions', (req, res) => {
 })
 app.post('/getAllUsers/:page', (req, res) => {
   const { page } = req.params
-  console.log(page)
   const {namesAndSurname,emailAddress } = req.body
   const token = getToken(req, res)
 
@@ -853,7 +846,6 @@ app.post('/banGroupTable/:idGroup', (req, res) => {
   const data = {
     reason: body.reason
   }
-  console.log('idGroup: ', idGroup, ' Token: ', token)
   axios.post(`https://happymatch.herokuapp.com/api/groupBans/${idGroup}`, data, {
     headers: {
       'Content-Type': 'application/json',
@@ -864,7 +856,6 @@ app.post('/banGroupTable/:idGroup', (req, res) => {
   })
     .catch(e => {
       res.statusCode = e.response.status
-      console.log('error servidor', e)
       res.json({
         error: e.message
       })

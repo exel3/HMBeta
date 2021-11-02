@@ -97,12 +97,7 @@ export default {
                 }
               )
         })
-    },
-    validateUser() {
-      const re = /^[a-zA-Z0-9]*$/
-      const isUserValid = re.test(this.newUserName)
-      isUserValid && console.log('cadena valida')
-    },
+    }
   },
 }
 </script>

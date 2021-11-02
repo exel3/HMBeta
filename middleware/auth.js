@@ -17,7 +17,7 @@ export default async function ({ store, redirect, req, res, app }) {
 
 
 
-  } catch (e) { console.log(e); redirect({ name: 'auth' }) }
+  } catch (e) { redirect({ name: 'auth' }) }
 
 
 }

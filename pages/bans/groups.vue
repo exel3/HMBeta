@@ -45,7 +45,7 @@
             <th>Imagen</th>
             <th>Mesa</th>
             <th>Personas</th>
-            <th>Banear</th>
+            <th>Opciones</th>
           </tr>
         </thead>
         <tbody>
@@ -57,6 +57,9 @@
               showBanModal = true
               userSelected = group
             "
+            @click:cerrar="
+            showCerrarModal = true
+            userSelected = group"
           />
         </tbody>
       </table>
@@ -66,11 +69,17 @@
       @ban:user="banUser"
       @cancel:ban="showBanModal = false"
     />
+        <CerrarModal
+      v-if="showCerrarModal"
+      @ban:user="cerrarUser"
+      @cancel:ban="showCerrarModal = false"
+    />
   </section>
 </template>
 <script>
 import BaseRow from '@/components/bans/groups/BaseRow.vue'
 import BanModal from '~/components/bans/groups/BanModal.vue'
+import CerrarModal from '~/components/bans/groups/CerrarModal.vue'
 import Loading from '~/components/ui/Loading.vue'
 export default {
   name: 'UsersList',
@@ -78,9 +87,11 @@ export default {
     BaseRow,
     BanModal,
     Loading,
+    CerrarModal
   },
   data: () => ({
     showBanModal: false,
+    showCerrarModal: false,
     users: [],
     clientId: '',
     currentGroups: [],
@@ -187,6 +198,31 @@ export default {
           })
         )
       this.showBanModal = false
+    },
+      async cerrarUser() {
+      const idUser = this.userSelected.id
+      const body = {
+        reason: this.reason,
+      }
+      await this.$axios
+        .$delete(`/api/deleteGroup/${idUser}`, body)
+        .then((res) => {
+          this.tableFilter = this.currentGroups.filter((u) => u.id !== idUser)
+          this.currentGroups = [...this.tableFilter]
+          this.$toasted.show(`Grupo cerrado`, {
+            theme: 'toasted-primary',
+            position: 'top-right',
+            duration: 10000,
+          })
+        })
+        .catch((e) =>
+          this.$toasted.show(`Error al cerrar grupo: ${e}`, {
+            theme: 'toasted-primary',
+            position: 'top-right',
+            duration: 10000,
+          })
+        )
+      this.showCerrarModal = false
     },
   },
 }

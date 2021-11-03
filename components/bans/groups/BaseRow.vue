@@ -10,21 +10,30 @@
       <p>{{ user.usersCount}}</p>
     </td>
     <td class="tdOptions">
-      <BaseButtonTable
+            <BaseButtonTableText
+        backcolor="white"
+        bordercolor="black"
+        color="black"
+        text="Cerrar"
+        @click="$emit('click:cerrar', user)"
+      />
+      <BaseButtonTableText
         backcolor="black"
         bordercolor="black"
-        imgsrc="block.svg"
+          color="white"
+        text="Ban"
         @click="$emit('click', user)"
       />
+ 
     </td>
   </tr>
 </template>
 <script>
-import BaseButtonTable from '@/components/ui/BaseButtonTable.vue'
+import BaseButtonTableText from '@/components/ui/BaseButtonTableText.vue'
 export default {
   name: 'BaseRowBanUsers',
   components: {
-    BaseButtonTable,
+    BaseButtonTableText,
   },
   props: {
     user: {
@@ -73,7 +82,10 @@ td {
 td p {
   line-break: anywhere;
 }
-
+.tdOptions {
+  display: grid;
+  gap: 1rem 0;
+}
 .userImg {
   max-height: 4rem;
 }

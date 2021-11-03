@@ -899,6 +899,27 @@ app.get('/getAllGroupBans/:clientID', (req, res) => {
       })
     })
 })
+app.delete('/deleteGroup/:idGroup', (req, res) => {
+  const { idGroup } = req.params
+  const token = getToken(req, res)
+  const headers = {
+    headers:
+      { authorization: token }
+  }
+
+  axios.delete(`https://happymatch.herokuapp.com/api/grouptable/delete/${idGroup}`, headers)
+    .then(
+      response => {
+        res.json(response.data)
+      }
+    )
+    .catch(e => {
+      res.statusCode = e.response.status
+      res.json({
+        error: e.message
+      })
+    })
+})
 app.delete('/clearSesion', (req, res) => {
   try {
     deleteToken(req, res)

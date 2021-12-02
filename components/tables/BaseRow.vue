@@ -4,7 +4,7 @@
       <p>{{ table.name }}</p>
     </td>
     <td>
-      <p>{{ table.qr.code }}</p>
+      <p>{{ table.qr && table.qr.code ? table.qr.code : 'Sin asignar' }}</p>
     </td>
        <td class="tdOptions">
       <BaseButtonTable

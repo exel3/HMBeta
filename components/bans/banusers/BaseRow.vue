@@ -1,13 +1,13 @@
 <template>
   <tr>
     <td>
-        <p>{{ user.userID.userName}}</p>
+        <p>{{ user && user.userID ? user.userID.userName : 'Sin informacion'}}</p>
     </td>
     <td>
-      <p>{{ user.userID.email}}</p>
+      <p>{{  user && user.userID ? user.userID.email : 'Sin informacion'}}</p>
     </td>
         <td>
-      <p>{{ user.reason}}</p>
+      <p>{{  user ?  user.reason : 'Sin informacion'}}</p>
     </td>
     <td class="tdOptions">
       <BaseButtonTable

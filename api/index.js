@@ -11,6 +11,7 @@ module.exports = { path: '/api', handler: app }
 const getToken = (req, res) => {
   const cookies = new Cookies(req, res)
   const token = cookies.get('token')
+  console.log(token)
   return token
 }
 

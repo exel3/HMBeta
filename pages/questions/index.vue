@@ -40,7 +40,26 @@
         </form>
       </div>
     </article>
-    <article class="newQuestionArticle">
+        <article v-if="localSelected.id" class="newTable">
+      <div class="titleCard"><p>Opciones local</p></div>
+      <div class="contentCard">
+        <form>
+          <div v-if="user.type === 'admin'" class="selectContainer">
+            <label for="owner">Mostrar preguntas</label>
+            <select
+              id="onlyQuestions"
+              class="selectlocal"
+              name="onlyQuestions"
+              @change="setOnlyLocalQuestions($event.target.value)"
+            >
+              <option selected :value="false">Globales y locales</option>
+                 <option selected :value="true">Solo locales</option>
+            </select>
+          </div>
+        </form>
+      </div>
+    </article>
+    <article v-if="currentQuestions.length < 3 && localSelected.id" class="newQuestionArticle">
       <div class="titleCard"><p>Nueva pregunta</p></div>
       <div class="newQuestionContainer">
         <form @submit.prevent="">
@@ -238,6 +257,31 @@ export default {
       })
   },
   methods: {
+    setOnlyLocalQuestions(event) {
+      console.log(event)
+      let boolean = false
+      event === 'true'? boolean = true : boolean = false
+      const body = { activateLocalQuestion:boolean}
+      this.$axios.$put(`/updateLocal/${this.localSelected.id}`, body)
+        .then(res => 
+           this.$toasted.show(`Muestreo de preguntas actualizado`, {
+          theme: 'toasted-primary',
+          position: 'top-right',
+          duration: 5000,
+        })
+        )
+           .catch((e) => {
+          this.loadingMode = false
+          this.$toasted.show(
+            `Error al actualizar muestreo de pregutnas: ${e}`,
+            {
+              theme: 'toasted-primary',
+              position: 'top-right',
+              duration: 5000,
+            }
+          )
+        })
+    },
     setLocalSelected(localName) {
       if(this.user.type === 'admin'){
       if(localName !== "Default"){

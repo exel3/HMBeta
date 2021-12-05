@@ -63,6 +63,7 @@ export default {
       this.$axios
         .$get(`/api/getAdmin/${this.user.id}`)
         .then((res) => {
+          console.log(res)
           this.currentUser = res.admin
         })
         .catch((e) => {

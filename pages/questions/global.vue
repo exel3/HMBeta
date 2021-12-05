@@ -264,7 +264,7 @@ export default {
             })
         }
         this.newQuestion = ''
-        this.newAnswers = []
+        this.newAnswers = ['','']
         this.showNewAnswersInput = false
         this.buttonAddTitle = 'Agregar'
       }

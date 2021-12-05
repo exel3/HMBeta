@@ -48,6 +48,7 @@
             <label for="owner">Mostrar preguntas</label>
             <select
               id="onlyQuestions"
+              :disabled="currentQuestions.length !== 3"
               class="selectlocal"
               name="onlyQuestions"
               @change="setOnlyLocalQuestions($event.target.value)"
@@ -55,6 +56,7 @@
               <option :selected="localSelected.activateLocalQuestion===false" :value="false">Globales y locales</option>
                  <option :selected="localSelected.activateLocalQuestion===true" :value="true">Solo locales</option>
             </select>
+            <p v-if="currentQuestions.length !== 3" class="infoText">*Se deben crear preguntas locales para editar este campo</p>
           </div>
         </form>
       </div>
@@ -258,21 +260,24 @@ export default {
   },
   methods: {
     setOnlyLocalQuestions(event) {
+      if (this.currentQuestions.length === 3 || event === 'false') {
       let boolean = false
       event === 'true'? boolean = true : boolean = false
       const body = { activateLocalQuestion:boolean}
       this.$axios.$put(`/api/updateLocal/${this.localSelected.id}`, body)
-        .then(res => 
+        .then(res => {
            this.$toasted.show(`Muestreo de preguntas actualizado`, {
           theme: 'toasted-primary',
           position: 'top-right',
           duration: 5000,
         })
+        this.localSelected = res.local
+      }
         )
            .catch((e) => {
           this.loadingMode = false
           this.$toasted.show(
-            `Error al actualizar muestreo de pregutnas: ${e}`,
+            `Error al actualizar muestreo de preguntas: ${e}`,
             {
               theme: 'toasted-primary',
               position: 'top-right',
@@ -280,6 +285,17 @@ export default {
             }
           )
         })
+      }
+      else {
+             this.$toasted.show(
+            `Se deben crear 3 preguntas locales para poder usar esta configuracion`,
+            {
+              theme: 'toasted-primary',
+              position: 'top-right',
+              duration: 5000,
+            }
+          )
+      }
     },
     setLocalSelected(localName) {
       if(this.user.type === 'admin'){
@@ -306,9 +322,6 @@ export default {
         (l) => l.client === this.ownerSelected.id
       )
       this.localSelected = {}
-      // this.localsFilter.length === 1 &&
-      //   this.setLocalSelected(this.localsFilter[0].name)
-      // await this.getAllTablesByClientAndLocal()
     } else {
        this.localsFilter = []
     }
@@ -427,7 +440,7 @@ export default {
             })
         }
         this.newQuestion = ''
-        this.newAnswers = []
+        this.newAnswers = ['','']
         this.showNewAnswersInput = false
         this.buttonAddTitle = 'Agregar'
       }
@@ -816,4 +829,9 @@ table img {
   border: none;
   box-sizing: border-box;
 }
+.infoText {
+  font-size: 0.7rem;
+  padding-top: 0.5rem;
+  color:#525f7f
+  }
 </style>

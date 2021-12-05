@@ -11,7 +11,6 @@ module.exports = { path: '/api', handler: app }
 const getToken = (req, res) => {
   const cookies = new Cookies(req, res)
   const token = cookies.get('token')
-  console.log(token)
   return token
 }
 
@@ -353,7 +352,6 @@ app.put('/updateLocal/:localID', (req, res) => {
       { authorization: token }
   }
   const data = body
-
   axios.put(`https://happymatch.herokuapp.com/api/local/update/${localID}`, data, headers)
     .then(
       response => {
@@ -396,8 +394,8 @@ app.post('/admin/login', (req, res) => {
   axios.post('https://happymatch.herokuapp.com/api/admin/login', post)
     .then(response => {
       const { token, admin } = response.data
-      const { id, username } = admin
-      const dataAdmin = { id, username, type: 'admin' }
+      const { id, username, isMain } = admin
+      const dataAdmin = { id, username, type: 'admin', isMain }
       const cookies = new Cookies(req, res)
       if (token) {
 

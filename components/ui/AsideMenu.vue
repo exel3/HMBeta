@@ -21,13 +21,22 @@
       :options="[{ title: 'Editar perfil', url: '/profile' }]"
     />
     <ItemAsideMenu
-      v-if="user.type === 'admin'"
+      v-if="user.type === 'admin' && user.isMain"
       title="Cuentas"
       imgsrc="group.svg"
       mainurl="/users/owners/"
       :options="[
         { title: 'Dueños', url: '/users/owners' },
         { title: 'Administradores', url: '/users/admins' },
+      ]"
+    />
+        <ItemAsideMenu
+      v-if="user.type === 'admin' && !user.isMain"
+      title="Cuentas"
+      imgsrc="group.svg"
+      mainurl="/users/owners/"
+      :options="[
+        { title: 'Dueños', url: '/users/owners' }
       ]"
     />
     <ItemAsideMenu

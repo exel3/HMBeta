@@ -41,7 +41,7 @@
       </div>
     </article>
         <article v-if="localSelected.id" class="newTable">
-      <div class="titleCard"><p>Opciones local</p></div>
+      <div class="titleCard"><p>Defina tipo de preguntas que se mostraran en este local</p></div>
       <div class="contentCard">
         <form>
           <div v-if="user.type === 'admin'" class="selectContainer">
@@ -52,8 +52,8 @@
               name="onlyQuestions"
               @change="setOnlyLocalQuestions($event.target.value)"
             >
-              <option selected :value="false">Globales y locales</option>
-                 <option selected :value="true">Solo locales</option>
+              <option :selected="localSelected.activateLocalQuestion===false" :value="false">Globales y locales</option>
+                 <option :selected="localSelected.activateLocalQuestion===true" :value="true">Solo locales</option>
             </select>
           </div>
         </form>
@@ -258,11 +258,10 @@ export default {
   },
   methods: {
     setOnlyLocalQuestions(event) {
-      console.log(event)
       let boolean = false
       event === 'true'? boolean = true : boolean = false
       const body = { activateLocalQuestion:boolean}
-      this.$axios.$put(`/updateLocal/${this.localSelected.id}`, body)
+      this.$axios.$put(`/api/updateLocal/${this.localSelected.id}`, body)
         .then(res => 
            this.$toasted.show(`Muestreo de preguntas actualizado`, {
           theme: 'toasted-primary',

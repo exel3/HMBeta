@@ -336,7 +336,8 @@ export default {
         .$get(`/api/getQuestionsByLocalId/${localID}`)
         .then((res) => {
           if (res) {
-            this.questionLength = res.questions.length
+            console.log(res)
+            this.questionLength = res.questions.length? res.questions.length : 0
             this.currentQuestions = res.questions
             this.tableFilter = res.questions
           }

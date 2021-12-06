@@ -1,13 +1,12 @@
-export default function(req, res, next) {
+export default function(req) {
   const redirects = [
     {
       from: "/", 
       to: "/locals"
     }
   ]
-  const redirect = redirects.find((r) => r.from === req.url)
+  const redirect = redirects.find((r) => r.from === req.route.path)
   if (redirect) {
-    res.writeHead(301, { Location: redirect.to })
-    res.end()
+    req.redirect(redirect.to)
   }
 }
